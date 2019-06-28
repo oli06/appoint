@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 
 class NavBar extends StatelessWidget {
   final String _header;
+  final String secondHeader;
   final Widget leadingWidget;
   final Widget endingWidget;
 
-  NavBar(this._header, this.leadingWidget, {this.endingWidget});
+  NavBar(this._header, this.leadingWidget,
+      {this.secondHeader = "", this.endingWidget});
 
   @override
   Widget build(BuildContext context) {
@@ -16,20 +18,52 @@ class NavBar extends StatelessWidget {
         Row(
           children: <Widget>[
             leadingWidget,
+            _headerText(),
             Expanded(
-              child: Container(
-                padding: EdgeInsets.only(left: 10.0),
-                child: Text(
-                  _header,
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Container(
+                  padding: EdgeInsets.only(right: 10.0),
+                  child: endingWidget != null
+                      ? endingWidget
+                      : _endingWidget(context),
                 ),
               ),
             ),
-            endingWidget != null ? endingWidget : _endingWidget(context),
           ],
         ),
         Divider(),
       ],
+    );
+  }
+
+  Widget _headerText() {
+    return Container(
+      padding: EdgeInsets.only(left: 10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            _header,
+            style: TextStyle(
+              fontSize: 26,
+              fontWeight:
+                  secondHeader != "" ? FontWeight.w200 : FontWeight.w700,
+            ),
+          ),
+          secondHeader != ""
+              ? Text(
+                  secondHeader,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                )
+              : Container(
+                  height: 0,
+                ),
+        ],
+      ),
     );
   }
 

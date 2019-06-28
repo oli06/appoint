@@ -11,8 +11,11 @@ class AppointmentPage extends StatelessWidget {
         children: <Widget>[
           NavBar(
             "Termine",
-            Icon(
-              CupertinoIcons.getIconData(0xf2d1),
+            Container(
+              padding: EdgeInsets.only(left: 10.0),
+              child: Icon(
+                CupertinoIcons.getIconData(0xf2d1),
+              ),
             ),
           ),
           Text("Appointments Page"),

@@ -11,7 +11,12 @@ class CompanyPage extends StatelessWidget {
         children: <Widget>[
           NavBar(
             "Unternehmen",
-            Icon(CupertinoIcons.getIconData(0xf3ed)),
+            Container(
+              child: Icon(
+                CupertinoIcons.getIconData(0xf3ed),
+              ),
+              padding: EdgeInsets.only(left: 10.0),
+            ),
           ),
           Text("unternehmens Page"),
         ],
