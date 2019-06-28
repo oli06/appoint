@@ -17,7 +17,6 @@ class NavBar extends StatelessWidget {
           children: <Widget>[
             leadingWidget,
             Expanded(
-              
               child: Container(
                 padding: EdgeInsets.only(left: 10.0),
                 child: Text(
