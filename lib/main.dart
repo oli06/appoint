@@ -1,9 +1,11 @@
+import 'package:appoint/data/locator.dart';
 import 'package:appoint/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 void main() {
   debugPaintSizeEnabled = false;
+  setupLocator();
   runApp(MyApp());
 }
 

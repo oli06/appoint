@@ -1,4 +1,4 @@
-import 'package:appoint/base/navBar.dart';
+import 'package:appoint/widgets/navBar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 

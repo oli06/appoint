@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:appoint/base/navBar.dart';
+import 'package:appoint/widgets/navBar.dart';
 
 class ProfilePage extends StatelessWidget {
   @override

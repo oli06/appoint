@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 class NavBar extends StatelessWidget {
   final String _header;
   final String secondHeader;
+  final Widget tabBar;
   final Widget leadingWidget;
   final Widget endingWidget;
 
   NavBar(this._header, this.leadingWidget,
-      {this.secondHeader = "", this.endingWidget});
+      {this.secondHeader = "", this.endingWidget, this.tabBar});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +33,8 @@ class NavBar extends StatelessWidget {
             ),
           ],
         ),
-        Divider(),
+        tabBar == null ? Container(width: 0, height: 0,) : tabBar,
+        tabBar == null ? Divider() : Divider(height: 1,), //divider line finishes with tabBar if tabBar exists
       ],
     );
   }

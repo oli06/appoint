@@ -1,62 +1,128 @@
-import 'package:appoint/base/navBar.dart';
+import 'package:appoint/data/locator.dart';
+import 'package:appoint/viewmodels/create_appoint_model.dart';
+import 'package:appoint/widgets/company_list.dart';
+import 'package:appoint/widgets/dropdown/select.dart';
+import 'package:appoint/widgets/navBar.dart';
 import 'package:flutter/material.dart';
-
+import 'package:direct_select_flutter/direct_select_container.dart';
+import 'package:provider/provider.dart';
 class SelectCompany extends StatefulWidget {
+  final CreateAppointModel model;
+
+  SelectCompany({this.model});
+
   @override
   State<StatefulWidget> createState() {
     return SelectCompanyState();
   }
 }
 
-class SelectCompanyState extends State<SelectCompany> {
+class SelectCompanyState extends State<SelectCompany>
+    with TickerProviderStateMixin {
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            NavBar(
-              "Neuer Termin",
-              IconButton(
-                icon: Icon(
-                  Icons.arrow_back_ios,
+        bottom: false,
+        child: DirectSelectContainer(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: <Widget>[
+                _buildNavBar(context),
+                _buildDropdown(),
+                _buildListHeading(),
+                Expanded(
+                  child: CompanyList(createAppointModel: widget.model,),
                 ),
-                onPressed: () => Navigator.pop(context),
-              ),
-              secondHeader: "Unternehmen auswählen",
-              endingWidget: Container(height: 0,),
-            )
-          ],
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
- int currentlySelected = 0;
-  String dropdownValue = "Arzt";
+  Container _buildListHeading() {
+    return Container(
+      padding: EdgeInsets.all(6.0),
+      alignment: Alignment.centerLeft,
+      child: const Text(
+        "Unternehmen",
+        style: TextStyle(
+          fontWeight: FontWeight.w200,
+          fontSize: 18,
+        ),
+      ),
+    );
+  }
 
-    static final Map<int, Widget> selectable = <int, Widget>{
-    0: Row(
-      children: <Widget>[
-        Expanded(
-          child: Container(
-              padding: EdgeInsets.only(left: 5.0, right: 5.0),
-              child: Text("Favoriten")),
+  _buildDropdown() {
+    final _categories = ["Arzt", "Steuerberater", "Andere", "Friseur"];
+
+    return SelectWidget(
+      dataset: _categories,
+    );
+  }
+
+  NavBar _buildNavBar(BuildContext context) {
+    return NavBar(
+      "Neuer Termin",
+      IconButton(
+        icon: Icon(
+          Icons.arrow_back_ios,
         ),
-        Icon(Icons.favorite)
-      ],
-    ),
-    1: Row(
-      children: <Widget>[
-        Expanded(
-          child: Container(
-              padding: EdgeInsets.only(left: 5.0, right: 5.0),
-              child: Text("Alle")),
+        onPressed: () => Navigator.pop(context),
+      ),
+      secondHeader: "Unternehmen auswählen",
+      endingWidget: Container(
+        height: 0,
+      ),
+      tabBar: tabBar(),
+    );
+  }
+
+  int _selectedTab = 0;
+
+  Widget tabBar() {
+    return TabBar(
+      unselectedLabelColor: Colors.black,
+      labelColor: Colors.blue,
+      controller: TabController(vsync: this, length: 2),
+      onTap: (int index) {
+        if (_selectedTab == index) {
+          return;
+        }
+
+        _selectedTab = index;
+        print(_selectedTab);
+      },
+      tabs: <Widget>[
+        Tab(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text("Favoriten"),
+              Icon(Icons.favorite),
+            ],
+          ),
         ),
-        Icon(Icons.list)
+        Tab(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text("Alle"),
+              Icon(Icons.list),
+            ],
+          ),
+        ),
       ],
-    ),
-  };
+    );
+  }
+
+  int currentlySelected = 0;
+  String dropdownValue = "Arzt";
 
   /*
   Widget _selectHeader(context) {

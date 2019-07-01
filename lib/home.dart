@@ -1,4 +1,4 @@
-import 'package:appoint/base/TabBar/FABBottomAppBarItem.dart';
+import 'package:appoint/widgets/TabBar/FABBottomAppBarItem.dart';
 import 'package:appoint/pages/appointments.dart';
 import 'package:appoint/pages/companies.dart';
 import 'package:appoint/pages/createAppoint/createAppoint.dart';

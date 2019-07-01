@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../base/navBar.dart';
+import 'package:appoint/widgets/navBar.dart';
 
 class AppointmentPage extends StatelessWidget {
   @override
