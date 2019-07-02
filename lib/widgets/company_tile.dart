@@ -10,8 +10,7 @@ class CompanyTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-        return ListTile(
-      //onTap: () => Navigator.pop(context, cpy),
+    return ListTile(
       onTap: onTap,
       leading: CircleAvatar(
           backgroundImage: NetworkImage(
@@ -38,7 +37,7 @@ class CompanyTile extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: Text(
-                  "${company.category.toUpperCase()}",
+                  "${company.category}",
                   style: const TextStyle(
                       fontWeight: FontWeight.w200, fontSize: 13),
                 ),
@@ -49,6 +48,5 @@ class CompanyTile extends StatelessWidget {
         ],
       ),
     );
-    
   }
 }

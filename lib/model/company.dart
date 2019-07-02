@@ -1,5 +1,9 @@
 import 'package:appoint/model/address.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+part 'company.g.dart';
+
+@JsonSerializable()
 class Company {
   String id;
   bool isPartner;
@@ -9,7 +13,7 @@ class Company {
   String picture;
   Address address;
   double rating;
-  String category; //TODO FIX TO INT
+  Category category; //TODO FIX TO INT
 
   Company({
     this.id,
@@ -23,7 +27,7 @@ class Company {
     this.category,
   });
 
-  Company.fromJson(Map<String, dynamic> json)
+  /* Company.fromJson(Map<String, dynamic> json)
       : address = Address.fromJson(json['address']),
         category = json['category'],
         description = json['description'],
@@ -32,7 +36,15 @@ class Company {
         name = json['name'],
         phone = json['phone'],
         picture = json['picture'],
-        rating = double.parse(json['rating']);
+        rating = double.parse(json['rating']); */
+
+      factory Company.fromJson(Map<String, dynamic> json) => _$CompanyFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CompanyToJson(this);
 }
 
 enum Category { ACCOUNTANT, DOCTOR, OTHER }
+
+enum CompanyVisibilityFilter {
+  all, favorites, category
+}

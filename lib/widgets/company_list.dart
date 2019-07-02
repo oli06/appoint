@@ -1,31 +1,37 @@
-import 'package:appoint/base/base_view.dart';
+import 'package:appoint/actions/companies_action.dart';
+import 'package:appoint/model/app_state.dart';
 import 'package:appoint/model/company.dart';
-import 'package:appoint/viewmodels/company_select_model.dart';
-import 'package:appoint/viewmodels/create_appoint_model.dart';
-import 'package:appoint/widgets/company_tile.dart';
+import 'package:appoint/selectors/selectors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 
-class CompanyList extends StatelessWidget {
+class CompanyList extends StatefulWidget {
+  final Widget Function(BuildContext context, int index, Company cpy)
+      itemBuilder;
 
-  //final CreateAppointModel model = locator<CreateAppointModel>();
-  final CreateAppointModel createAppointModel;
+  CompanyList({@required this.itemBuilder});
 
-CompanyList({this.createAppointModel});
+  @override
+  _CompanyListState createState() => _CompanyListState();
+}
+
+class _CompanyListState extends State<CompanyList> {
 
   @override
   Widget build(BuildContext context) {
-    return BaseView<CompanySelectModel>(
-      onModelReady: (model) => model.getCompanies(),
-      builder: (context, model, child) {
-        if (model.companies == null) {
-          return _buildLoading();
-        } else if (model.companies.length == 0) {
-          return _buildEmptyList();
-        } else
-          return _buildCompanyList(model.companies);
-      },
-    );
+    return StoreConnector<AppState, _ViewModel>(
+      onInit: (Store<AppState> store) => store.dispatch(LoadCompaniesAction()),
+        converter: _ViewModel.fromStore,
+        builder: (context, vm) {
+          if (vm.companies == null) {
+            return _buildLoading();
+          } else if (vm.companies.length == 0) {
+            return _buildEmptyList();
+          } else
+            return _buildCompanyList(vm.companies);
+        });
   }
 
   Widget _buildLoading() {
@@ -71,16 +77,23 @@ CompanyList({this.createAppointModel});
         physics: ClampingScrollPhysics(),
         itemCount: companies.length,
         itemBuilder: (context, index) {
-          Company cpy = companies[index];
-          Function onTap = () {
-            createAppointModel.setCompany(cpy);
-            Navigator.pop(context);
-          };
-          return CompanyTile(
-            company: cpy,
-            onTap: onTap,
-          );
+          return widget.itemBuilder(context, index, companies[index]);
         },
+      ),
+    );
+  }
+}
+
+class _ViewModel {
+  final List<Company> companies;
+
+  _ViewModel({@required this.companies});
+
+  static _ViewModel fromStore(Store<AppState> store) {
+    return _ViewModel(
+      companies: filteredCompaniesSelector(
+        companiesSelector(store.state),
+        activeCompanyFilterSelector(store.state),
       ),
     );
   }

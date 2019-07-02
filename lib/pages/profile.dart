@@ -11,7 +11,7 @@ class ProfilePage extends StatelessWidget {
           children: <Widget>[
             NavBar(
               "Profil",
-              IconButton(
+              leadingWidget: IconButton(
                 icon: Icon(Icons.close),
                 onPressed: () {
                   Navigator.pop(context);

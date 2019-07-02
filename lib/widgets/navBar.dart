@@ -9,33 +9,48 @@ class NavBar extends StatelessWidget {
   final Widget leadingWidget;
   final Widget endingWidget;
 
-  NavBar(this._header, this.leadingWidget,
-      {this.secondHeader = "", this.endingWidget, this.tabBar});
+  NavBar(this._header,
+      {this.leadingWidget,
+      this.secondHeader = "",
+      this.endingWidget,
+      this.tabBar});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            leadingWidget,
-            _headerText(),
-            Expanded(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Container(
-                  padding: EdgeInsets.only(right: 10.0),
-                  child: endingWidget != null
-                      ? endingWidget
-                      : _endingWidget(context),
+    return Container(
+      child: Column(
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              leadingWidget,
+              _headerText(),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    padding: EdgeInsets.only(right: 10.0),
+                    child: endingWidget != null
+                        ? endingWidget
+                        : _endingWidget(context),
+                  ),
                 ),
               ),
+            ],
+          ),
+          if (tabBar == null) ...[
+            Container(
+              width: 0,
+              height: 0,
             ),
+            Divider()
+          ] else ...[
+            tabBar,
+            Divider(
+              height: 1,
+            )
           ],
-        ),
-        tabBar == null ? Container(width: 0, height: 0,) : tabBar,
-        tabBar == null ? Divider() : Divider(height: 1,), //divider line finishes with tabBar if tabBar exists
-      ],
+        ],
+      ),
     );
   }
 

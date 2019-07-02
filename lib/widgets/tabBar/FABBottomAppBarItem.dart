@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 class FABBottomAppBarItem {
   FABBottomAppBarItem({this.iconData, this.text});
   IconData iconData;
@@ -6,18 +7,17 @@ class FABBottomAppBarItem {
 }
 
 class FABBottomAppBar extends StatefulWidget {
-  FABBottomAppBar({
-    this.items,
-    this.centerItemText,
-    this.height: 60.0,
-    this.iconSize: 24.0,
-    this.backgroundColor,
-    this.color,
-    this.selectedColor,
-    this.notchedShape,
-    this.onTabSelected,
-    this.selectedIndex
-  }) {
+  FABBottomAppBar(
+      {this.items,
+      this.centerItemText,
+      this.height: 60.0,
+      this.iconSize: 24.0,
+      this.backgroundColor,
+      this.color,
+      this.selectedColor,
+      this.notchedShape,
+      this.onTabSelected,
+      this.selectedIndex}) {
     assert(this.items.length == 2 || this.items.length == 4);
   }
   final List<FABBottomAppBarItem> items;
@@ -69,7 +69,6 @@ class FABBottomAppBarState extends State<FABBottomAppBar> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: items,
       ),
-      color: widget.backgroundColor,
     );
   }
 

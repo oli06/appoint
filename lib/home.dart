@@ -1,7 +1,8 @@
+import 'package:appoint/model/appoint.dart';
 import 'package:appoint/widgets/TabBar/FABBottomAppBarItem.dart';
 import 'package:appoint/pages/appointments.dart';
 import 'package:appoint/pages/companies.dart';
-import 'package:appoint/pages/createAppoint/createAppoint.dart';
+import 'package:appoint/pages/add_appoint.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -25,6 +26,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: FABBottomAppBar(
+        backgroundColor: Colors.white,
         items: [
           FABBottomAppBarItem(
               iconData: CupertinoIcons.getIconData(0xf3ed),
@@ -54,10 +56,23 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
       onPressed: () {
         showCupertinoModalPopup(
             context: context,
-            builder: (BuildContext context) => CreateAppoint());
+            builder: (BuildContext context) => AddAppoint(
+                  isEditing: false,
+                  onSave: (title, cpy, period, description) {
+                    Appoint newAppoint = Appoint(
+                      title: title,
+                      company: cpy,
+                      period: period,
+                      description: description,
+                    );
+
+                    //TODO ADD TO USERS APPOINTMENTS
+                  },
+                ));
       },
       child: Icon(Icons.add),
       elevation: 4.0,
+      backgroundColor: Color(0xff09c199),
     );
   }
 }
