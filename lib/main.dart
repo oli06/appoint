@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
 
   final store = Store<AppState>(
     appReducer,
-    initialState: AppState(),
+    initialState: AppState.initState(),
     middleware: createStoreCompaniesMiddleware(),
   );
 
@@ -27,6 +27,7 @@ class MyApp extends StatelessWidget {
     return StoreProvider(
       store: store,
       child: MaterialApp(
+        theme: ThemeData(iconTheme: IconThemeData(color: Color(0xff1991eb))),
         title: "Appoint",
         home: HomePage(),
       ),

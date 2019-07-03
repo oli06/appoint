@@ -72,6 +72,7 @@ class NavBar extends StatelessWidget {
               ? Text(
                   secondHeader,
                   style: TextStyle(
+                    color: Color(0xff1991eb),
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),

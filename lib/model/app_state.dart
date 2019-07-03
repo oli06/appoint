@@ -14,6 +14,12 @@ class AppState {
     this.selectPeriodViewModel = const SelectPeriodViewModel(),
     this.addAppointViewModel = const AddAppointViewModel(),
   });
+
+  factory AppState.initState() => AppState(
+        selectPeriodViewModel: SelectPeriodViewModel(
+          periodModel: PeriodMode(mode: SelectedPeriodMode.DATE),
+        ),
+      );
 }
 
 enum AppTab { appointments, companies }

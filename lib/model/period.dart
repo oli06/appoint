@@ -1,23 +1,19 @@
-import 'package:json_annotation/json_annotation.dart';
+import 'package:appoint/utils/parse.dart';
+import 'package:flutter/material.dart';
 
-part 'period.g.dart';
-
-@JsonSerializable()
 class Period {
-  DateTime date;
+  TimeOfDay time;
   Duration duration;
 
-  Period({this.date, this.duration});
+  Period({this.time, this.duration});
 
-    factory Period.fromJson(Map<String, dynamic> json) => _$PeriodFromJson(json);
+      Period.fromJson(Map<String, dynamic> json)
+      : time = Parse.convertTimeString(json['date']),
+        duration = Duration(minutes: json['duration']);
 
-  /// `toJson` is the convention for a class to declare support for serialization
-  /// to JSON. The implementation simply calls the private, generated
-  /// helper method `_$UserToJson`.
-  Map<String, dynamic> toJson() => _$PeriodToJson(this);
-}
-
-enum PeriodMode {
-  DATE,
-  TIME,
+  Map<String, dynamic> toJson() =>
+    {
+      'date': time,
+      'duration': duration,
+    };
 }

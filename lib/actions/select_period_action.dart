@@ -1,13 +1,16 @@
 import 'package:appoint/model/period.dart';
+import 'package:appoint/model/select_period_vm.dart';
+import 'package:flutter/material.dart';
 
 class UpdateModeAction {
-  final PeriodMode mode;
+  final SelectedPeriodMode mode;
+  final dynamic value;
 
-  UpdateModeAction(this.mode);
+  UpdateModeAction(this.mode, this.value);
 }
 
 class UpdateSelectedValueAction {
-  final DateTime value;
+  final dynamic value;
 
   UpdateSelectedValueAction(this.value);
 }
@@ -18,8 +21,16 @@ class SetLoadedPeriodsAction {
   SetLoadedPeriodsAction(this.periods);
 }
 
-class LoadPeriodsAction {
-  final String companyId; 
+class LoadDatePeriodsAction {
+  final int companyId; 
+  final DateTime date;
 
-  LoadPeriodsAction(this.companyId);
+  LoadDatePeriodsAction(this.companyId, this.date);
+}
+
+class LoadTimePeriodsAction {
+  final int companyId;
+  final TimeOfDay time;
+
+  LoadTimePeriodsAction(this.companyId, this.time);
 }

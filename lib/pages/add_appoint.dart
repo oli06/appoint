@@ -1,11 +1,19 @@
+import 'package:appoint/actions/select_period_action.dart';
+import 'package:appoint/model/add_appoint_vm.dart';
+import 'package:appoint/model/app_state.dart';
 import 'package:appoint/model/appoint.dart';
 import 'package:appoint/model/company.dart';
 import 'package:appoint/model/period.dart';
+import 'package:appoint/model/select_period_vm.dart';
+import 'package:appoint/pages/select_period.dart';
 import 'package:appoint/widgets/company_tile.dart';
+import 'package:appoint/widgets/cupertino_bottom_picker.dart';
 import 'package:appoint/widgets/navBar.dart';
 import 'package:appoint/pages/select_company.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:redux/redux.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
 typedef OnSaveCallback = Function(
     String title, Company company, Period period, String description);
@@ -63,16 +71,23 @@ class AddAppointState extends State<AddAppoint>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            buildNavBar(),
-            _getLowerLayer(),
-          ],
-        ),
-      ),
-    );
+    return StoreConnector<AppState, _ViewModel>(
+        onInit: (store) {
+          if (widget.isEditing) {}
+        },
+        converter: _ViewModel.fromStore,
+        builder: (context, vm) {
+          return Scaffold(
+            body: SafeArea(
+              child: Column(
+                children: <Widget>[
+                  buildNavBar(),
+                  _getLowerLayer(),
+                ],
+              ),
+            ),
+          );
+        });
   }
 
   NavBar buildNavBar() {
@@ -86,7 +101,7 @@ class AddAppointState extends State<AddAppoint>
         padding: EdgeInsets.zero,
         child: Text(
           widget.isEditing ? "Speichern" : "Erstellen",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold,color: Color(0xff09c199)),
         ),
         onPressed: _isValid()
             ? () => widget.onSave(_title, _company, _period, _description)
@@ -194,7 +209,6 @@ class AddAppointState extends State<AddAppoint>
 
   Card _secondCard() {
     return Card(
-      
       color: _company == null ? Colors.grey[350] : null,
       elevation: 2,
       child: Container(
@@ -208,7 +222,6 @@ class AddAppointState extends State<AddAppoint>
             Align(
               alignment: Alignment.centerLeft,
               child: Container(
-                
                 height: 35,
                 padding: EdgeInsets.only(top: 10),
                 child: Text(
@@ -220,46 +233,78 @@ class AddAppointState extends State<AddAppoint>
                 ),
               ),
             ),
-            Row(
+            _period == null
+                ? Container(
+                    height: 50,
+                    child: FlatButton(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Zeitraum auswählen..."),
+                          Icon(
+                            CupertinoIcons.getIconData(0xf3d0),
+                            color: Colors.black,
+                          ),
+                        ],
+                      ),
+                      onPressed: _company == null ? null : _selectPeriodPressed,
+                    ),
+                  )
+                : Text("PERIODE WURDE GEWÄHLT")
+            /*Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Expanded(
                   child: OutlineButton(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text("Datum"),
-                          Icon(Icons.event),
-                        ],
-                      ),
-                      onPressed: _company == null
-                          ? null
-                          : () {} // => _selectPeriod(true),
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text("Datum"),
+                        Icon(Icons.event),
+                      ],
+                    ),
+                    onPressed:
+                        _company == null ? null : () {} //=> _selectPeriod(true),
+                  ),
                 ),
                 Expanded(
                   child: OutlineButton(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text("Uhrzeit"),
-                          Icon(Icons.watch_later),
-                        ],
-                      ),
-                      onPressed: _company == null
-                          ? null
-                          : () {} //=> _selectPeriod(false),
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text("Uhrzeit"),
+                        Icon(Icons.watch_later),
+                      ],
+                    ),
+                    onPressed:
+                        _company == null ? null : () {} //=> _selectPeriod(false),
+                  ),
                 ),
               ],
-            )
+            )*/
           ],
         ),
       ),
     );
   }
 
+  void _selectPeriodPressed() => showCupertinoModalPopup(
+                          context: context,
+                          builder: (context) => SelectPeriod(
+                                companyId: _company.id,
+                              ),
+                        ).then((selectedPeriod) {
+                          if (selectedPeriod != null) {
+                            setState(() {
+                              _period = selectedPeriod;
+                            });
+                          }
+                        });
+
   /*void _selectPeriod(bool isDateMode) {
+    final store = StoreProvider.of<AppState>(context);
+    store.dispatch(
+        UpdateModeAction(isDateMode ? SelectedPeriodMode.DATE : SelectedPeriodMode.TIME));
     bool isIos = Theme.of(context).platform == TargetPlatform.iOS;
 
     final firstDate = DateTime.now();
@@ -273,23 +318,23 @@ class AddAppointState extends State<AddAppoint>
                     ? CupertinoDatePickerMode.date
                     : CupertinoDatePickerMode.time,
                 onDateTimeChanged: (date) {
-                  model.setSelectedDate(date);
+                  store.dispatch(UpdateSelectedValueAction(date));
                 },
                 initialDateTime: firstDate,
                 maximumYear: 2100,
                 use24hFormat: true,
               ),
             ),
-      ).then((val) {
+      ).then((_) {
         showCupertinoModalPopup(
           context: context,
-          builder: (context) => SelectTimespan(
-                model: model,
+          builder: (context) => SelectPeriod(
+                companyId: _company.id,
               ),
         );
       });
     } else {
-      isDateMode == true
+      isDateMode
           ? showDatePicker(
               context: context,
               firstDate: firstDate,
@@ -308,10 +353,12 @@ class AddAppointState extends State<AddAppoint>
                 return;
               }
 
+              store.dispatch(UpdateSelectedValueAction(date));
+
               showCupertinoModalPopup(
                 context: context,
-                builder: (context) => SelectTimespan(
-                      model: model,
+                builder: (context) => SelectPeriod(
+                      companyId: _company.id,
                     ),
               );
             })
@@ -319,14 +366,31 @@ class AddAppointState extends State<AddAppoint>
                   context: context, initialTime: TimeOfDay(hour: 8, minute: 0))
               .then(
               (time) {
+                final currentDate = DateTime.now();
+                store.dispatch(UpdateSelectedValueAction(new DateTime(
+                    currentDate.year,
+                    currentDate.month,
+                    currentDate.day,
+                    time.hour,
+                    time.minute)));
                 showCupertinoModalPopup(
                   context: context,
-                  builder: (context) => SelectTimespan(
-                        model: model,
+                  builder: (context) => SelectPeriod(
+                        companyId: _company.id,
                       ),
                 );
               },
             );
     }
   }*/
+}
+
+class _ViewModel {
+  final AddAppointViewModel addAppointViewModel;
+
+  _ViewModel({@required this.addAppointViewModel});
+
+  static _ViewModel fromStore(Store<AppState> store) {
+    return _ViewModel(addAppointViewModel: store.state.addAppointViewModel);
+  }
 }

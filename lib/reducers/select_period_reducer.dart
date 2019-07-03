@@ -4,30 +4,36 @@ import 'package:appoint/model/select_period_vm.dart';
 
 final selectPeriodReudcer = combineReducers<SelectPeriodViewModel>([
   TypedReducer<SelectPeriodViewModel, UpdateModeAction>(_updateMode),
-    TypedReducer<SelectPeriodViewModel, UpdateSelectedValueAction>(_updateSelectedValue),
-  TypedReducer<SelectPeriodViewModel, SetLoadedPeriodsAction>(_setLoadedPeriods),
+  TypedReducer<SelectPeriodViewModel, UpdateSelectedValueAction>(
+      _updateSelectedValue),
+  TypedReducer<SelectPeriodViewModel, SetLoadedPeriodsAction>(
+      _setLoadedPeriods),
 ]);
 
-SelectPeriodViewModel _updateMode(SelectPeriodViewModel vm, UpdateModeAction action) {
+SelectPeriodViewModel _updateMode(
+    SelectPeriodViewModel vm, UpdateModeAction action) {
   return SelectPeriodViewModel(
-    mode: action.mode,
     periods: vm.periods,
-    selectedValue: vm.selectedValue
+    periodModel: PeriodMode(
+      mode: action.mode,
+      value: action.value,
+    ),
   );
 }
 
-SelectPeriodViewModel _setLoadedPeriods(SelectPeriodViewModel vm, SetLoadedPeriodsAction action) {
-    return SelectPeriodViewModel(
-    mode: vm.mode,
+SelectPeriodViewModel _setLoadedPeriods(
+    SelectPeriodViewModel vm, SetLoadedPeriodsAction action) {
+  return SelectPeriodViewModel(
+    periodModel: vm.periodModel,
     periods: action.periods,
-    selectedValue: vm.selectedValue
   );
 }
 
-SelectPeriodViewModel _updateSelectedValue(SelectPeriodViewModel vm, UpdateSelectedValueAction action) {
-  return   SelectPeriodViewModel(
-    mode: vm.mode,
+SelectPeriodViewModel _updateSelectedValue(
+    SelectPeriodViewModel vm, UpdateSelectedValueAction action) {
+  return SelectPeriodViewModel(
     periods: vm.periods,
-    selectedValue: action.value
+    periodModel: PeriodMode(mode: vm.periodModel.mode, value: action.value)
   );
 }
+

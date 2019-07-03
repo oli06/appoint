@@ -1,30 +1,27 @@
 import 'package:appoint/actions/select_period_action.dart';
 import 'package:appoint/model/app_state.dart';
-import 'package:appoint/model/period.dart';
 import 'package:appoint/model/select_period_vm.dart';
 import 'package:appoint/widgets/day_button.dart';
 import 'package:appoint/widgets/navBar.dart';
+import 'package:appoint/widgets/weekdays_row.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 
 class SelectPeriod extends StatefulWidget {
-  final Period period;
+  final int companyId;
 
-  SelectPeriod({this.period});
+  SelectPeriod({@required this.companyId});
 
   @override
   _SelectPeriodState createState() => _SelectPeriodState();
 }
 
 class _SelectPeriodState extends State<SelectPeriod> {
-  String compId = "1"; //TODO in Store
-
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
       converter: _ViewModel.fromStore,
-      onInit: (store) => store.dispatch(LoadPeriodsAction(compId)),
       builder: (context, vm) {
         return Scaffold(
           body: SafeArea(
@@ -33,36 +30,18 @@ class _SelectPeriodState extends State<SelectPeriod> {
                 _buildNavBar(context),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: vm.selectPeriodViewModel.mode == PeriodMode.DATE
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: <Widget>[
-                            DayButton(
-                              text: "MO",
-                            ),
-                            DayButton(
-                              text: "DI",
-                            ),
-                            DayButton(
-                              text: "MI",
-                            ),
-                            DayButton(
-                              text: "DO",
-                            ),
-                            DayButton(
-                              text: "FR",
-                            ),
-                            DayButton(
-                              text: "SA",
-                            ),
-                          ],
-                        )
+                  child: vm.selectPeriodViewModel.periodModel.mode ==
+                          SelectedPeriodMode.DATE
+                      ? WeekdaysRow()
                       : Container(
-                          height: 0,
-                          width: 0,
+                          child: Text(
+                            vm.selectPeriodViewModel.periodModel
+                                .getSelectedValue()
+                                .toString(),
+                          ),
                         ),
                 ),
-                vm.selectPeriodViewModel.mode == PeriodMode.DATE
+                vm.selectPeriodViewModel.periodModel.mode == SelectedPeriodMode.DATE
                     ? _buildPeriodSelect()
                     : _buildDateSelect(),
               ],

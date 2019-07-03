@@ -6,10 +6,10 @@ part of 'address.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-Address _$AddressFromJson(Map<String, dynamic> json) {
+Address _$AddressFromJson(Map json) {
   return Address(
       street: json['street'] as String,
-      houseNumber: json['houseNumber'] as int,
+      houseNumber: json['houseNumber'] as String,
       city: json['city'] as String,
       zip: json['zip'] as int);
 }
