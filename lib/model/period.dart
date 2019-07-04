@@ -1,19 +1,22 @@
-import 'package:appoint/utils/parse.dart';
-import 'package:flutter/material.dart';
+
 
 class Period {
-  TimeOfDay time;
-  Duration duration;
+  final DateTime start;
+  final Duration duration;
 
-  Period({this.time, this.duration});
+  Period({this.start, this.duration});
 
-      Period.fromJson(Map<String, dynamic> json)
-      : time = Parse.convertTimeString(json['date']),
+  DateTime getPeriodEnd() {
+    return start.add(duration);
+  }
+
+  Period.fromJson(Map<String, dynamic> json)
+      : start = DateTime.fromMillisecondsSinceEpoch(json['start']),
         duration = Duration(minutes: json['duration']);
 
   Map<String, dynamic> toJson() =>
     {
-      'date': time,
+      'start': start.millisecondsSinceEpoch,
       'duration': duration,
     };
 }

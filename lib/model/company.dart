@@ -36,4 +36,4 @@ class Company {
 
 enum Category { ACCOUNTANT, DOCTOR, OTHER }
 
-enum CompanyVisibilityFilter { all, favorites, category }
+enum CompanyVisibilityFilter { all, favorites }

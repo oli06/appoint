@@ -2,6 +2,7 @@ import 'package:appoint/actions/companies_action.dart';
 import 'package:appoint/actions/select_period_action.dart';
 import 'package:appoint/data/services.dart';
 import 'package:appoint/model/app_state.dart';
+import 'package:appoint/model/select_period_vm.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:redux/redux.dart';
 
@@ -9,13 +10,11 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
   final Service service = Service();
 
   final loadCompanies = _createLoadCompanies(service);
-  final loadDatePeriods = _createLoadDatePeriods(service);
-  final loadTimePeriods = _createLoadTimePeriods(service);
+  final loadPeriods = _createLoadPeriods(service);
 
   return [
     TypedMiddleware<AppState, LoadCompaniesAction>(loadCompanies),
-    TypedMiddleware<AppState, LoadDatePeriodsAction>(loadDatePeriods),
-    TypedMiddleware<AppState, LoadTimePeriodsAction>(loadTimePeriods)
+    TypedMiddleware<AppState, LoadPeriodsAction>(loadPeriods)
   ];
 }
 
@@ -29,33 +28,39 @@ Middleware<AppState> _createLoadCompanies(Service service) {
   };
 }
 
-Middleware<AppState> _createLoadDatePeriods(Service service) {
+Middleware<AppState> _createLoadPeriods(Service service) {
   return (Store<AppState> store, action, next) {
-    final act = action as LoadDatePeriodsAction;
-    service
-        .getDatePeriods(
-      act.companyId,
-      Parse.convertDateToPeriodDate(act.date),
-    )
-        .then((periods) {
-      store.dispatch(SetLoadedPeriodsAction(periods));
-    });
+    store.dispatch(UpdateIsLoadingAction(true));
 
-    next(action);
-  };
-}
-
-Middleware<AppState> _createLoadTimePeriods(Service service) {
-  return (Store<AppState> store, action, next) {
-    final act = action as LoadTimePeriodsAction;
-    service
-        .getTimePeriods(
-      act.companyId,
-      Parse.convertTimeOfDay(act.time),
-    )
-        .then((periods) {
-      store.dispatch(SetLoadedPeriodsAction(periods),);
-    });
+    if (store.state.selectPeriodViewModel.periodModel.mode ==
+        SelectedPeriodMode.DATE) {
+      final date = store.state.selectPeriodViewModel.periodModel.date;
+      print("loading for date: ${date.toIso8601String()}");
+      service
+          .getDatePeriods(
+        action.companyId,
+        Parse.convertDateToPeriodDate(
+            store.state.selectPeriodViewModel.periodModel.date),
+      )
+          .then((periods) {
+        store.dispatch(SetLoadedPeriodsAction(periods));
+        store.dispatch(UpdateIsLoadingAction(false));
+      });
+    } else {
+      final time = store.state.selectPeriodViewModel.periodModel.time;
+      print("loading for time: ${time.toString()}");
+      service
+          .getTimePeriods(
+        action.companyId,
+        Parse.convertTimeOfDay(time),
+      )
+          .then((periods) {
+        store.dispatch(
+          SetLoadedPeriodsAction(periods),
+        );
+        store.dispatch(UpdateIsLoadingAction(false));
+      });
+    }
 
     next(action);
   };

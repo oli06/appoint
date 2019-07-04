@@ -11,13 +11,16 @@ class AppState {
   AppState({
     this.companies = const [],
     this.activeCompanyFilter = CompanyVisibilityFilter.all,
-    this.selectPeriodViewModel = const SelectPeriodViewModel(),
+    this.selectPeriodViewModel = const SelectPeriodViewModel(
+    ),
     this.addAppointViewModel = const AddAppointViewModel(),
   });
 
   factory AppState.initState() => AppState(
         selectPeriodViewModel: SelectPeriodViewModel(
           periodModel: PeriodMode(mode: SelectedPeriodMode.DATE),
+          isLoading: true,
+          filter: [for(var i = 0; i < 7; i++) true],
         ),
       );
 }

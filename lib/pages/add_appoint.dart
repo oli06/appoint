@@ -1,13 +1,10 @@
-import 'package:appoint/actions/select_period_action.dart';
 import 'package:appoint/model/add_appoint_vm.dart';
 import 'package:appoint/model/app_state.dart';
 import 'package:appoint/model/appoint.dart';
 import 'package:appoint/model/company.dart';
 import 'package:appoint/model/period.dart';
-import 'package:appoint/model/select_period_vm.dart';
 import 'package:appoint/pages/select_period.dart';
 import 'package:appoint/widgets/company_tile.dart';
-import 'package:appoint/widgets/cupertino_bottom_picker.dart';
 import 'package:appoint/widgets/navBar.dart';
 import 'package:appoint/pages/select_company.dart';
 import 'package:flutter/cupertino.dart';
@@ -38,7 +35,7 @@ class AddAppointState extends State<AddAppoint>
   final _appointFormKey = GlobalKey<FormState>();
 
   String _title;
-  Company _company;
+  Company _company = Company(address: null, id: 1, category: Category.DOCTOR, name: "DreamCompany", picture: "http://placehold.it/32x32", description: "Beschreibung", isPartner: true, rating: 3.5);
   Period _period;
   String _description;
 
@@ -66,7 +63,7 @@ class AddAppointState extends State<AddAppoint>
   }
 
   bool _isValid() {
-    return _title != null && _title.isNotEmpty && _company != null;
+    return _title != null && _title.isNotEmpty && _company != null && _period != null;
   }
 
   @override
@@ -101,7 +98,7 @@ class AddAppointState extends State<AddAppoint>
         padding: EdgeInsets.zero,
         child: Text(
           widget.isEditing ? "Speichern" : "Erstellen",
-          style: TextStyle(fontWeight: FontWeight.bold,color: Color(0xff09c199)),
+          style: TextStyle(fontWeight: FontWeight.bold, color: _isValid() ? Color(0xff09c199) : null),
         ),
         onPressed: _isValid()
             ? () => widget.onSave(_title, _company, _period, _description)
@@ -300,89 +297,6 @@ class AddAppointState extends State<AddAppoint>
                             });
                           }
                         });
-
-  /*void _selectPeriod(bool isDateMode) {
-    final store = StoreProvider.of<AppState>(context);
-    store.dispatch(
-        UpdateModeAction(isDateMode ? SelectedPeriodMode.DATE : SelectedPeriodMode.TIME));
-    bool isIos = Theme.of(context).platform == TargetPlatform.iOS;
-
-    final firstDate = DateTime.now();
-
-    if (isIos) {
-      showCupertinoModalPopup(
-        context: context,
-        builder: (context) => CupertinoBottomPicker(
-              picker: CupertinoDatePicker(
-                mode: isDateMode
-                    ? CupertinoDatePickerMode.date
-                    : CupertinoDatePickerMode.time,
-                onDateTimeChanged: (date) {
-                  store.dispatch(UpdateSelectedValueAction(date));
-                },
-                initialDateTime: firstDate,
-                maximumYear: 2100,
-                use24hFormat: true,
-              ),
-            ),
-      ).then((_) {
-        showCupertinoModalPopup(
-          context: context,
-          builder: (context) => SelectPeriod(
-                companyId: _company.id,
-              ),
-        );
-      });
-    } else {
-      isDateMode
-          ? showDatePicker(
-              context: context,
-              firstDate: firstDate,
-              lastDate: DateTime(2100),
-              initialDate: firstDate.add(
-                Duration(days: 1),
-              ),
-              selectableDayPredicate: (date) {
-                if (date.weekday == DateTime.sunday) {
-                  return false;
-                } else {
-                  return true;
-                }
-              }).then((date) {
-              if (date == null) {
-                return;
-              }
-
-              store.dispatch(UpdateSelectedValueAction(date));
-
-              showCupertinoModalPopup(
-                context: context,
-                builder: (context) => SelectPeriod(
-                      companyId: _company.id,
-                    ),
-              );
-            })
-          : showTimePicker(
-                  context: context, initialTime: TimeOfDay(hour: 8, minute: 0))
-              .then(
-              (time) {
-                final currentDate = DateTime.now();
-                store.dispatch(UpdateSelectedValueAction(new DateTime(
-                    currentDate.year,
-                    currentDate.month,
-                    currentDate.day,
-                    time.hour,
-                    time.minute)));
-                showCupertinoModalPopup(
-                  context: context,
-                  builder: (context) => SelectPeriod(
-                        companyId: _company.id,
-                      ),
-                );
-              },
-            );
-    }
-  }*/
 }
 
 class _ViewModel {
