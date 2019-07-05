@@ -1,4 +1,4 @@
-import 'package:appoint/model/company.dart';
+import 'package:appoint/models/company.dart';
 
 class UpdateFilterAction {
   final CompanyVisibilityFilter newFilter;

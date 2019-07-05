@@ -1,19 +1,31 @@
-import 'package:appoint/model/app_state.dart';
-import 'package:appoint/model/company.dart';
-import 'package:appoint/model/period.dart';
+import 'package:appoint/models/app_state.dart';
+import 'package:appoint/models/company.dart';
+import 'package:appoint/models/period.dart';
 
-List<Company> companiesSelector(AppState state) => state.companies;
+List<Company> companiesSelector(AppState state) =>
+    state.selectCompanyViewModel.companies;
 
 CompanyVisibilityFilter activeCompanyFilterSelector(AppState state) =>
-    state.activeCompanyFilter;
+    state.selectCompanyViewModel.companyVisibilityFilter;
 
-List<Company> filteredCompaniesSelector(
-    List<Company> companies, CompanyVisibilityFilter filter) {
+List<Company> companiesVisibilityFilterSelector(List<Company> companies,
+    CompanyVisibilityFilter filter) {
   return companies.where((cpy) {
     if (filter == CompanyVisibilityFilter.favorites) {
-      return false; //TODO
+      return true;//TODO
     } else if (filter == CompanyVisibilityFilter.all) {
       return true;
+    }
+  }).toList();
+}
+
+List<Company> companiesCategoryFilterSelector(List<Company> companies, Category categoryFilter) {
+  return companies.where((cpy) {
+    switch (categoryFilter) {
+      case Category.ALL:
+        return true;
+      default:
+        return cpy.category == categoryFilter;
     }
   }).toList();
 }

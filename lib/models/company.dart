@@ -34,6 +34,6 @@ class Company {
   Map<String, dynamic> toJson() => _$CompanyToJson(this);
 }
 
-enum Category { ACCOUNTANT, DOCTOR, OTHER }
+enum Category { ALL, DOCTOR, ACCOUNTANT, OTHER }
 
-enum CompanyVisibilityFilter { all, favorites }
+enum CompanyVisibilityFilter { favorites, all }

@@ -2,25 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:direct_select_flutter/direct_select_item.dart';
 import 'package:direct_select_flutter/direct_select_list.dart';
 
-class SelectWidget extends StatefulWidget {
-  final List<String> dataset;
+class SelectWidget<T> extends StatefulWidget {
+  final List<T> dataset;
+  final Function(T value, int index, BuildContext context) onSelectionChanged;
+  final dynamic Function(BuildContext context, T value) itemBuilder;
+  final int selectedIndex;
 
-  SelectWidget({@required this.dataset});
+  SelectWidget(
+      {@required this.dataset, this.onSelectionChanged, this.itemBuilder, this.selectedIndex});
 
   @override
-  _SelectWidgetState createState() => _SelectWidgetState();
+  _SelectWidgetState createState() => _SelectWidgetState<T>();
 }
 
-class _SelectWidgetState extends State<SelectWidget> {
+class _SelectWidgetState<T> extends State<SelectWidget<T>> {
   int selectedCategory = 0;
 
-  DirectSelectItem<String> getDropDownMenuItem(String value) {
-    return DirectSelectItem<String>(
+  DirectSelectItem<T> getDropDownMenuItem(T value) {
+    return DirectSelectItem<T>(
         itemHeight: 56,
         value: value,
-        itemBuilder: (context, value) {
-          return Text(value);
-        });
+        itemBuilder: (context, T value) => widget.itemBuilder(context, value));
   }
 
   _selectionDecoration() {
@@ -45,7 +47,7 @@ class _SelectWidgetState extends State<SelectWidget> {
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(0, 8, 0, 0,),
+            padding: EdgeInsets.fromLTRB(0, 8, 0, 0),
             child: Container(
               child: Card(
                 child: Row(
@@ -53,11 +55,12 @@ class _SelectWidgetState extends State<SelectWidget> {
                   children: <Widget>[
                     Expanded(
                       child: Padding(
-                        child: DirectSelectList<String>(
+                        child: DirectSelectList<T>(
+                          onItemSelectedListener: (T value, index, context) =>
+                              widget.onSelectionChanged(value, index, context),
                           values: widget.dataset,
-                          defaultItemIndex: 0,
-                          itemBuilder: (String value) =>
-                              getDropDownMenuItem(value),
+                          defaultItemIndex: widget.selectedIndex,
+                          itemBuilder: (T value) => getDropDownMenuItem(value),
                           focusedItemDecoration: _selectionDecoration(),
                         ),
                         padding: EdgeInsets.only(left: 12),

@@ -1,6 +1,5 @@
-import 'package:appoint/actions/company_filter_action.dart';
 import 'package:appoint/actions/select_period_action.dart' as periodFilter;
-import 'package:appoint/model/app_state.dart';
+import 'package:appoint/models/app_state.dart';
 import 'package:appoint/widgets/day_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';

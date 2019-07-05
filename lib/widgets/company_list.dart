@@ -1,6 +1,7 @@
 import 'package:appoint/actions/companies_action.dart';
-import 'package:appoint/model/app_state.dart';
-import 'package:appoint/model/company.dart';
+import 'package:appoint/models/app_state.dart';
+import 'package:appoint/models/company.dart';
+import 'package:appoint/view_models/select_company_vm.dart';
 import 'package:appoint/selectors/selectors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -18,19 +19,26 @@ class CompanyList extends StatefulWidget {
 }
 
 class _CompanyListState extends State<CompanyList> {
-
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
-      onInit: (Store<AppState> store) => store.dispatch(LoadCompaniesAction()),
+        onInit: (Store<AppState> store) =>
+            store.dispatch(LoadCompaniesAction()),
         converter: _ViewModel.fromStore,
         builder: (context, vm) {
-          if (vm.companies == null) {
+          if (vm.selectCompanyViewModel.isLoading) {
             return _buildLoading();
-          } else if (vm.companies.length == 0) {
+          } else if (vm.selectCompanyViewModel.companies.length == 0) {
             return _buildEmptyList();
           } else
-            return _buildCompanyList(vm.companies);
+            return _buildCompanyList(
+              companiesCategoryFilterSelector(
+                  companiesVisibilityFilterSelector(
+                    vm.selectCompanyViewModel.companies,
+                    vm.selectCompanyViewModel.companyVisibilityFilter,
+                  ),
+                  vm.selectCompanyViewModel.categoryFilter),
+            );
         });
   }
 
@@ -85,16 +93,13 @@ class _CompanyListState extends State<CompanyList> {
 }
 
 class _ViewModel {
-  final List<Company> companies;
+  final SelectCompanyViewModel selectCompanyViewModel;
 
-  _ViewModel({@required this.companies});
+  _ViewModel({@required this.selectCompanyViewModel});
 
   static _ViewModel fromStore(Store<AppState> store) {
     return _ViewModel(
-      companies: filteredCompaniesSelector(
-        companiesSelector(store.state),
-        activeCompanyFilterSelector(store.state),
-      ),
+      selectCompanyViewModel: store.state.selectCompanyViewModel,
     );
   }
 }

@@ -1,7 +1,8 @@
 import 'package:appoint/actions/select_period_action.dart';
-import 'package:appoint/model/app_state.dart';
-import 'package:appoint/model/period.dart';
-import 'package:appoint/model/select_period_vm.dart';
+import 'package:appoint/models/app_state.dart';
+import 'package:appoint/models/period.dart';
+import 'package:appoint/view_models/select_period_vm.dart';
+import 'package:appoint/utils/parse.dart';
 import 'package:appoint/widgets/bottom_picker.dart';
 import 'package:appoint/widgets/date_picker.dart';
 import 'package:appoint/widgets/navBar.dart';
@@ -13,7 +14,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
-import 'package:intl/intl.dart';
 
 class SelectPeriod extends StatefulWidget {
   final int companyId;
@@ -54,7 +54,8 @@ class _SelectPeriodState extends State<SelectPeriod> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(_buildSelectedValueButtonText(vm)),
+                                  Text(_buildSelectedValueButtonText(
+                                      vm, context)),
                                   Icon(
                                     vm.selectPeriodViewModel.periodModel.mode ==
                                             SelectedPeriodMode.DATE
@@ -63,7 +64,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
                                   ),
                                 ],
                               ),
-                              onPressed: () => _selectValueClicked(vm),
+                              onPressed: () => _selectValueClicked(vm, context),
                             ),
                           ),
                         ),
@@ -91,8 +92,10 @@ class _SelectPeriodState extends State<SelectPeriod> {
                       child: PeriodList(
                         companyId: widget.companyId,
                         itemBuilder: (context, index, Period period) =>
-                            _buildPeriodTile(period,
-                                vm.selectPeriodViewModel.periodModel.mode),
+                            _buildPeriodTile(
+                                period,
+                                vm.selectPeriodViewModel.periodModel.mode,
+                                context),
                       ),
                     ),
                   )
@@ -105,19 +108,53 @@ class _SelectPeriodState extends State<SelectPeriod> {
     );
   }
 
-  Widget _buildPeriodTile(Period period, SelectedPeriodMode mode) {
+  DateTime _lastDay;
+
+  bool _isFirstElementOfDay(Period period) {
+    if (_lastDay == null) {
+      _lastDay = period.start;
+      return true;
+    } else if (_lastDay.year == period.start.year &&
+        _lastDay.month == period.start.month &&
+        _lastDay.day == period.start.day) {
+      return false;
+    } else {
+      _lastDay = period.start;
+      return true;
+    }
+  }
+
+  Widget _buildPeriodTile(
+      Period period, SelectedPeriodMode mode, BuildContext context) {
     Function onTap = () {
       Navigator.pop(context, period);
     };
 
     if (mode == SelectedPeriodMode.DATE) {
-      return PeriodTile(
-        onTap: onTap,
-        period: period,
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          _isFirstElementOfDay(period)
+              ? Container(
+                  height: 30,
+                  color: Colors.grey[350],
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      Parse.dateWithWeekday.format(period.start.toUtc()),
+                    ),
+                  ),
+                )
+              : Divider(
+                  height: 1,
+                ),
+          PeriodTile(
+            onTap: onTap,
+            period: period,
+          ),
+        ],
       );
     } else {
-      final formatter = DateFormat("dd.MM.yyyy");
-
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
@@ -127,7 +164,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                formatter.format(period.start),
+                Parse.dateWithWeekday.format(period.start),
               ),
             ),
           ),
@@ -140,14 +177,14 @@ class _SelectPeriodState extends State<SelectPeriod> {
     }
   }
 
-  String _buildSelectedValueButtonText(_ViewModel vm) {
+  String _buildSelectedValueButtonText(_ViewModel vm, BuildContext context) {
     dynamic selectedValue =
         vm.selectPeriodViewModel.periodModel.getSelectedValue();
 
     if (vm.selectPeriodViewModel.periodModel.mode == SelectedPeriodMode.DATE) {
       if (selectedValue != null) {
         var dateString =
-            DateFormat("dd.MM.yyyy").format((selectedValue as DateTime));
+            Parse.dateOnly.format((selectedValue as DateTime));
         return "$dateString | ändern";
       }
 
@@ -161,7 +198,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
     }
   }
 
-  void _selectValueClicked(_ViewModel vm) {
+  void _selectValueClicked(_ViewModel vm, BuildContext context) {
     final DateTime minDate = DateTime.now().add(Duration(days: 1));
     showCupertinoModalPopup(
       context: context,

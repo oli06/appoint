@@ -1,5 +1,5 @@
-import 'package:appoint/model/company.dart';
-import 'package:appoint/model/period.dart';
+import 'package:appoint/models/company.dart';
+import 'package:appoint/models/period.dart';
 
 class UpdatePeriodAction {
   final Period period;

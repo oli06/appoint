@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class Parse {
+   static final DateFormat dateWithWeekday = DateFormat("EEEE, dd.MM.yyyy");
+
+   static final DateFormat dateOnly = DateFormat("dd.MM.yyyy");
+
+   static final DateFormat hoursWithMinutes = DateFormat("HH:mm");
+
   static TimeOfDay convertTimeString(String value) {
     if (value != null && value.length == 5) {
       List<String> data = value.split('-');
@@ -27,4 +34,6 @@ class Parse {
     //2019-07-23
     return "${date.year}-${date.month}-${date.day}";
   }
+
+
 }

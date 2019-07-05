@@ -1,4 +1,4 @@
-import 'package:appoint/model/app_state.dart';
+import 'package:appoint/models/app_state.dart';
 
 class UpdateTabAction {
   final AppTab newTab;

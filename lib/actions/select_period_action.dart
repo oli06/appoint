@@ -1,5 +1,5 @@
-import 'package:appoint/model/period.dart';
-import 'package:appoint/model/select_period_vm.dart';
+import 'package:appoint/models/period.dart';
+import 'package:appoint/view_models/select_period_vm.dart';
 
 class UpdateModeAction {
   final SelectedPeriodMode mode;

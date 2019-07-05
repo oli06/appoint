@@ -1,6 +1,6 @@
 import 'package:appoint/actions/add_appoint_action.dart';
 import 'package:redux/redux.dart';
-import 'package:appoint/model/add_appoint_vm.dart';
+import 'package:appoint/view_models/add_appoint_vm.dart';
 
 final addAppointReducer = combineReducers<AddAppointViewModel>([
   TypedReducer<AddAppointViewModel, UpdatePeriodAction>(_updatePeriod),

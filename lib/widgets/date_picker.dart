@@ -1,4 +1,4 @@
-import 'package:appoint/model/select_period_vm.dart';
+import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 

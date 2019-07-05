@@ -1,4 +1,4 @@
-import 'package:appoint/model/company.dart';
+import 'package:appoint/models/company.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 

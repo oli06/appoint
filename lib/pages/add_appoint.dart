@@ -1,9 +1,10 @@
-import 'package:appoint/model/add_appoint_vm.dart';
-import 'package:appoint/model/app_state.dart';
-import 'package:appoint/model/appoint.dart';
-import 'package:appoint/model/company.dart';
-import 'package:appoint/model/period.dart';
+import 'package:appoint/view_models/add_appoint_vm.dart';
+import 'package:appoint/models/app_state.dart';
+import 'package:appoint/models/appoint.dart';
+import 'package:appoint/models/company.dart';
+import 'package:appoint/models/period.dart';
 import 'package:appoint/pages/select_period.dart';
+import 'package:appoint/utils/parse.dart';
 import 'package:appoint/widgets/company_tile.dart';
 import 'package:appoint/widgets/navBar.dart';
 import 'package:appoint/pages/select_company.dart';
@@ -35,7 +36,15 @@ class AddAppointState extends State<AddAppoint>
   final _appointFormKey = GlobalKey<FormState>();
 
   String _title;
-  Company _company = Company(address: null, id: 1, category: Category.DOCTOR, name: "DreamCompany", picture: "http://placehold.it/32x32", description: "Beschreibung", isPartner: true, rating: 3.5);
+  Company _company = Company(
+      address: null,
+      id: 1,
+      category: Category.DOCTOR,
+      name: "DreamCompany",
+      picture: "http://placehold.it/32x32",
+      description: "Beschreibung",
+      isPartner: true,
+      rating: 3.5);
   Period _period;
   String _description;
 
@@ -47,23 +56,35 @@ class AddAppointState extends State<AddAppoint>
       _period = widget.appoint.period;
       _description = widget.appoint.description;
 
-      _controller.text = _title;
+      _titleController.text = _title;
     }
 
-    _controller.addListener(onChange);
+    _titleController.addListener(onTitleChange);
+    _descriptionController.addListener(onDescriptionChange);
     super.initState();
   }
 
-  TextEditingController _controller = TextEditingController();
+  TextEditingController _titleController = TextEditingController();
+  TextEditingController _descriptionController = TextEditingController();
 
-  void onChange() {
+  void onTitleChange() {
     setState(() {
-      _title = _controller.text;
+      _title = _titleController.text;
     });
   }
 
+  void onDescriptionChange() {
+    setState(() {
+      _description = _descriptionController.text;
+    });
+  }
+
+
   bool _isValid() {
-    return _title != null && _title.isNotEmpty && _company != null && _period != null;
+    return _title != null &&
+        _title.isNotEmpty &&
+        _company != null &&
+        _period != null;
   }
 
   @override
@@ -76,11 +97,14 @@ class AddAppointState extends State<AddAppoint>
         builder: (context, vm) {
           return Scaffold(
             body: SafeArea(
-              child: Column(
-                children: <Widget>[
-                  buildNavBar(),
-                  _getLowerLayer(),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: <Widget>[
+                    buildNavBar(),
+                    _getLowerLayer(),
+                  ],
+                ),
               ),
             ),
           );
@@ -98,10 +122,12 @@ class AddAppointState extends State<AddAppoint>
         padding: EdgeInsets.zero,
         child: Text(
           widget.isEditing ? "Speichern" : "Erstellen",
-          style: TextStyle(fontWeight: FontWeight.bold, color: _isValid() ? Color(0xff09c199) : null),
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: _isValid() ? Color(0xff09c199) : null),
         ),
         onPressed: _isValid()
-            ? () => widget.onSave(_title, _company, _period, _description)
+            ? () { widget.onSave(_title, _company, _period, _description); Navigator.pop(context);}
             : null,
       ),
     );
@@ -115,6 +141,7 @@ class AddAppointState extends State<AddAppoint>
           if (selectedCompany != null) {
             setState(() {
               _company = selectedCompany;
+              _period = null;
             });
           }
         });
@@ -135,7 +162,7 @@ class AddAppointState extends State<AddAppoint>
                     ),
                     child: Align(
                       child: TextFormField(
-                        controller: _controller,
+                        controller: _titleController,
                         autofocus: widget.isEditing ? false : true,
                         style: TextStyle(color: Colors.black),
                         decoration: InputDecoration.collapsed(
@@ -192,13 +219,17 @@ class AddAppointState extends State<AddAppoint>
         scrollDirection: Axis.vertical,
         children: <Widget>[
           SizedBox(
-            height: 20,
+            height: 10,
           ),
           _firstCard(),
           SizedBox(
             height: 20,
           ),
           _secondCard(),
+          SizedBox(
+            height: 20,
+          ),
+          _thirdCard(),
         ],
       ),
     );
@@ -209,7 +240,7 @@ class AddAppointState extends State<AddAppoint>
       color: _company == null ? Colors.grey[350] : null,
       elevation: 2,
       child: Container(
-        height: 100,
+        height: 130,
         padding: EdgeInsets.only(
           left: 15,
           right: 15,
@@ -247,56 +278,86 @@ class AddAppointState extends State<AddAppoint>
                       onPressed: _company == null ? null : _selectPeriodPressed,
                     ),
                   )
-                : Text("PERIODE WURDE GEWÄHLT")
-            /*Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Expanded(
-                  child: OutlineButton(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text("Datum"),
-                        Icon(Icons.event),
-                      ],
+                : GestureDetector(
+                    onTap: _selectPeriodPressed,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                      child: Container(
+                        color: Colors
+                            .transparent, //hack: make widget also clickable where no other (text) widget is placed
+                        child: Column(
+                          children: <Widget>[
+                            Align(
+                              child: Text(
+                                Parse.dateWithWeekday.format(_period.start),
+                                style: TextStyle(fontSize: 17),
+                              ),
+                              alignment: Alignment.centerLeft,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: <Widget>[
+                                  Container(
+                                    height: (_period.duration.inMinutes / 1.5),
+                                    width: 5,
+                                    color: Colors.green,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      "${Parse.hoursWithMinutes.format(_period.start.toUtc())} - ${Parse.hoursWithMinutes.format(_period.getPeriodEnd().toUtc())}",
+                                      style: TextStyle(fontSize: 15),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
                     ),
-                    onPressed:
-                        _company == null ? null : () {} //=> _selectPeriod(true),
                   ),
-                ),
-                Expanded(
-                  child: OutlineButton(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text("Uhrzeit"),
-                        Icon(Icons.watch_later),
-                      ],
-                    ),
-                    onPressed:
-                        _company == null ? null : () {} //=> _selectPeriod(false),
-                  ),
-                ),
-              ],
-            )*/
           ],
         ),
       ),
     );
   }
 
+  Card _thirdCard() {
+    return Card(
+      
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: TextFormField(
+            controller: _descriptionController,
+            minLines: 6,
+            maxLines: 10,
+            maxLength: 256,
+            decoration: InputDecoration.collapsed(
+              hintText: "Information / Hintergründe zum Termin:",
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   void _selectPeriodPressed() => showCupertinoModalPopup(
-                          context: context,
-                          builder: (context) => SelectPeriod(
-                                companyId: _company.id,
-                              ),
-                        ).then((selectedPeriod) {
-                          if (selectedPeriod != null) {
-                            setState(() {
-                              _period = selectedPeriod;
-                            });
-                          }
-                        });
+        context: context,
+        builder: (context) => SelectPeriod(
+              companyId: _company.id,
+            ),
+      ).then((selectedPeriod) {
+        if (selectedPeriod != null) {
+          setState(() {
+            _period = selectedPeriod;
+          });
+        }
+      });
 }
 
 class _ViewModel {

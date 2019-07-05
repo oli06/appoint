@@ -1,4 +1,4 @@
-import 'package:appoint/model/period.dart';
+import 'package:appoint/models/period.dart';
 import 'package:flutter/material.dart';
 
 class SelectPeriodViewModel {

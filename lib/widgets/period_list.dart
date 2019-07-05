@@ -1,7 +1,7 @@
 import 'package:appoint/actions/select_period_action.dart';
-import 'package:appoint/model/app_state.dart';
-import 'package:appoint/model/period.dart';
-import 'package:appoint/model/select_period_vm.dart';
+import 'package:appoint/models/app_state.dart';
+import 'package:appoint/models/period.dart';
+import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:appoint/selectors/selectors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';

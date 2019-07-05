@@ -1,8 +1,8 @@
 import 'package:appoint/actions/companies_action.dart';
 import 'package:appoint/actions/select_period_action.dart';
 import 'package:appoint/data/services.dart';
-import 'package:appoint/model/app_state.dart';
-import 'package:appoint/model/select_period_vm.dart';
+import 'package:appoint/models/app_state.dart';
+import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:redux/redux.dart';
 
@@ -20,8 +20,11 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
 
 Middleware<AppState> _createLoadCompanies(Service service) {
   return (Store<AppState> store, action, NextDispatcher next) {
+    store.dispatch(UpdateCompanyIsLoadingAction(true));
+
     service.getCompanies().then((companies) {
       store.dispatch(LoadedCompaniesAction(companies));
+      store.dispatch(UpdateCompanyIsLoadingAction(false));
     });
 
     next(action);

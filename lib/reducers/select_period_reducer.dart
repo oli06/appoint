@@ -1,5 +1,5 @@
 import 'package:appoint/actions/select_period_action.dart';
-import 'package:appoint/model/select_period_vm.dart';
+import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:redux/redux.dart';
 
 final selectPeriodReudcer = combineReducers<SelectPeriodViewModel>([

@@ -1,7 +1,7 @@
-import 'package:appoint/model/period.dart';
+import 'package:appoint/models/period.dart';
+import 'package:appoint/utils/parse.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 class PeriodTile extends StatelessWidget {
   final Period period;
@@ -11,12 +11,10 @@ class PeriodTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final DateFormat formatter = DateFormat("HH:mm");
-
     return ListTile(
       onTap: onTap,
       title: Text(
-        "${formatter.format(period.start.toUtc())} - ${formatter.format(period.getPeriodEnd().toUtc())}",
+        "${Parse.hoursWithMinutes.format(period.start.toUtc())} - ${Parse.hoursWithMinutes.format(period.getPeriodEnd().toUtc())}",
         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
       ),
     );
