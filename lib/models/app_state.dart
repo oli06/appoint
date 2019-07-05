@@ -1,5 +1,5 @@
 import 'package:appoint/view_models/add_appoint_vm.dart';
-import 'package:appoint/model/company.dart';
+import 'package:appoint/models/company.dart';
 import 'package:appoint/view_models/select_company_vm.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
 

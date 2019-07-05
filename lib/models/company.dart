@@ -1,4 +1,4 @@
-import 'package:appoint/model/address.dart';
+import 'package:appoint/models/address.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'company.g.dart';
