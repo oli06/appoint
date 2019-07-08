@@ -1,13 +1,13 @@
 import 'package:appoint/models/period.dart';
 import 'package:flutter/material.dart';
 
-class SelectPeriodViewModel {
+class SelectedPeriodViewModel {
   final List<Period> periods;
   final PeriodMode periodModel;
   final bool isLoading;
   final List<bool> filter;
 
-  const SelectPeriodViewModel({
+  const SelectedPeriodViewModel({
     this.periods,
     this.periodModel,
     this.isLoading,

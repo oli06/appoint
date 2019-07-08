@@ -1,3 +1,4 @@
+import 'package:appoint/assets/company_icons_icons.dart';
 import 'package:appoint/models/appoint.dart';
 import 'package:appoint/widgets/TabBar/FABBottomAppBarItem.dart';
 import 'package:appoint/pages/appointments.dart';
@@ -29,7 +30,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         backgroundColor: Colors.white,
         items: [
           FABBottomAppBarItem(
-              iconData: CupertinoIcons.getIconData(0xf3ed),
+              iconData: CompanyIcons.account_balance,
               text: "Unternehmen"),
           FABBottomAppBarItem(
               iconData: CupertinoIcons.getIconData(0xf2d1), text: "Termine")

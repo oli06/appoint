@@ -21,11 +21,9 @@ class Address {
     return "$street $houseNumber - $zip $city";
   }
 
-/*   Address.fromJson(Map<String, dynamic> json)
-      : street = json['street'],
-        houseNumber = json['houseNumber'],
-        city = json['city'],
-        zip = json['zip']; */
+  String toCityString() {
+    return "$zip $city";
+  }
 
   factory Address.fromJson(Map<String, dynamic> json) =>
       _$AddressFromJson(json);

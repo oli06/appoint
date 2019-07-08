@@ -30,15 +30,14 @@ class SelectCompanyState extends State<SelectCompany>
       },
       converter: (store) => _ViewModel.fromState(store),
       builder: (context, vm) => Scaffold(
+            appBar: _buildNavBar(vm),
             body: SafeArea(
               bottom: false,
               child: DirectSelectContainer(
-
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.only(left: 8, right: 8),
                   child: Column(
                     children: <Widget>[
-                      _buildNavBar(vm),
                       _buildDropdown(vm),
                       _buildListHeading(),
                       Expanded(
@@ -110,6 +109,7 @@ class SelectCompanyState extends State<SelectCompany>
   NavBar _buildNavBar(_ViewModel vm) {
     return NavBar(
       "Neuer Termin",
+      height: 99,
       leadingWidget: IconButton(
         icon: Icon(
           Icons.arrow_back_ios,
@@ -117,7 +117,7 @@ class SelectCompanyState extends State<SelectCompany>
         onPressed: () => Navigator.pop(context),
       ),
       secondHeader: "Unternehmen auswählen",
-      endingWidget: Container(
+      trailing: Container(
         height: 0,
       ),
       tabBar: tabBar(vm),

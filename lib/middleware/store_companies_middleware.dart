@@ -1,24 +1,27 @@
+import 'package:appoint/actions/appointments_action.dart';
 import 'package:appoint/actions/companies_action.dart';
 import 'package:appoint/actions/select_period_action.dart';
-import 'package:appoint/data/services.dart';
+import 'package:appoint/data/api.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:redux/redux.dart';
 
 List<Middleware<AppState>> createStoreCompaniesMiddleware() {
-  final Service service = Service();
+  final Api api = Api();
 
-  final loadCompanies = _createLoadCompanies(service);
-  final loadPeriods = _createLoadPeriods(service);
+  final loadCompanies = _createLoadCompanies(api);
+  final loadPeriods = _createLoadPeriods(api);
+  final loadAppointments = _createLoadAppointments(api);
 
   return [
     TypedMiddleware<AppState, LoadCompaniesAction>(loadCompanies),
-    TypedMiddleware<AppState, LoadPeriodsAction>(loadPeriods)
+    TypedMiddleware<AppState, LoadPeriodsAction>(loadPeriods),
+    TypedMiddleware<AppState, LoadAppointmentsAction>(loadAppointments)
   ];
 }
 
-Middleware<AppState> _createLoadCompanies(Service service) {
+Middleware<AppState> _createLoadCompanies(Api service) {
   return (Store<AppState> store, action, NextDispatcher next) {
     store.dispatch(UpdateCompanyIsLoadingAction(true));
 
@@ -31,7 +34,20 @@ Middleware<AppState> _createLoadCompanies(Service service) {
   };
 }
 
-Middleware<AppState> _createLoadPeriods(Service service) {
+Middleware<AppState> _createLoadAppointments(Api service) {
+  return (Store<AppState> store, action, NextDispatcher next) {
+    store.dispatch(UpdateAppointmentsIsLoadingAction(true));
+
+    service.getAppointments().then((appointments) {
+      store.dispatch(LoadedAppointmentsAction(appointments));
+      store.dispatch(UpdateAppointmentsIsLoadingAction(false));
+    });
+
+    next(action);
+  };
+}
+
+Middleware<AppState> _createLoadPeriods(Api service) {
   return (Store<AppState> store, action, next) {
     store.dispatch(UpdateIsLoadingAction(true));
 

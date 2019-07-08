@@ -35,5 +35,9 @@ class Parse {
     return "${date.year}-${date.month}-${date.day}";
   }
 
+  static bool sameDay(DateTime firstDate, DateTime secondDate) {
+    return firstDate.year == secondDate.year && firstDate.month == secondDate.month && firstDate.day == secondDate.day;
+  }
+
 
 }

@@ -2,19 +2,19 @@ import 'package:appoint/actions/select_period_action.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:redux/redux.dart';
 
-final selectPeriodReudcer = combineReducers<SelectPeriodViewModel>([
-  TypedReducer<SelectPeriodViewModel, UpdateModeAction>(_updateMode),
-  TypedReducer<SelectPeriodViewModel, UpdateSelectedValueAction>(
+final selectPeriodReudcer = combineReducers<SelectedPeriodViewModel>([
+  TypedReducer<SelectedPeriodViewModel, UpdateModeAction>(_updateMode),
+  TypedReducer<SelectedPeriodViewModel, UpdateSelectedValueAction>(
       _updateSelectedValue),
-  TypedReducer<SelectPeriodViewModel, SetLoadedPeriodsAction>(
+  TypedReducer<SelectedPeriodViewModel, SetLoadedPeriodsAction>(
       _setLoadedPeriods),
-  TypedReducer<SelectPeriodViewModel, UpdateIsLoadingAction>(_updateIsLoading),
-  TypedReducer<SelectPeriodViewModel, UpdateFilterAction>(_updateFilter),
+  TypedReducer<SelectedPeriodViewModel, UpdateIsLoadingAction>(_updateIsLoading),
+  TypedReducer<SelectedPeriodViewModel, UpdateFilterAction>(_updateFilter),
 ]);
 
-SelectPeriodViewModel _updateMode(
-    SelectPeriodViewModel vm, UpdateModeAction action) {
-  return SelectPeriodViewModel(
+SelectedPeriodViewModel _updateMode(
+    SelectedPeriodViewModel vm, UpdateModeAction action) {
+  return SelectedPeriodViewModel(
     periods: vm.periods,
     isLoading: vm.isLoading,
     filter: vm.filter,
@@ -25,9 +25,9 @@ SelectPeriodViewModel _updateMode(
   );
 }
 
-SelectPeriodViewModel _setLoadedPeriods(
-    SelectPeriodViewModel vm, SetLoadedPeriodsAction action) {
-  return SelectPeriodViewModel(
+SelectedPeriodViewModel _setLoadedPeriods(
+    SelectedPeriodViewModel vm, SetLoadedPeriodsAction action) {
+  return SelectedPeriodViewModel(
     periodModel: vm.periodModel,
     periods: action.periods,
     isLoading: vm.isLoading,
@@ -35,18 +35,18 @@ SelectPeriodViewModel _setLoadedPeriods(
   );
 }
 
-SelectPeriodViewModel _updateIsLoading(
-    SelectPeriodViewModel vm, UpdateIsLoadingAction action) {
-  return SelectPeriodViewModel(
+SelectedPeriodViewModel _updateIsLoading(
+    SelectedPeriodViewModel vm, UpdateIsLoadingAction action) {
+  return SelectedPeriodViewModel(
       isLoading: action.isLoading,
       periodModel: vm.periodModel,
       filter: vm.filter,
       periods: vm.periods);
 }
 
-SelectPeriodViewModel _updateSelectedValue(
-    SelectPeriodViewModel vm, UpdateSelectedValueAction action) {
-  return SelectPeriodViewModel(
+SelectedPeriodViewModel _updateSelectedValue(
+    SelectedPeriodViewModel vm, UpdateSelectedValueAction action) {
+  return SelectedPeriodViewModel(
       periods: vm.periods,
       filter: vm.filter,
       isLoading: vm.isLoading,
@@ -61,9 +61,9 @@ SelectPeriodViewModel _updateSelectedValue(
               time: action.value));
 }
 
-SelectPeriodViewModel _updateFilter(
-    SelectPeriodViewModel vm, UpdateFilterAction action) {
-  return SelectPeriodViewModel(
+SelectedPeriodViewModel _updateFilter(
+    SelectedPeriodViewModel vm, UpdateFilterAction action) {
+  return SelectedPeriodViewModel(
       periods: vm.periods,
       filter: action.filter,
       isLoading: vm.isLoading,

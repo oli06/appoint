@@ -56,7 +56,8 @@ T _$enumDecodeNullable<T>(Map<T, dynamic> enumValues, dynamic source) {
 }
 
 const _$CategoryEnumMap = <Category, dynamic>{
-  Category.ACCOUNTANT: 'ACCOUNTANT',
+  Category.ALL: 'ALL',
   Category.DOCTOR: 'DOCTOR',
+  Category.ACCOUNTANT: 'ACCOUNTANT',
   Category.OTHER: 'OTHER'
 };

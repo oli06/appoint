@@ -1,6 +1,6 @@
-import 'package:appoint/home.dart';
 import 'package:appoint/middleware/store_companies_middleware.dart';
 import 'package:appoint/models/app_state.dart';
+import 'package:appoint/pages/routes.dart';
 import 'package:appoint/reducers/app_state_reducer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -13,7 +13,6 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-
   final store = Store<AppState>(
     appReducer,
     initialState: AppState.initState(),
@@ -27,9 +26,10 @@ class MyApp extends StatelessWidget {
     return StoreProvider(
       store: store,
       child: MaterialApp(
+        initialRoute: "/app",
+        routes: routes,
         theme: ThemeData(iconTheme: IconThemeData(color: Color(0xff1991eb))),
         title: "Appoint",
-        home: HomePage(),
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/company.dart';
 import 'package:appoint/view_models/select_company_vm.dart';
 import 'package:appoint/selectors/selectors.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -80,13 +81,15 @@ class _CompanyListState extends State<CompanyList> {
 
   Widget _buildCompanyList(List<Company> companies) {
     return Container(
-      child: ListView.builder(
-        shrinkWrap: true,
-        physics: ClampingScrollPhysics(),
-        itemCount: companies.length,
-        itemBuilder: (context, index) {
-          return widget.itemBuilder(context, index, companies[index]);
-        },
+      child: CupertinoScrollbar(
+        child: ListView.builder(
+          shrinkWrap: true,
+          physics: ClampingScrollPhysics(),
+          itemCount: companies.length,
+          itemBuilder: (context, index) {
+            return widget.itemBuilder(context, index, companies[index]);
+          },
+        ),
       ),
     );
   }

@@ -6,21 +6,23 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            NavBar(
+      appBar: NavBar(
               "Profil",
+              height: 57,
               leadingWidget: IconButton(
                 icon: Icon(Icons.close),
                 onPressed: () {
                   Navigator.pop(context);
                 },
               ),
-              endingWidget: Container(
+              trailing: Container(
                 height: 0,
               ),
             ),
+      body: SafeArea(
+        child: Column(
+          children: <Widget>[
+            
           ],
         ),
       ),

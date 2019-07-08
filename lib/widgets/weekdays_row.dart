@@ -19,7 +19,6 @@ class _WeekdaysRowState extends State<WeekdaysRow> {
     DayButtonData(text: "DO"),
     DayButtonData(text: "FR"),
     DayButtonData(text: "SA"),
-    DayButtonData(text: "SO"),
   ];
 
   @override

@@ -1,12 +1,13 @@
+import 'package:appoint/models/appoint.dart';
 import 'package:appoint/models/company.dart';
 import 'package:appoint/models/period.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
 
-String url = 'https://4280813e.ngrok.io';
+String url = 'https://3e01132c.ngrok.io';
 
-class Service {
+class Api {
   Future<List<Company>> getCompanies() async {
     print("called now");
     final response = await http.get('$url/companies');
@@ -16,7 +17,19 @@ class Service {
       return list.map((model) => Company.fromJson(model)).toList();
     }
     
-    return null;
+    return [];
+  }
+
+  Future<List<Appoint>> getAppointments() async {
+    print("called now");
+    final response = await http.get('$url/user/1/appointments');
+
+    if (response.statusCode == 200) {
+      List<dynamic> list = json.decode(response.body);
+      return list.map((model) => Appoint.fromJson(model)).toList();
+    }
+    
+    return [];
   }
 
   Future<List<Period>> getDatePeriods(int companyId, String date) async {

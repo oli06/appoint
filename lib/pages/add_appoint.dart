@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:appoint/view_models/add_appoint_vm.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/appoint.dart';
@@ -10,6 +12,7 @@ import 'package:appoint/widgets/navBar.dart';
 import 'package:appoint/pages/select_company.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:redux/redux.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 
@@ -32,21 +35,25 @@ class AddAppoint extends StatefulWidget {
 }
 
 class AddAppointState extends State<AddAppoint>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final _appointFormKey = GlobalKey<FormState>();
 
   String _title;
-  Company _company = Company(
+  Company
+      _company/*=  Company(
       address: null,
       id: 1,
       category: Category.DOCTOR,
       name: "DreamCompany",
       picture: "http://placehold.it/32x32",
-      description: "Beschreibung",
+      description: "Beschreibung" ,
       isPartner: true,
-      rating: 3.5);
+      rating: 3.5) */
+      ;
   Period _period;
   String _description;
+
+  bool hideKeyboardEnabled = true;
 
   @override
   void initState() {
@@ -61,11 +68,38 @@ class AddAppointState extends State<AddAppoint>
 
     _titleController.addListener(onTitleChange);
     _descriptionController.addListener(onDescriptionChange);
+    WidgetsBinding.instance.addObserver(this);
     super.initState();
   }
 
   TextEditingController _titleController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
+  final FocusNode _descriptionFocus = FocusNode();
+  final FocusNode _titleFocus = FocusNode();
+
+  void scrollInProgress() {
+    hideKeyboardEnabled = false;
+  }
+
+  void scrollDone() {
+    hideKeyboardEnabled = true;
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _titleFocus.dispose();
+    _descriptionFocus.dispose();
+
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    super.didChangeMetrics();
+  }
 
   void onTitleChange() {
     setState(() {
@@ -78,7 +112,6 @@ class AddAppointState extends State<AddAppoint>
       _description = _descriptionController.text;
     });
   }
-
 
   bool _isValid() {
     return _title != null &&
@@ -96,14 +129,38 @@ class AddAppointState extends State<AddAppoint>
         converter: _ViewModel.fromStore,
         builder: (context, vm) {
           return Scaffold(
-            body: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: <Widget>[
-                    buildNavBar(),
-                    _getLowerLayer(),
-                  ],
+            appBar: buildNavBar(),
+            body: Padding(
+              padding: const EdgeInsets.only(left: 8.0, right: 8),
+              child: Form(
+                key: _appointFormKey,
+                child: CupertinoScrollbar(
+                  child: NotificationListener(
+                    onNotification: (t) {
+                      if (t is UserScrollNotification) {
+                        if (hideKeyboardEnabled) {
+                          FocusScope.of(context).requestFocus(FocusNode());
+                        }
+                      }
+                    },
+                    child: ListView(
+                      children: <Widget>[
+                        //buildNavBar(),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        _firstCard(),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        _secondCard(),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        _thirdCard(),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -111,14 +168,15 @@ class AddAppointState extends State<AddAppoint>
         });
   }
 
-  NavBar buildNavBar() {
+  Widget buildNavBar() {
     return NavBar(
       "Neuer Termin",
+      height: 57,
       leadingWidget: IconButton(
         icon: Icon(Icons.close),
         onPressed: () => Navigator.pop(context),
       ),
-      endingWidget: CupertinoButton(
+      trailing: CupertinoButton(
         padding: EdgeInsets.zero,
         child: Text(
           widget.isEditing ? "Speichern" : "Erstellen",
@@ -127,7 +185,10 @@ class AddAppointState extends State<AddAppoint>
               color: _isValid() ? Color(0xff09c199) : null),
         ),
         onPressed: _isValid()
-            ? () { widget.onSave(_title, _company, _period, _description); Navigator.pop(context);}
+            ? () {
+                widget.onSave(_title, _company, _period, _description);
+                Navigator.pop(context);
+              }
             : null,
       ),
     );
@@ -146,7 +207,10 @@ class AddAppointState extends State<AddAppoint>
           }
         });
 
-    return Container(
+    return EnsureVisibleWhenFocused(
+      scrollDone: () => scrollDone,
+      scrollInProgress: () => scrollInProgress,
+      focusNode: _titleFocus,
       child: Card(
         elevation: 2,
         child: Column(
@@ -165,14 +229,26 @@ class AddAppointState extends State<AddAppoint>
                         controller: _titleController,
                         autofocus: widget.isEditing ? false : true,
                         style: TextStyle(color: Colors.black),
-                        decoration: InputDecoration.collapsed(
-                          hintText: "Termin",
-                        ),
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) {
+                          _titleFocus.unfocus();
+                          companyTap(); },
+                        decoration: InputDecoration(
+                            hintText: "Titel",
+                            suffixIcon: _titleController.text.isNotEmpty ? IconButton(
+                              icon: Icon(
+                                CupertinoIcons.clear_circled_solid,
+                                size: 16,
+                                color: Colors.grey[350],
+                              ),
+                              onPressed: () => _titleController.text = "",
+                            ): null,
+                            border: InputBorder.none),
                       ),
-                      alignment: Alignment.centerLeft,
                     ),
+                    alignment: Alignment.centerLeft,
                   ),
-                )
+                ),
               ],
             ),
             Container(
@@ -211,56 +287,13 @@ class AddAppointState extends State<AddAppoint>
     );
   }
 
-  Widget _getLowerLayer() {
-    return Form(
-      key: _appointFormKey,
-      child: ListView(
-        shrinkWrap: true,
-        scrollDirection: Axis.vertical,
-        children: <Widget>[
-          SizedBox(
-            height: 10,
-          ),
-          _firstCard(),
-          SizedBox(
-            height: 20,
-          ),
-          _secondCard(),
-          SizedBox(
-            height: 20,
-          ),
-          _thirdCard(),
-        ],
-      ),
-    );
-  }
-
   Card _secondCard() {
     return Card(
       color: _company == null ? Colors.grey[350] : null,
       elevation: 2,
       child: Container(
-        height: 130,
-        padding: EdgeInsets.only(
-          left: 15,
-          right: 15,
-        ),
         child: Column(
           children: <Widget>[
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                height: 35,
-                padding: EdgeInsets.only(top: 10),
-                child: Text(
-                  "Zeitraum wählen",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w200,
-                  ),
-                ),
-              ),
-            ),
             _period == null
                 ? Container(
                     height: 50,
@@ -281,7 +314,7 @@ class AddAppointState extends State<AddAppoint>
                 : GestureDetector(
                     onTap: _selectPeriodPressed,
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
+                      padding: const EdgeInsets.all(8.0),
                       child: Container(
                         color: Colors
                             .transparent, //hack: make widget also clickable where no other (text) widget is placed
@@ -324,21 +357,34 @@ class AddAppointState extends State<AddAppoint>
     );
   }
 
-  Card _thirdCard() {
+  Widget _thirdCard() {
     return Card(
-      
       elevation: 2,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Align(
           alignment: Alignment.centerLeft,
-          child: TextFormField(
-            controller: _descriptionController,
-            minLines: 6,
-            maxLines: 10,
-            maxLength: 256,
-            decoration: InputDecoration.collapsed(
-              hintText: "Information / Hintergründe zum Termin:",
+          child: EnsureVisibleWhenFocused(
+            scrollDone: () => scrollDone,
+            scrollInProgress: () => scrollInProgress,
+            focusNode: _descriptionFocus,
+            child: TextFormField(
+              focusNode: _descriptionFocus,
+              controller: _descriptionController,
+              minLines: 6,
+              maxLines: 6,
+              maxLength: 256,
+              decoration: InputDecoration(
+                  hintText: "Information zum Termin:",
+                  suffixIcon: _descriptionController.text.isNotEmpty ? IconButton(
+                    icon: Icon(
+                      CupertinoIcons.clear_circled_solid,
+                      size: 16,
+                      color: Colors.grey[350],
+                    ) ,
+                    onPressed: () => _descriptionController.text = "",
+                  ) : null,
+                  border: InputBorder.none),
             ),
           ),
         ),
@@ -367,5 +413,145 @@ class _ViewModel {
 
   static _ViewModel fromStore(Store<AppState> store) {
     return _ViewModel(addAppointViewModel: store.state.addAppointViewModel);
+  }
+}
+
+class EnsureVisibleWhenFocused extends StatefulWidget {
+  const EnsureVisibleWhenFocused({
+    Key key,
+    @required this.child,
+    @required this.focusNode,
+    this.curve: Curves.ease,
+    this.scrollDone,
+    this.scrollInProgress,
+    this.duration: const Duration(milliseconds: 100),
+  }) : super(key: key);
+
+  /// The node we will monitor to determine if the child is focused
+  final FocusNode focusNode;
+
+  /// The child widget that we are wrapping
+  final Widget child;
+
+  /// The curve we will use to scroll ourselves into view.
+  ///
+  /// Defaults to Curves.ease.
+  final Curve curve;
+
+  /// The duration we will use to scroll ourselves into view
+  ///
+  /// Defaults to 100 milliseconds.
+  final Duration duration;
+
+  final Function scrollInProgress;
+  final Function scrollDone;
+
+  @override
+  _EnsureVisibleWhenFocusedState createState() =>
+      new _EnsureVisibleWhenFocusedState();
+}
+
+class _EnsureVisibleWhenFocusedState extends State<EnsureVisibleWhenFocused>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    widget.focusNode.addListener(_ensureVisible);
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    widget.focusNode.removeListener(_ensureVisible);
+    super.dispose();
+  }
+
+  ///
+  /// This routine is invoked when the window metrics have changed.
+  /// This happens when the keyboard is open or dismissed, among others.
+  /// It is the opportunity to check if the field has the focus
+  /// and to ensure it is fully visible in the viewport when
+  /// the keyboard is displayed
+  ///
+  @override
+  void didChangeMetrics() {
+    if (widget.focusNode.hasFocus) {
+      _ensureVisible();
+    }
+  }
+
+  ///
+  /// This routine waits for the keyboard to come into view.
+  /// In order to prevent some issues if the Widget is dismissed in the
+  /// middle of the loop, we need to check the "mounted" property
+  ///
+  /// This method was suggested by Peter Yuen (see discussion).
+  ///
+  Future<Null> _keyboardToggled() async {
+    if (mounted) {
+      EdgeInsets edgeInsets = MediaQuery.of(context).viewInsets;
+      while (mounted && MediaQuery.of(context).viewInsets == edgeInsets) {
+        await new Future.delayed(const Duration(milliseconds: 10));
+      }
+    }
+
+    return;
+  }
+
+  Future<Null> _ensureVisible() async {
+    // Wait for the keyboard to come into view
+    await Future.any([
+      new Future.delayed(const Duration(milliseconds: 300)),
+      _keyboardToggled()
+    ]);
+
+    // No need to go any further if the node has not the focus
+    if (!widget.focusNode.hasFocus) {
+      return;
+    }
+
+    // Find the object which has the focus
+    final RenderObject object = context.findRenderObject();
+    final RenderAbstractViewport viewport = RenderAbstractViewport.of(object);
+
+    // If we are not working in a Scrollable, skip this routine
+    if (viewport == null) {
+      return;
+    }
+
+    // Get the Scrollable state (in order to retrieve its offset)
+    ScrollableState scrollableState = Scrollable.of(context);
+    assert(scrollableState != null);
+
+    // Get its offset
+    ScrollPosition position = scrollableState.position;
+    double alignment;
+
+    if (position.pixels > viewport.getOffsetToReveal(object, 0.0).offset) {
+      // Move down to the top of the viewport
+      alignment = 0.0;
+    } else if (position.pixels <
+        viewport.getOffsetToReveal(object, 1.0).offset) {
+      // Move up to the bottom of the viewport
+      alignment = 1.0;
+    } else {
+      // No scrolling is necessary to reveal the child
+      return;
+    }
+    widget.scrollInProgress();
+    position
+        .ensureVisible(
+          object,
+          alignment: alignment,
+          duration: widget.duration,
+          curve: widget.curve,
+        )
+        .then((_) => widget.scrollDone);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
   }
 }

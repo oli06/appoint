@@ -1,13 +1,10 @@
 import 'package:appoint/actions/select_period_action.dart';
 import 'package:appoint/models/app_state.dart';
-import 'package:appoint/models/period.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:appoint/utils/parse.dart';
-import 'package:appoint/widgets/bottom_picker.dart';
-import 'package:appoint/widgets/date_picker.dart';
+import 'package:flutter_cupertino_date_picker/flutter_cupertino_date_picker.dart';
 import 'package:appoint/widgets/navBar.dart';
 import 'package:appoint/widgets/period_list.dart';
-import 'package:appoint/widgets/period_tile.dart';
 import 'package:appoint/widgets/switch.dart';
 import 'package:appoint/widgets/weekdays_row.dart';
 import 'package:flutter/cupertino.dart';
@@ -34,15 +31,15 @@ class _SelectPeriodState extends State<SelectPeriod> {
           )), //inital date-value
       builder: (context, vm) {
         return Scaffold(
+          appBar: _buildNavBar(context),
           body: SafeArea(
             bottom: false,
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.only(left: 8.0, right: 8),
               child: Column(
                 children: <Widget>[
-                  _buildNavBar(context),
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.only(left: 8.0, right: 8, top: 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
@@ -81,21 +78,16 @@ class _SelectPeriodState extends State<SelectPeriod> {
                     ),
                   ),
                   Padding(
-                    padding:
-                        const EdgeInsets.only(left: 16.0, right: 16, bottom: 8),
+                    padding: const EdgeInsets.only(left: 16.0, right: 16),
                     child: Divider(),
                   ),
-                  _buildWeekdays(),
+                  WeekdaysRow(),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding:
+                          const EdgeInsets.only(left: 8.0, right: 8, top: 8),
                       child: PeriodList(
                         companyId: widget.companyId,
-                        itemBuilder: (context, index, Period period) =>
-                            _buildPeriodTile(
-                                period,
-                                vm.selectPeriodViewModel.periodModel.mode,
-                                context),
                       ),
                     ),
                   )
@@ -108,83 +100,13 @@ class _SelectPeriodState extends State<SelectPeriod> {
     );
   }
 
-  DateTime _lastDay;
-
-  bool _isFirstElementOfDay(Period period) {
-    if (_lastDay == null) {
-      _lastDay = period.start;
-      return true;
-    } else if (_lastDay.year == period.start.year &&
-        _lastDay.month == period.start.month &&
-        _lastDay.day == period.start.day) {
-      return false;
-    } else {
-      _lastDay = period.start;
-      return true;
-    }
-  }
-
-  Widget _buildPeriodTile(
-      Period period, SelectedPeriodMode mode, BuildContext context) {
-    Function onTap = () {
-      Navigator.pop(context, period);
-    };
-
-    if (mode == SelectedPeriodMode.DATE) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          _isFirstElementOfDay(period)
-              ? Container(
-                  height: 30,
-                  color: Colors.grey[350],
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      Parse.dateWithWeekday.format(period.start.toUtc()),
-                    ),
-                  ),
-                )
-              : Divider(
-                  height: 1,
-                ),
-          PeriodTile(
-            onTap: onTap,
-            period: period,
-          ),
-        ],
-      );
-    } else {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Container(
-            height: 30,
-            color: Colors.grey[350],
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                Parse.dateWithWeekday.format(period.start),
-              ),
-            ),
-          ),
-          PeriodTile(
-            onTap: onTap,
-            period: period,
-          ),
-        ],
-      );
-    }
-  }
-
   String _buildSelectedValueButtonText(_ViewModel vm, BuildContext context) {
     dynamic selectedValue =
         vm.selectPeriodViewModel.periodModel.getSelectedValue();
 
     if (vm.selectPeriodViewModel.periodModel.mode == SelectedPeriodMode.DATE) {
       if (selectedValue != null) {
-        var dateString =
-            Parse.dateOnly.format((selectedValue as DateTime));
+        var dateString = Parse.dateOnly.format((selectedValue as DateTime));
         return "$dateString | ändern";
       }
 
@@ -199,48 +121,93 @@ class _SelectPeriodState extends State<SelectPeriod> {
   }
 
   void _selectValueClicked(_ViewModel vm, BuildContext context) {
-    final DateTime minDate = DateTime.now().add(Duration(days: 1));
-    showCupertinoModalPopup(
-      context: context,
-      builder: (context) {
-        return BottomPicker(
-          picker: PlatformSpecificDatePicker(
-            initialDate: minDate,
-            maximumYear: 2100,
-            use24hFormat: true,
-            minimalDate: minDate,
-            selectableDayPredicate: (date) {
-              if (date.weekday == DateTime.sunday) {
-                return false;
-              } else {
-                return true;
-              }
-            },
-            mode: vm.selectPeriodViewModel.periodModel.mode,
-            onValueChanged: (value) {
-              if (vm.selectPeriodViewModel.periodModel.mode ==
-                  SelectedPeriodMode.TIME) {
-                if (value is DateTime) {
-                  //PlatformSpecificDatePicker returned auch im timeModus ein Datum anstelle eines TimeOfDay Objc
-                  value = TimeOfDay.fromDateTime(value);
-                }
-              }
-              vm.updateSelectedValue(value);
-              vm.loadPeriods(widget.companyId);
-            },
-          ),
-        );
-      },
-    );
-  }
+    final DateTime maxDate = DateTime(2022, 12, 31, 23, 59, 59);
+    DateTime minDate = DateTime.now();
+    DateTime initialDate;
+    if (vm.selectPeriodViewModel.periodModel.mode == SelectedPeriodMode.DATE) {
+      initialDate =
+          vm.selectPeriodViewModel.periodModel.getSelectedValue() != null
+              ? vm.selectPeriodViewModel.periodModel.getSelectedValue()
+              : minDate.add(Duration(days: 1));
+    } else {
+      initialDate =
+          DateTime(minDate.year, minDate.month, minDate.day + 1, 08, 00);
+      minDate = DateTime(minDate.year, minDate.month, minDate.day, 0, 0, 0);
+    }
 
-  Widget _buildWeekdays() {
-    return WeekdaysRow();
+    if (Theme.of(context).platform == TargetPlatform.iOS) {
+      DatePicker.showDatePicker(
+        context,
+        dateFormat:
+            vm.selectPeriodViewModel.periodModel.mode == SelectedPeriodMode.DATE
+                ? "dd-MMMM-yyyy"
+                : "HH:mm",
+        onConfirm: (value, _) {
+          if (vm.selectPeriodViewModel.periodModel.mode ==
+              SelectedPeriodMode.TIME) {
+            //PlatformSpecificDatePicker returned auch im timeModus ein Datum anstelle eines TimeOfDay Objc
+            vm.updateSelectedValue(TimeOfDay.fromDateTime(value));
+            vm.loadPeriods(widget.companyId);
+            return;
+          }
+
+          vm.updateSelectedValue(value);
+          vm.loadPeriods(widget.companyId);
+        },
+        pickerMode:
+            vm.selectPeriodViewModel.periodModel.mode == SelectedPeriodMode.DATE
+                ? DateTimePickerMode.date
+                : DateTimePickerMode.time,
+        initialDateTime: initialDate,
+        maxDateTime: maxDate,
+        minDateTime: minDate,
+        pickerTheme: DateTimePickerTheme(
+            cancel: Text(
+              "Abbrechen",
+            ),
+            confirm: Text(
+              "Auswählen",
+              style: TextStyle(color: Color(0xff1991eb)),
+            )),
+      );
+    } else {
+      if (vm.selectPeriodViewModel.periodModel.mode ==
+          SelectedPeriodMode.DATE) {
+        showDatePicker(
+          context: context,
+          firstDate: minDate,
+          lastDate: DateTime(2022),
+          initialDate: initialDate,
+          selectableDayPredicate: (date) {
+            if (date.weekday == DateTime.sunday) {
+              return false;
+            } else {
+              return true;
+            }
+          },
+        ).then((value) {
+          vm.updateSelectedValue(value);
+          vm.loadPeriods(widget.companyId);
+        });
+      } else {
+        showTimePicker(
+          context: context,
+          initialTime: TimeOfDay(
+            hour: TimeOfDay.now().hourOfPeriod,
+            minute: 0,
+          ),
+        ).then((value) {
+          vm.updateSelectedValue(value);
+          vm.loadPeriods(widget.companyId);
+        });
+      }
+    }
   }
 
   NavBar _buildNavBar(BuildContext context) {
     return NavBar(
       "Neuer Termin",
+      height: 59,
       leadingWidget: IconButton(
         icon: Icon(
           Icons.arrow_back_ios,
@@ -248,7 +215,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
         onPressed: () => Navigator.pop(context),
       ),
       secondHeader: "Zeitraum wählen",
-      endingWidget: IconButton(
+      trailing: IconButton(
         icon: Icon(
           Icons.info_outline,
         ),
@@ -261,7 +228,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
 }
 
 class _ViewModel {
-  final SelectPeriodViewModel selectPeriodViewModel;
+  final SelectedPeriodViewModel selectPeriodViewModel;
 
   final Function setMode;
   final Function(dynamic value) updateSelectedValue;
