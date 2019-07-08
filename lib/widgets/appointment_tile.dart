@@ -1,5 +1,6 @@
 import 'package:appoint/models/appoint.dart';
 import 'package:appoint/utils/parse.dart';
+import 'package:appoint/widgets/period_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
@@ -23,9 +24,9 @@ class AppointmentTile extends StatelessWidget {
           },
         ),
         IconSlideAction(
-          caption: 'Löschen',
+          caption: 'Absagen',
           color: Colors.red,
-          icon: Icons.delete,
+          icon: Icons.cancel,
           onTap: () {
             print("favorite");
           },
@@ -54,16 +55,7 @@ class AppointmentTile extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 4.0, top: 4),
                   child: Align(
                     alignment: Alignment.topCenter,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                            colors: [Color(0xff188e9b), Color(0xff6dd7c7)],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter),
-                      ),
-                      height: (appoint.period.duration.inMinutes / 1.5),
-                      width: 5,
-                    ),
+                    child: PeriodBar(period: appoint.period,)
                   ),
                 ),
                 Expanded(

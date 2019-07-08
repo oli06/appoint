@@ -2,6 +2,7 @@ import 'package:appoint/actions/appointments_action.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/appoint.dart';
 import 'package:appoint/models/day.dart';
+import 'package:appoint/pages/appointment_details.dart';
 import 'package:appoint/pages/profile.dart';
 import 'package:appoint/selectors/selectors.dart';
 import 'package:appoint/utils/parse.dart';
@@ -72,9 +73,9 @@ class _AppointmentPageState extends State<AppointmentPage> {
           delegate: new SliverChildBuilderDelegate(
             (context, i) => AppointmentTile(
                   appoint: day.events[i],
-                  onTap: () {
-                    print("selected: ${day.events[i].title}");
-                  },
+                  onTap: () => Navigator.pushNamed(
+                      context, AppointmentDetails.routeName,
+                      arguments: day.events[i]),
                 ),
             childCount: day.events.length,
           ),
@@ -158,7 +159,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
     );
   }
 
-    void listHeaderTap(Day day) {
+  void listHeaderTap(Day day) {
     DatePicker.showDatePicker(
       context,
       minDateTime: DateTime.now(),

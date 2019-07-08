@@ -39,5 +39,14 @@ class Parse {
     return firstDate.year == secondDate.year && firstDate.month == secondDate.month && firstDate.day == secondDate.day;
   }
 
+  static String convertDateDifferenceToReadable(DateTime now, DateTime future) {
+    final duration = future.difference(now);
+    if(duration.inDays < 2) {
+      return "${duration.inHours} Studen";
+    } else {
+      return "${duration.inDays} Tagen";
+    }
+  }
+
 
 }

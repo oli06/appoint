@@ -19,16 +19,22 @@ class MyApp extends StatelessWidget {
     middleware: createStoreCompaniesMiddleware(),
   );
 
+  final theme = ThemeData(
+    primaryColor: Color(0xff1991eb),
+    accentColor: Color(0xff09c199),
+    indicatorColor: Color(0xfff7981c),
+    errorColor: Color(0xfff7981c),
+    buttonColor: Color(0xfff7981c),
+    iconTheme: IconThemeData(color: Color(0xff1991eb)));
+
   @override
   Widget build(BuildContext context) {
-//FlutterStatusbarcolor.setStatusBarColor(const Color(0xFF1991eb), animate: true);
-
     return StoreProvider(
       store: store,
       child: MaterialApp(
-        initialRoute: "/app",
+        initialRoute: "/",
         routes: routes,
-        theme: ThemeData(iconTheme: IconThemeData(color: Color(0xff1991eb))),
+        theme: theme,
         title: "Appoint",
       ),
     );

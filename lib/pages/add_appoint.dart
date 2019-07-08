@@ -10,6 +10,7 @@ import 'package:appoint/utils/parse.dart';
 import 'package:appoint/widgets/company_tile.dart';
 import 'package:appoint/widgets/navBar.dart';
 import 'package:appoint/pages/select_company.dart';
+import 'package:appoint/widgets/period_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -232,17 +233,20 @@ class AddAppointState extends State<AddAppoint>
                         textInputAction: TextInputAction.next,
                         onFieldSubmitted: (_) {
                           _titleFocus.unfocus();
-                          companyTap(); },
+                          companyTap();
+                        },
                         decoration: InputDecoration(
                             hintText: "Titel",
-                            suffixIcon: _titleController.text.isNotEmpty ? IconButton(
-                              icon: Icon(
-                                CupertinoIcons.clear_circled_solid,
-                                size: 16,
-                                color: Colors.grey[350],
-                              ),
-                              onPressed: () => _titleController.text = "",
-                            ): null,
+                            suffixIcon: _titleController.text.isNotEmpty
+                                ? IconButton(
+                                    icon: Icon(
+                                      CupertinoIcons.clear_circled_solid,
+                                      size: 16,
+                                      color: Colors.grey[350],
+                                    ),
+                                    onPressed: () => _titleController.text = "",
+                                  )
+                                : null,
                             border: InputBorder.none),
                       ),
                     ),
@@ -331,11 +335,7 @@ class AddAppointState extends State<AddAppoint>
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
                                 children: <Widget>[
-                                  Container(
-                                    height: (_period.duration.inMinutes / 1.5),
-                                    width: 5,
-                                    color: Colors.green,
-                                  ),
+                                  PeriodBar(period: _period,),
                                   Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Text(
@@ -361,7 +361,7 @@ class AddAppointState extends State<AddAppoint>
     return Card(
       elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.only(left: 8, right: 8),
         child: Align(
           alignment: Alignment.centerLeft,
           child: EnsureVisibleWhenFocused(
@@ -376,14 +376,16 @@ class AddAppointState extends State<AddAppoint>
               maxLength: 256,
               decoration: InputDecoration(
                   hintText: "Information zum Termin:",
-                  suffixIcon: _descriptionController.text.isNotEmpty ? IconButton(
-                    icon: Icon(
-                      CupertinoIcons.clear_circled_solid,
-                      size: 16,
-                      color: Colors.grey[350],
-                    ) ,
-                    onPressed: () => _descriptionController.text = "",
-                  ) : null,
+                  suffixIcon: _descriptionController.text.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(
+                            CupertinoIcons.clear_circled_solid,
+                            size: 16,
+                            color: Colors.grey[350],
+                          ),
+                          onPressed: () => _descriptionController.text = "",
+                        )
+                      : null,
                   border: InputBorder.none),
             ),
           ),

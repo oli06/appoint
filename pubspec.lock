@@ -188,13 +188,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.5.3"
-  flutter_statusbarcolor:
-    dependency: "direct main"
-    description:
-      name: flutter_statusbarcolor
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.2.0"
   flutter_sticky_header:
     dependency: "direct main"
     description:
@@ -214,13 +207,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.1.19"
-  get_it:
-    dependency: "direct main"
-    description:
-      name: get_it
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.3+2"
   glob:
     dependency: transitive
     description:
@@ -368,13 +354,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.4.0"
-  provider:
-    dependency: "direct main"
-    description:
-      name: provider
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "3.0.0+1"
   pub_semver:
     dependency: transitive
     description:
@@ -424,13 +403,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.0.7"
-  scoped_model:
-    dependency: "direct main"
-    description:
-      name: scoped_model
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.1"
   shelf:
     dependency: transitive
     description:

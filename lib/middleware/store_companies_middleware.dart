@@ -21,11 +21,11 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
   ];
 }
 
-Middleware<AppState> _createLoadCompanies(Api service) {
+Middleware<AppState> _createLoadCompanies(Api api) {
   return (Store<AppState> store, action, NextDispatcher next) {
     store.dispatch(UpdateCompanyIsLoadingAction(true));
 
-    service.getCompanies().then((companies) {
+    api.getCompanies().then((companies) {
       store.dispatch(LoadedCompaniesAction(companies));
       store.dispatch(UpdateCompanyIsLoadingAction(false));
     });
@@ -34,11 +34,11 @@ Middleware<AppState> _createLoadCompanies(Api service) {
   };
 }
 
-Middleware<AppState> _createLoadAppointments(Api service) {
+Middleware<AppState> _createLoadAppointments(Api api) {
   return (Store<AppState> store, action, NextDispatcher next) {
     store.dispatch(UpdateAppointmentsIsLoadingAction(true));
 
-    service.getAppointments().then((appointments) {
+    api.getAppointments().then((appointments) {
       store.dispatch(LoadedAppointmentsAction(appointments));
       store.dispatch(UpdateAppointmentsIsLoadingAction(false));
     });
@@ -47,15 +47,15 @@ Middleware<AppState> _createLoadAppointments(Api service) {
   };
 }
 
-Middleware<AppState> _createLoadPeriods(Api service) {
+Middleware<AppState> _createLoadPeriods(Api api) {
   return (Store<AppState> store, action, next) {
     store.dispatch(UpdateIsLoadingAction(true));
 
     if (store.state.selectPeriodViewModel.periodModel.mode ==
         SelectedPeriodMode.DATE) {
       final date = store.state.selectPeriodViewModel.periodModel.date;
-      print("loading for date: ${date.toIso8601String()}");
-      service
+      print("loading for date: ${date.toIso8601String()}, company: ${action.companyId}");
+      api
           .getDatePeriods(
         action.companyId,
         Parse.convertDateToPeriodDate(
@@ -67,8 +67,8 @@ Middleware<AppState> _createLoadPeriods(Api service) {
       });
     } else {
       final time = store.state.selectPeriodViewModel.periodModel.time;
-      print("loading for time: ${time.toString()}");
-      service
+      print("loading for time: ${time.toString()}, company: ${action.companyId}");
+      api
           .getTimePeriods(
         action.companyId,
         Parse.convertTimeOfDay(time),

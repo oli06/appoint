@@ -25,10 +25,6 @@ dependencies:
   http:
   redux:
   flutter_redux:
-  flutter_statusbarcolor:
-  scoped_model:
-  provider:
-  get_it:
   json_annotation:
   intl:
   flutter_cupertino_date_picker:
