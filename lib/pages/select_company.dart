@@ -24,9 +24,12 @@ class SelectCompanyState extends State<SelectCompany>
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
       onInit: (store) {
-        Function update = () => store.dispatch(UpdateCompanyVisibilityFilter(
-            CompanyVisibilityFilter.values[_controller.index]));
-        _controller.addListener(update);
+        Function update = () => store.dispatch(
+            UpdateCompanyVisibilityFilterAction(
+                CompanyVisibilityFilter.values[_controller.index]));
+        _controller.index =
+            store.state.selectCompanyViewModel.companyVisibilityFilter.index; //initial value comes from the redux store
+        _controller.addListener(update); //if there is a new selection of the tabView, it store.dispatch will be called
       },
       converter: (store) => _ViewModel.fromState(store),
       builder: (context, vm) => Scaffold(
@@ -111,11 +114,10 @@ class SelectCompanyState extends State<SelectCompany>
       "Neuer Termin",
       height: 99,
       leadingWidget: IconButton(
-        icon: Icon(
-          Icons.arrow_back_ios,
-        ),
-        onPressed: () => Navigator.pop(context),
-      ),
+          icon: Icon(
+            Icons.arrow_back_ios,
+          ),
+          onPressed: () => Navigator.pop(context)),
       secondHeader: "Unternehmen auswählen",
       trailing: Container(
         height: 0,
@@ -159,19 +161,20 @@ class _ViewModel {
   final Function(CompanyVisibilityFilter filter) updateFilter;
   final Function(Category category) updateCategoryFilter;
 
-  _ViewModel(
-      {this.updateFilter,
-      this.selectCompanyViewModel,
-      this.updateCategoryFilter});
+  _ViewModel({
+    this.updateFilter,
+    this.selectCompanyViewModel,
+    this.updateCategoryFilter,
+  });
 
   static _ViewModel fromState(Store<AppState> store) {
     return _ViewModel(
       updateFilter: (CompanyVisibilityFilter filter) => store.dispatch(
-            UpdateCompanyVisibilityFilter(filter),
+            UpdateCompanyVisibilityFilterAction(filter),
           ),
       selectCompanyViewModel: store.state.selectCompanyViewModel,
       updateCategoryFilter: (Category category) => store.dispatch(
-            UpdateCategoryFilter(
+            UpdateCategoryFilterAction(
               (category),
             ),
           ),

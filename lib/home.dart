@@ -1,5 +1,4 @@
 import 'package:appoint/assets/company_icons_icons.dart';
-import 'package:appoint/models/appoint.dart';
 import 'package:appoint/widgets/TabBar/FABBottomAppBarItem.dart';
 import 'package:appoint/pages/appointments.dart';
 import 'package:appoint/pages/companies.dart';
@@ -30,8 +29,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         backgroundColor: Colors.white,
         items: [
           FABBottomAppBarItem(
-              iconData: CompanyIcons.account_balance,
-              text: "Unternehmen"),
+              iconData: CompanyIcons.account_balance, text: "Unternehmen"),
           FABBottomAppBarItem(
               iconData: CupertinoIcons.getIconData(0xf2d1), text: "Termine")
         ],
@@ -56,20 +54,9 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return FloatingActionButton(
       onPressed: () {
         showCupertinoModalPopup(
-            context: context,
-            builder: (BuildContext context) => AddAppoint(
-                  isEditing: false,
-                  onSave: (title, cpy, period, description) {
-                    Appoint newAppoint = Appoint(
-                      title: title,
-                      company: cpy,
-                      period: period,
-                      description: description,
-                    );
-
-                    //TODO ADD TO USERS APPOINTMENTS
-                  },
-                ));
+          context: context,
+          builder: (BuildContext context) => AddAppoint(isEditing: false),
+        );
       },
       child: Icon(Icons.add),
       elevation: 4.0,

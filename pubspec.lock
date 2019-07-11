@@ -291,6 +291,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.3.19"
+  location:
+    dependency: "direct main"
+    description:
+      name: location
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.3.5"
   logging:
     dependency: transitive
     description:
@@ -390,7 +397,7 @@ packages:
     source: hosted
     version: "3.0.0"
   redux_dev_tools:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: redux_dev_tools
       url: "https://pub.dartlang.org"

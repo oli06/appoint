@@ -55,7 +55,7 @@ class AppointmentDetails extends StatelessWidget {
                   child: Column(
                     children: <Widget>[
                       _buildPeriodTile(appointment),
-                      if (appointment.description.isNotEmpty) ...[
+                      if (appointment.description != null && appointment.description.isNotEmpty) ...[
                         _buildDivider(),
                         Padding(
                           padding: const EdgeInsets.all(8.0),

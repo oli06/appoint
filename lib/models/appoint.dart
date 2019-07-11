@@ -7,16 +7,18 @@ part 'appoint.g.dart';
 
 @JsonSerializable()
 class Appoint {
+  int id;
   final String title;
   final Company company;
   final Period period;
   final String description;
 
-  const Appoint({
+  Appoint({
     @required this.title,
     @required this.company,
     @required this.period,
     this.description = "",
+    this.id,
   });
 
     factory Appoint.fromJson(Map<String, dynamic> json) {

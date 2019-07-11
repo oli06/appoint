@@ -14,14 +14,20 @@ class UpdateCompanyIsLoadingAction {
   UpdateCompanyIsLoadingAction(this.isLoading);
 }
 
-class UpdateCompanyVisibilityFilter {
+class UpdateCompanyVisibilityFilterAction {
   final CompanyVisibilityFilter filter;
 
-  UpdateCompanyVisibilityFilter(this.filter);
+  UpdateCompanyVisibilityFilterAction(this.filter);
 }
 
-class UpdateCategoryFilter {
+class UpdateCategoryFilterAction {
   final Category filter;
 
-  UpdateCategoryFilter(this.filter);
+  UpdateCategoryFilterAction(this.filter);
+}
+
+class UpdateRangeFilterAction {
+  final double range;
+
+  UpdateRangeFilterAction(this.range);
 }

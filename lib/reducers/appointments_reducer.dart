@@ -3,10 +3,11 @@ import 'package:appoint/view_models/appointments_vm.dart';
 import 'package:redux/redux.dart';
 
 final appointmentsReducer = combineReducers<AppointmentsViewModel>([
-
   TypedReducer<AppointmentsViewModel, LoadedAppointmentsAction>(
       _setLoadedAppointments),
-  TypedReducer<AppointmentsViewModel, UpdateAppointmentsIsLoadingAction>(_updateIsLoading),
+  TypedReducer<AppointmentsViewModel, UpdateAppointmentsIsLoadingAction>(
+      _updateIsLoading),
+  TypedReducer<AppointmentsViewModel, AddAppointmentAction>(_addAppointment),
 ]);
 
 AppointmentsViewModel _setLoadedAppointments(
@@ -20,7 +21,23 @@ AppointmentsViewModel _setLoadedAppointments(
 AppointmentsViewModel _updateIsLoading(
     AppointmentsViewModel vm, UpdateAppointmentsIsLoadingAction action) {
   return AppointmentsViewModel(
-      isLoading: action.isLoading,
-      appointments: vm.appointments,
-      );
+    isLoading: action.isLoading,
+    appointments: vm.appointments,
+  );
+}
+
+AppointmentsViewModel _addAppointment(
+    AppointmentsViewModel vm, AddAppointmentAction action) {
+  if (action.appoint.id != null) {
+    final index = vm.appointments
+        .indexOf(vm.appointments.firstWhere((a) => a.id == action.appoint.id));
+    vm.appointments[index] = action.appoint;
+  } else {
+    action.appoint.id = vm.appointments.length;
+    vm.appointments.add(action.appoint);
+  }
+  return AppointmentsViewModel(
+    isLoading: vm.isLoading,
+    appointments: vm.appointments,
+  );
 }

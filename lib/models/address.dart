@@ -9,12 +9,17 @@ class Address {
   String city;
   int zip;
 
-  Address({
-    this.street,
-    this.houseNumber,
-    this.city,
-    this.zip,
-  });
+  double latitude;
+
+  double longitude;
+
+  Address(
+      {this.street,
+      this.houseNumber,
+      this.city,
+      this.zip,
+      this.latitude,
+      this.longitude});
 
   @override
   String toString() {

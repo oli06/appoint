@@ -19,10 +19,12 @@ Appoint _$AppointFromJson(Map json) {
           : Period.fromJson((json['period'] as Map)?.map(
               (k, e) => MapEntry(k as String, e),
             )),
-      description: json['description'] as String);
+      description: json['description'] as String,
+      id: json['id'] as int);
 }
 
 Map<String, dynamic> _$AppointToJson(Appoint instance) => <String, dynamic>{
+      'id': instance.id,
       'title': instance.title,
       'company': instance.company,
       'period': instance.period,

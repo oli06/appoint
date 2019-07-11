@@ -13,3 +13,9 @@ class LoadedAppointmentsAction {
 
   LoadedAppointmentsAction(this.appointments);
 }
+
+class AddAppointmentAction {
+  final Appoint appoint;
+
+  AddAppointmentAction(this.appoint);
+}

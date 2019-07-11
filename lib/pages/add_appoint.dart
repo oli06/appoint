@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:appoint/actions/add_appoint_action.dart';
+import 'package:appoint/actions/appointments_action.dart';
 import 'package:appoint/view_models/add_appoint_vm.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/appoint.dart';
@@ -17,17 +19,11 @@ import 'package:flutter/rendering.dart';
 import 'package:redux/redux.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 
-typedef OnSaveCallback = Function(
-    String title, Company company, Period period, String description);
-
 class AddAppoint extends StatefulWidget {
   final Appoint appoint;
   final bool isEditing;
-  final OnSaveCallback onSave;
 
-  AddAppoint(
-      {Key key, this.isEditing = false, this.appoint, @required this.onSave})
-      : super(key: key);
+  AddAppoint({Key key, this.isEditing = false, this.appoint}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -40,25 +36,17 @@ class AddAppointState extends State<AddAppoint>
   final _appointFormKey = GlobalKey<FormState>();
 
   String _title;
-  Company
-      _company/*=  Company(
-      address: null,
-      id: 1,
-      category: Category.DOCTOR,
-      name: "DreamCompany",
-      picture: "http://placehold.it/32x32",
-      description: "Beschreibung" ,
-      isPartner: true,
-      rating: 3.5) */
-      ;
+  Company _company;
   Period _period;
   String _description;
+
+  bool get isEditing => widget.isEditing;
 
   bool hideKeyboardEnabled = true;
 
   @override
   void initState() {
-    if (widget.isEditing) {
+    if (isEditing) {
       _company = widget.appoint.company;
       _title = widget.appoint.title;
       _period = widget.appoint.period;
@@ -125,12 +113,12 @@ class AddAppointState extends State<AddAppoint>
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
         onInit: (store) {
-          if (widget.isEditing) {}
+          if (isEditing) {}
         },
         converter: _ViewModel.fromStore,
         builder: (context, vm) {
           return Scaffold(
-            appBar: buildNavBar(),
+            appBar: buildNavBar(vm),
             body: Padding(
               padding: const EdgeInsets.only(left: 8.0, right: 8),
               child: Form(
@@ -169,25 +157,32 @@ class AddAppointState extends State<AddAppoint>
         });
   }
 
-  Widget buildNavBar() {
+  Widget buildNavBar(_ViewModel vm) {
     return NavBar(
       "Neuer Termin",
       height: 57,
       leadingWidget: IconButton(
         icon: Icon(Icons.close),
-        onPressed: () => Navigator.pop(context),
+        onPressed: () {
+          vm.cancelEditOrAdd();
+          Navigator.pop(context);
+        },
       ),
       trailing: CupertinoButton(
         padding: EdgeInsets.zero,
         child: Text(
-          widget.isEditing ? "Speichern" : "Erstellen",
+          isEditing ? "Speichern" : "Erstellen",
           style: TextStyle(
               fontWeight: FontWeight.bold,
               color: _isValid() ? Color(0xff09c199) : null),
         ),
         onPressed: _isValid()
             ? () {
-                widget.onSave(_title, _company, _period, _description);
+                vm.saveAppoint(Appoint(
+                    title: _title,
+                    company: _company,
+                    period: _period,
+                    description: _description));
                 Navigator.pop(context);
               }
             : null,
@@ -228,7 +223,7 @@ class AddAppointState extends State<AddAppoint>
                     child: Align(
                       child: TextFormField(
                         controller: _titleController,
-                        autofocus: widget.isEditing ? false : true,
+                        autofocus: isEditing ? false : true,
                         style: TextStyle(color: Colors.black),
                         textInputAction: TextInputAction.next,
                         onFieldSubmitted: (_) {
@@ -335,7 +330,9 @@ class AddAppointState extends State<AddAppoint>
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
                                 children: <Widget>[
-                                  PeriodBar(period: _period,),
+                                  PeriodBar(
+                                    period: _period,
+                                  ),
                                   Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Text(
@@ -410,11 +407,22 @@ class AddAppointState extends State<AddAppoint>
 
 class _ViewModel {
   final AddAppointViewModel addAppointViewModel;
+  final Function(Appoint appoint) saveAppoint;
+  final Function cancelEditOrAdd;
 
-  _ViewModel({@required this.addAppointViewModel});
+  _ViewModel({
+    @required this.addAppointViewModel,
+    this.saveAppoint,
+    this.cancelEditOrAdd,
+  });
 
   static _ViewModel fromStore(Store<AppState> store) {
-    return _ViewModel(addAppointViewModel: store.state.addAppointViewModel);
+    return _ViewModel(
+      addAppointViewModel: store.state.addAppointViewModel,
+      saveAppoint: (Appoint appoint) =>
+          store.dispatch(AddAppointmentAction(appoint)),
+      cancelEditOrAdd: () => store.dispatch(CancelEditOrAddAppointAction()),
+    );
   }
 }
 

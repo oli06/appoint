@@ -8,6 +8,8 @@ final addAppointReducer = combineReducers<AddAppointViewModel>([
   TypedReducer<AddAppointViewModel, UpdateTitleAction>(_updateTitle),
   TypedReducer<AddAppointViewModel, UpdateDescriptionAction>(
       _updateDescription),
+  TypedReducer<AddAppointViewModel, CancelEditOrAddAppointAction>(
+      _cancelEditOrAddAppoint),
 ]);
 
 AddAppointViewModel _updatePeriod(
@@ -48,4 +50,9 @@ AddAppointViewModel _updateDescription(
     period: vm.period,
     title: vm.title,
   );
+}
+
+AddAppointViewModel _cancelEditOrAddAppoint(
+    AddAppointViewModel vm, CancelEditOrAddAppointAction action) {
+  return AddAppointViewModel();
 }

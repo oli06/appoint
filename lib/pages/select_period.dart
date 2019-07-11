@@ -2,6 +2,7 @@ import 'package:appoint/actions/select_period_action.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:appoint/utils/parse.dart';
+import 'package:appoint/widgets/dialog.dart' as prefix0;
 import 'package:flutter_cupertino_date_picker/flutter_cupertino_date_picker.dart';
 import 'package:appoint/widgets/navBar.dart';
 import 'package:appoint/widgets/period_list.dart';
@@ -26,12 +27,12 @@ class _SelectPeriodState extends State<SelectPeriod> {
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
       converter: _ViewModel.fromStore,
-      onInit: (store) => store.dispatch(UpdateSelectedValueAction(
-            DateTime.now(),
+      onInit: (store) =>  store.dispatch(UpdateSelectedValueAction(store.state.selectPeriodViewModel.periodModel.mode == SelectedPeriodMode.DATE ?
+            DateTime.now() : TimeOfDay(hour: 8, minute: 0),
           )), //inital date-value
       builder: (context, vm) {
         return Scaffold(
-          appBar: _buildNavBar(context),
+          appBar: _buildNavBar(vm),
           body: SafeArea(
             bottom: false,
             child: Padding(
@@ -204,23 +205,28 @@ class _SelectPeriodState extends State<SelectPeriod> {
     }
   }
 
-  NavBar _buildNavBar(BuildContext context) {
+  NavBar _buildNavBar(_ViewModel vm) {
     return NavBar(
       "Neuer Termin",
       height: 59,
       leadingWidget: IconButton(
-        icon: Icon(
-          Icons.arrow_back_ios,
-        ),
-        onPressed: () => Navigator.pop(context),
-      ),
+          icon: Icon(
+            Icons.arrow_back_ios,
+          ),
+          onPressed: () => Navigator.pop(context)),
       secondHeader: "Zeitraum wählen",
       trailing: IconButton(
         icon: Icon(
           Icons.info_outline,
         ),
         onPressed: () {
-          //TODO show page info
+          showCupertinoDialog(
+          context: context, builder: (context) => prefix0.Dialog(
+            title: "Hilfe",
+            information: "Um einen Termin vereinbaren zu können, muss zuerst ein freier Zeitraum bei dem sowohl das Unternehmen, als auch Sie Zeit haben. Die angezeigten Zeiträume entsprechen bereits den freien Zeiträumen des jeweiligen Unternehmens. \n Damit Ihnen die Suche nicht so schwer fällt haben Sie verschiedene Möglichkeiten. \n \t 1. Ein bestimmtes Datum wählen, um freie Zeiten an diesem Tag anzeigen zu lassen \n \t 2. Auf den Uhrzeit-Modus umschalten, um Tage anzuzeigen, an denen das Unternehmen beispielsweise um 17:00 Uhr Zeit hat \n \n Außerdem können Sie einzelne Wochentage ausschließen, sodass von diesem Wochentag keine freie Zeiten angezeigt werden.",
+          userActionWidget: CupertinoButton(child: Text("Alles klar!"), onPressed: () => Navigator.pop(context),),
+          ),
+          );
         },
       ),
     );
@@ -234,23 +240,25 @@ class _ViewModel {
   final Function(dynamic value) updateSelectedValue;
   final Function(int companyId) loadPeriods;
 
-  _ViewModel(
-      {@required this.selectPeriodViewModel,
-      this.setMode,
-      this.updateSelectedValue,
-      this.loadPeriods});
+  _ViewModel({
+    @required this.selectPeriodViewModel,
+    this.setMode,
+    this.updateSelectedValue,
+    this.loadPeriods,
+  });
 
   static _ViewModel fromStore(Store<AppState> store) {
     return _ViewModel(
-        selectPeriodViewModel: store.state.selectPeriodViewModel,
-        setMode: (SelectedPeriodMode newMode) {
-          store.dispatch(UpdateModeAction(newMode));
-        },
-        updateSelectedValue: (dynamic value) {
-          store.dispatch(UpdateSelectedValueAction(value));
-        },
-        loadPeriods: (int companyId) {
-          store.dispatch(LoadPeriodsAction(companyId));
-        });
+      selectPeriodViewModel: store.state.selectPeriodViewModel,
+      setMode: (SelectedPeriodMode newMode) {
+        store.dispatch(UpdateModeAction(newMode));
+      },
+      updateSelectedValue: (dynamic value) {
+        store.dispatch(UpdateSelectedValueAction(value));
+      },
+      loadPeriods: (int companyId) {
+        store.dispatch(LoadPeriodsAction(companyId));
+      },
+    );
   }
 }

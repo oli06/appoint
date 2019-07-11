@@ -5,11 +5,13 @@ class SelectCompanyViewModel {
   final bool isLoading;
   final CompanyVisibilityFilter companyVisibilityFilter;
   final Category categoryFilter;
+  final double rangeFilter;
 
   const SelectCompanyViewModel({
     this.companies,
     this.isLoading,
     this.companyVisibilityFilter,
-    this.categoryFilter
+    this.categoryFilter,
+    this.rangeFilter,
   });
 }

@@ -31,20 +31,6 @@ class UpdateIsLoadingAction {
   UpdateIsLoadingAction(this.isLoading);
 }
 
-/* class LoadDatePeriodsAction {
-  final int companyId; 
-  final DateTime date;
-
-  LoadDatePeriodsAction(this.companyId, this.date);
-}
-
-class LoadTimePeriodsAction {
-  final int companyId;
-  final TimeOfDay time;
-
-  LoadTimePeriodsAction(this.companyId, this.time);
-} */
-
 class LoadPeriodsAction {
   final int companyId;
 

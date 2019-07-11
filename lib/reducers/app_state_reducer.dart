@@ -3,6 +3,7 @@ import 'package:appoint/reducers/add_appoint_reducer.dart';
 import 'package:appoint/reducers/appointments_reducer.dart';
 import 'package:appoint/reducers/companies_reducer.dart';
 import 'package:appoint/reducers/select_period_reducer.dart';
+import 'package:appoint/reducers/user_reducer.dart';
 
 AppState appReducer(AppState state, action) {
   return AppState(
@@ -12,5 +13,6 @@ AppState appReducer(AppState state, action) {
         selectPeriodReudcer(state.selectPeriodViewModel, action),
     addAppointViewModel: addAppointReducer(state.addAppointViewModel, action),
     appointmentsViewModel: appointmentsReducer(state.appointmentsViewModel, action),
+    userViewModel: userReducer(state.userViewModel, action),
   );
 }
