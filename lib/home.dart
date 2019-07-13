@@ -52,12 +52,12 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildFab(BuildContext context) {
     return FloatingActionButton(
-      onPressed: () {
+      onPressed: () =>
         showCupertinoModalPopup(
           context: context,
           builder: (BuildContext context) => AddAppoint(isEditing: false),
-        );
-      },
+        ),
+      
       child: Icon(Icons.add),
       elevation: 4.0,
       backgroundColor: Color(0xff09c199),

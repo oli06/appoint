@@ -59,4 +59,24 @@ class Parse {
         c(lat1 * p) * c(lat2 * p) * (1 - c((lon2 - lon1) * p)) / 2;
     return 12742 * asin(sqrt(a));
   }
+
+  static List<Widget> ratingToIconList(double rating) {
+    List<Widget> icons = [];
+    //TODO: refactor
+    final starCountString = rating.toStringAsFixed(0);
+    final int starCount = int.parse(starCountString);
+
+    for (int i = 0; i < starCount; i++) {
+      icons.add(Icon(
+        Icons.star,
+        color: Color(0xfff7981c),
+      ));
+    }
+
+    for (var o = icons.length; o < 5; o++) {
+      icons.add(Icon(Icons.star_border, color: Color(0xffc5d0ed),));
+    }
+
+    return icons;
+  }
 }

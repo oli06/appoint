@@ -109,7 +109,7 @@ class AppointmentDetails extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
-                children: <Widget>[
+                children: <Widget>[ 
                   PeriodBar(
                     period: appointment.period,
                   ),

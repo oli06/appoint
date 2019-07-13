@@ -216,6 +216,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
           onPressed: () => Navigator.pop(context)),
       secondHeader: "Zeitraum wählen",
       trailing: IconButton(
+        color: Theme.of(context).primaryColor,
         icon: Icon(
           Icons.info_outline,
         ),

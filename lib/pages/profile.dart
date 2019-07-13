@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:appoint/widgets/navBar.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
+//import 'package:flutter_code_input/flutter_code_input.dart';
 
 class ProfilePage extends StatelessWidget {
   @override
@@ -132,6 +133,7 @@ class ProfilePage extends StatelessWidget {
                       vm.verifyUser(code);
                       Navigator.pop(context);
                     }),
+                    
               ),
             ),
           ),

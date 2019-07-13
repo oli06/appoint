@@ -112,49 +112,49 @@ class AddAppointState extends State<AddAppoint>
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
-        onInit: (store) {
-          if (isEditing) {}
-        },
-        converter: _ViewModel.fromStore,
-        builder: (context, vm) {
-          return Scaffold(
-            appBar: buildNavBar(vm),
-            body: Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8),
-              child: Form(
-                key: _appointFormKey,
-                child: CupertinoScrollbar(
-                  child: NotificationListener(
-                    onNotification: (t) {
-                      if (t is UserScrollNotification) {
-                        if (hideKeyboardEnabled) {
-                          FocusScope.of(context).requestFocus(FocusNode());
-                        }
-                      }
-                    },
-                    child: ListView(
-                      children: <Widget>[
-                        //buildNavBar(),
-                        SizedBox(
-                          height: 10,
-                        ),
-                        _firstCard(),
-                        SizedBox(
-                          height: 20,
-                        ),
-                        _secondCard(),
-                        SizedBox(
-                          height: 20,
-                        ),
-                        _thirdCard(),
-                      ],
-                    ),
+      onInit: (store) {
+        if (isEditing) {}
+      },
+      converter: _ViewModel.fromStore,
+      builder: (context, vm) {
+        return Scaffold(
+          appBar: buildNavBar(vm),
+          body: Padding(
+            padding: const EdgeInsets.only(left: 8.0, right: 8),
+            child: NotificationListener(
+              onNotification: (t) {
+                if (t is UserScrollNotification) {
+                  if (hideKeyboardEnabled) {
+                    FocusScope.of(context).requestFocus(FocusNode());
+                  }
+                }
+              },
+              child: CupertinoScrollbar(
+                child: Form(
+                  key: _appointFormKey,
+                  child: ListView(
+                    children: <Widget>[
+                      SizedBox(
+                        height: 10,
+                      ),
+                      _firstCard(),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      _secondCard(),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      _thirdCard(),
+                    ],
                   ),
                 ),
               ),
             ),
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
   Widget buildNavBar(_ViewModel vm) {
@@ -163,6 +163,7 @@ class AddAppointState extends State<AddAppoint>
       height: 57,
       leadingWidget: IconButton(
         icon: Icon(Icons.close),
+        color: Theme.of(context).primaryColor,
         onPressed: () {
           vm.cancelEditOrAdd();
           Navigator.pop(context);

@@ -42,10 +42,10 @@ class CompanyTile extends StatelessWidget {
             ],
             child: ListTile(
               onTap: onTap,
-              leading: CircleAvatar(
+              /* leading: CircleAvatar(
                   backgroundImage: NetworkImage(
                 "${company.picture}",
-              )),
+              )), */
               title: Text(
                 "${company.name}",
                 style: const TextStyle(

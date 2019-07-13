@@ -101,6 +101,7 @@ class NavBar extends StatelessWidget implements PreferredSizeWidget {
   Widget _trailingWidget(context) {
     return IconButton(
       icon: Icon(CupertinoIcons.profile_circled),
+      color: Theme.of(context).primaryColor,
       onPressed: () {
         showCupertinoModalPopup(
           context: context,

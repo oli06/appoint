@@ -3,6 +3,7 @@ import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/assets/company_icons_icons.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/company.dart';
+import 'package:appoint/pages/company_details.dart';
 import 'package:appoint/view_models/select_company_vm.dart';
 import 'package:appoint/widgets/company_list.dart';
 import 'package:appoint/widgets/company_tile.dart';
@@ -144,7 +145,8 @@ class _CompanyPageState extends State<CompanyPage>
       itemBuilder: (context, index, cpy) {
         return CompanyTile(
           company: cpy,
-          onTap: () {},
+          onTap: () => Navigator.pushNamed(context, CompanyDetails.routeName,
+              arguments: cpy),
         );
       },
     );

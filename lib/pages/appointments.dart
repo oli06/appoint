@@ -2,6 +2,7 @@ import 'package:appoint/actions/appointments_action.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/appoint.dart';
 import 'package:appoint/models/day.dart';
+import 'package:appoint/pages/add_appoint.dart';
 import 'package:appoint/pages/appointment_details.dart';
 import 'package:appoint/pages/profile.dart';
 import 'package:appoint/selectors/selectors.dart';
@@ -45,18 +46,131 @@ class _AppointmentPageState extends State<AppointmentPage> {
   Widget _buildAppointmentsList(_ViewModel vm) {
     final List<Day<Appoint>> days =
         groupAppointmentsByDate(vm.appointmentsViewModel.appointments);
-
+    
+    //filter next Appointment
+    final Appoint upcomingAppointment = days[0].events[0];
+    days[0].events.removeAt(0);
+    if (days[0].events.length == 0) {
+      days.remove(0);
+    }
+    
     days.forEach((d) => listElements.add(
         _ListHeader(childrenCount: d.events.length, value: d.date.toUtc())));
 
     final List<Widget> slivers = List<Widget>();
     days.asMap().forEach((index, day) =>
         slivers.addAll(_buildHeaderBuilderLists(context, index, 1, day)));
-    return CupertinoScrollbar(
-        child: CustomScrollView(
-      controller: _scrollController,
-      slivers: slivers,
-    ));
+    return Column(
+      children: <Widget>[
+        _buildUpcomingEventDescription(upcomingAppointment),
+        _buildUpcomingAppointment(upcomingAppointment),
+        Expanded(
+          child: CupertinoScrollbar(
+            child: CustomScrollView(
+              shrinkWrap: true,
+              controller: _scrollController,
+              slivers: slivers,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Padding _buildUpcomingEventDescription(Appoint upcomingAppointment) {
+    return Padding(
+        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Text("Termin in ${Parse.convertDateDifferenceToReadable(DateTime.now(), upcomingAppointment.period.start)}:", style: TextStyle(fontSize: 18),),
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              child: Row(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Icon(Icons.map),
+                  ),
+                  Text("Route"),
+                ],
+              ),
+              onPressed: () {},
+            ),
+          ],
+        ),
+      );
+  }
+
+  Padding _buildUpcomingAppointment(Appoint upcomingAppointment) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8.0, 0, 8, 8),
+      child: GestureDetector(
+        onTap: () => Navigator.pushNamed(
+                      context, AppointmentDetails.routeName,
+                      arguments: upcomingAppointment),
+        child: Container(
+          padding: EdgeInsets.all(4.0),
+          height: 68,
+          decoration: BoxDecoration(
+            shape: BoxShape.rectangle,
+            borderRadius: BorderRadius.circular(5),
+            gradient: LinearGradient(colors: [
+              Color(0xff6dd7c7).withOpacity(0.8),
+              Color(0xff188e9b).withOpacity(0.8)
+            ], begin: Alignment.topLeft, end: Alignment.bottomRight),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        upcomingAppointment.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Color(0xff333f52)),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          Expanded(
+                            child: Text(
+                              "${Parse.hoursWithMinutes.format(upcomingAppointment.period.start.toUtc())} - ${Parse.hoursWithMinutes.format(upcomingAppointment.period.getPeriodEnd().toUtc())}",
+                              style: TextStyle(fontSize: 15),
+                            ),
+                          ),
+                          Text(upcomingAppointment.company.category
+                              .toString()
+                              .split(".")
+                              .last),
+                        ],
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(upcomingAppointment.company.name),
+                          Text(upcomingAppointment.company.address
+                              .toCityString()),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   List<Widget> _buildHeaderBuilderLists(
@@ -111,9 +225,17 @@ class _AppointmentPageState extends State<AppointmentPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Text(
-            "Bisher haben Sie noch keine Termine vereinbart. \n Klicken Sie auf den + Button unten und legen Sie direkt los.",
+            "Bisher haben Sie noch keine Termine vereinbart.",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.w200),
             textAlign: TextAlign.center,
+          ),
+          FlatButton(
+            child: Text("Jetzt Termin vereinbaren"),
+            onPressed: () => showCupertinoModalPopup(
+                  context: context,
+                  builder: (BuildContext context) =>
+                      AddAppoint(isEditing: false),
+                ),
           ),
         ],
       ),
@@ -147,12 +269,11 @@ class _AppointmentPageState extends State<AppointmentPage> {
           ),
           IconButton(
             icon: Icon(CupertinoIcons.profile_circled),
-            onPressed: () {
-              showCupertinoModalPopup(
-                context: context,
-                builder: (context) => ProfilePage(),
-              );
-            },
+            color: Theme.of(context).primaryColor,
+            onPressed: () => showCupertinoModalPopup(
+                  context: context,
+                  builder: (context) => ProfilePage(),
+                ),
           ),
         ],
       ),

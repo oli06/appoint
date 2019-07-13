@@ -54,9 +54,10 @@ class AppointmentTile extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(right: 4.0, top: 4),
                   child: Align(
-                    alignment: Alignment.topCenter,
-                    child: PeriodBar(period: appoint.period,)
-                  ),
+                      alignment: Alignment.topCenter,
+                      child: PeriodBar(
+                        period: appoint.period,
+                      )),
                 ),
                 Expanded(
                   child: Align(
@@ -65,7 +66,6 @@ class AppointmentTile extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          
                           appoint.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

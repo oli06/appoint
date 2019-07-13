@@ -30,6 +30,10 @@ class Address {
     return "$zip $city";
   }
 
+  String toStreetString() {
+    return "$street $houseNumber";
+  }
+
   factory Address.fromJson(Map<String, dynamic> json) =>
       _$AddressFromJson(json);
 

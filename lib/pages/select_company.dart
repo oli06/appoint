@@ -27,9 +27,13 @@ class SelectCompanyState extends State<SelectCompany>
         Function update = () => store.dispatch(
             UpdateCompanyVisibilityFilterAction(
                 CompanyVisibilityFilter.values[_controller.index]));
-        _controller.index =
-            store.state.selectCompanyViewModel.companyVisibilityFilter.index; //initial value comes from the redux store
-        _controller.addListener(update); //if there is a new selection of the tabView, it store.dispatch will be called
+        _controller.index = store
+            .state 
+            .selectCompanyViewModel
+            .companyVisibilityFilter
+            .index; //initial value comes from the redux store
+        _controller.addListener(
+            update); //if there is a new selection of the tabView, it store.dispatch will be called
       },
       converter: (store) => _ViewModel.fromState(store),
       builder: (context, vm) => Scaffold(
@@ -42,7 +46,6 @@ class SelectCompanyState extends State<SelectCompany>
                   child: Column(
                     children: <Widget>[
                       _buildDropdown(vm),
-                      _buildListHeading(),
                       Expanded(
                         child: CompanyList(
                           itemBuilder: (context, index, Company cpy) =>
@@ -79,20 +82,6 @@ class SelectCompanyState extends State<SelectCompany>
     return CompanyTile(
       company: cpy,
       onTap: onTap,
-    );
-  }
-
-  Container _buildListHeading() {
-    return Container(
-      padding: EdgeInsets.all(6.0),
-      alignment: Alignment.centerLeft,
-      child: const Text(
-        "Unternehmen",
-        style: TextStyle(
-          fontWeight: FontWeight.w200,
-          fontSize: 18,
-        ),
-      ),
     );
   }
 

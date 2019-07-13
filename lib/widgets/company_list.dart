@@ -80,15 +80,25 @@ class _CompanyListState extends State<CompanyList> {
   }
 
   Widget _buildCompanyList(List<Company> companies) {
-    return Container(
-      child: CupertinoScrollbar(
-        child: ListView.builder(
-          shrinkWrap: true,
-          physics: ClampingScrollPhysics(),
-          itemCount: companies.length,
-          itemBuilder: (context, index) {
-            return widget.itemBuilder(context, index, companies[index]);
-          },
+    print(companies.length);
+    //TODO: FIXME: test, if hideKeyboard on scroll wirklich gescheit funktionert
+
+    return NotificationListener(
+      onNotification: (t) {
+        if (t is UserScrollNotification) {
+          FocusScope.of(context).requestFocus(FocusNode());
+        }
+      },
+      child: Container(
+        child: CupertinoScrollbar(
+          child: ListView.builder(
+            shrinkWrap: true,
+            physics: ClampingScrollPhysics(),
+            itemCount: companies.length,
+            itemBuilder: (context, index) {
+              return widget.itemBuilder(context, index, companies[index]);
+            },
+          ),
         ),
       ),
     );
