@@ -74,7 +74,10 @@ class Parse {
     }
 
     for (var o = icons.length; o < 5; o++) {
-      icons.add(Icon(Icons.star_border, color: Color(0xffc5d0ed),));
+      icons.add(Icon(
+        Icons.star_border,
+        color: Color(0xffc5d0ed),
+      ));
     }
 
     return icons;

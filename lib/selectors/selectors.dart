@@ -15,10 +15,12 @@ List<Company> companiesVisibilityFilterSelector(
     List<Company> companies, CompanyVisibilityFilter filter) {
   return companies.where((cpy) {
     if (filter == CompanyVisibilityFilter.favorites) {
-      return true; //TODO
+      return true; //FIXME:
     } else if (filter == CompanyVisibilityFilter.all) {
       return true;
     }
+    
+    return false;
   }).toList();
 }
 

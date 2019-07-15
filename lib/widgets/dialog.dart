@@ -6,8 +6,14 @@ import 'package:flutter/widgets.dart';
 class Dialog extends StatelessWidget {
   final String title;
   final String information;
+  final double informationTextSize;
   final Widget userActionWidget;
-  const Dialog({Key key, this.title, this.information, this.userActionWidget})
+  const Dialog(
+      {Key key,
+      this.title,
+      this.information,
+      this.userActionWidget,
+      this.informationTextSize})
       : super(key: key);
 
   @override
@@ -21,7 +27,7 @@ class Dialog extends StatelessWidget {
           Row(
             children: <Widget>[
               IconButton(
-                icon: Icon(CupertinoIcons.clear),
+                icon: Icon(CupertinoIcons.clear, size: 32,),
                 padding: EdgeInsets.zero,
                 onPressed: () => Navigator.pop(context),
               ),
@@ -40,6 +46,10 @@ class Dialog extends StatelessWidget {
                 children: <Widget>[
                   Text(
                     information,
+                    style: TextStyle(
+                        fontSize: informationTextSize != null
+                            ? informationTextSize
+                            : 14),
                   ),
                   userActionWidget
                 ],

@@ -32,22 +32,22 @@ class _CompanyPageState extends State<CompanyPage>
       },
       converter: (store) => _ViewModel.fromState(store),
       builder: (context, vm) => Scaffold(
-            appBar: _buildNavBar(vm),
-            body: SafeArea(
-              bottom: false,
-              child: DirectSelectContainer(
-                child: Column(
-                  children: <Widget>[
-                    _buildDropdown(vm),
-                    _buildRangeAndMapButton(vm),
-                    Expanded(
-                      child: _buildCompanyList(),
-                    ),
-                  ],
+        appBar: _buildNavBar(vm),
+        body: SafeArea(
+          bottom: false,
+          child: DirectSelectContainer(
+            child: Column(
+              children: <Widget>[
+                _buildDropdown(vm),
+                _buildRangeAndMapButton(vm),
+                Expanded(
+                  child: _buildCompanyList(),
                 ),
-              ),
+              ],
             ),
           ),
+        ),
+      ),
     );
   }
 
@@ -61,34 +61,33 @@ class _CompanyPageState extends State<CompanyPage>
               activeColor: Color(0xff09c199),
               value: vm.selectCompanyViewModel.rangeFilter,
               min: 1.0,
-              divisions: 6,
-              max: 25.0,
+              max: 50.0,
               onChanged: (double newValue) => vm.updateRangeFilter(newValue),
             ),
-            Text("${vm.selectCompanyViewModel.rangeFilter} km Umkreis"),
+            Text("${vm.selectCompanyViewModel.rangeFilter.toInt()} km"),
           ],
         ),
         Padding(
-          padding: const EdgeInsets.only(right: 12.0),
-          child: Align(
-              alignment: Alignment.centerRight,
-              child: FlatButton(
-                child: Row(
-                  children: <Widget>[
-                    Text("Karte"),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 2.0),
-                      child: Icon(
-                        Icons.map,
-                        color: Theme.of(context).iconTheme.color,
-                      ),
-                    ),
-                  ],
+          padding: const EdgeInsets.only(right: 12),
+          child: FlatButton(
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text("Karte"),
+                Padding(
+                  padding: const EdgeInsets.only(left: 2.0),
+                  child: Icon(
+                    Icons.map,
+                    color: Theme.of(context).iconTheme.color,
+                  ),
                 ),
-                onPressed: () {
-                  print("Change mode to map");
-                },
-              )),
+              ],
+            ),
+            onPressed: () {
+              print("Change mode to map");
+            },
+          ),
         ),
       ],
     );
@@ -168,8 +167,8 @@ class _ViewModel {
     return _ViewModel(
       selectCompanyViewModel: store.state.selectCompanyViewModel,
       updateCategoryFilter: (Category category) => store.dispatch(
-            UpdateCategoryFilterAction((category)),
-          ),
+        UpdateCategoryFilterAction((category)),
+      ),
       updateRangeFilter: (double value) =>
           store.dispatch(UpdateRangeFilterAction(value)),
     );

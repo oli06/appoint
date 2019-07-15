@@ -1,14 +1,17 @@
 import 'package:appoint/models/appoint.dart';
+import 'package:appoint/utils/ios_url_scheme.dart';
 import 'package:appoint/utils/parse.dart';
-import 'package:appoint/widgets/period_bar.dart';
+import 'package:appoint/widgets/icon_circle_gradient.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:location/location.dart';
 
 class AppointmentTile extends StatelessWidget {
   final Appoint appoint;
   final Function onTap;
+  final LocationData userLocation;
 
-  AppointmentTile({this.appoint, this.onTap});
+  AppointmentTile({this.appoint, this.onTap, this.userLocation});
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +40,13 @@ class AppointmentTile extends StatelessWidget {
           caption: 'Route',
           color: Color(0xff1991eb),
           icon: Icons.map,
-          onTap: () {
-            //TODO:
-          },
+          onTap: () => UrlScheme.buildRouteCupertinoActionSheet(
+            context,
+            userLocation.latitude,
+            userLocation.longitude,
+            appoint.company.address.latitude,
+            appoint.company.address.longitude,
+          ),
         )
       ],
       child: GestureDetector(
@@ -54,10 +61,10 @@ class AppointmentTile extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(right: 4.0, top: 4),
                   child: Align(
-                      alignment: Alignment.topCenter,
-                      child: PeriodBar(
-                        period: appoint.period,
-                      )),
+                    alignment: Alignment.topCenter,
+                    child: IconCircleGradient.periodIndicator(
+                        appoint.period.duration.inMinutes / 60),
+                  ),
                 ),
                 Expanded(
                   child: Align(
@@ -101,7 +108,10 @@ class AppointmentTile extends StatelessWidget {
                     ),
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: Theme.of(context).primaryColor,
+                ),
               ],
             ),
           ),

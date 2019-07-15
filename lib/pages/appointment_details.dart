@@ -1,11 +1,18 @@
+import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/models/appoint.dart';
+import 'package:appoint/utils/ios_url_scheme.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:appoint/widgets/company_tile.dart';
+import 'package:appoint/widgets/icon_circle_gradient.dart';
 import 'package:appoint/widgets/navBar.dart';
-import 'package:appoint/widgets/period_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:appoint/models/app_state.dart';
+import 'package:location/location.dart';
+import 'package:redux/redux.dart' as prefix0;
+import 'package:url_launcher/url_launcher.dart';
 
 class AppointmentDetails extends StatelessWidget {
   static const routeName = '/appointment_details';
@@ -33,7 +40,7 @@ class AppointmentDetails extends StatelessWidget {
                         padding: EdgeInsets.all(15),
                         child: Text(
                           appointment.title,
-                          textAlign: TextAlign.end,
+                          textAlign: TextAlign.start,
                           style: TextStyle(fontSize: 18),
                         ),
                       ),
@@ -55,7 +62,8 @@ class AppointmentDetails extends StatelessWidget {
                   child: Column(
                     children: <Widget>[
                       _buildPeriodTile(appointment),
-                      if (appointment.description != null && appointment.description.isNotEmpty) ...[
+                      if (appointment.description != null &&
+                          appointment.description.isNotEmpty) ...[
                         _buildDivider(),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -69,7 +77,7 @@ class AppointmentDetails extends StatelessWidget {
                   ),
                 ),
               ),
-              _buildActionButtons(),
+              _buildActionButtons(appointment, context),
             ],
           ),
         ),
@@ -109,10 +117,9 @@ class AppointmentDetails extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
-                children: <Widget>[ 
-                  PeriodBar(
-                    period: appointment.period,
-                  ),
+                children: <Widget>[
+                  IconCircleGradient.periodIndicator(
+                      appointment.period.duration.inMinutes / 60),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
@@ -129,47 +136,66 @@ class AppointmentDetails extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: <Widget>[
-        CupertinoButton(
-          child: Row(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(2.0),
-                child: Icon(Icons.delete),
-              ),
-              Text("Absagen"),
-            ],
+  Widget _buildActionButtons(Appoint appoint, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            child: Row(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(right: 2.0),
+                  child: Icon(Icons.delete),
+                ),
+                Text("Absagen"),
+              ],
+            ),
+            onPressed: () {},
           ),
-          onPressed: () {},
-        ),
-        CupertinoButton(
-          child: Row(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(2.0),
-                child: Icon(Icons.map),
-              ),
-              Text("Route"),
-            ],
+          StoreConnector<AppState, _ViewModel>(
+            converter: (store) => _ViewModel.fromState(store),
+            onInit: (store) {
+              if (store.state.userViewModel.currentLocation == null) {
+                store.dispatch(LoadUserLocationAction());
+              }
+            },
+            builder: (context, vm) => CupertinoButton(
+                padding: EdgeInsets.zero,
+                child: Row(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(right: 2.0),
+                      child: Icon(Icons.map),
+                    ),
+                    Text("Route"),
+                  ],
+                ),
+                onPressed: () => UrlScheme.buildRouteCupertinoActionSheet(
+                      context,
+                      vm.location.latitude,
+                      vm.location.longitude,
+                      appoint.company.address.latitude,
+                      appoint.company.address.longitude,
+                    )),
           ),
-          onPressed: () {},
-        ),
-        CupertinoButton(
-          child: Row(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(2.0),
-                child: Icon(Icons.schedule),
-              ),
-              Text("Verschieben"),
-            ],
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            child: Row(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(right: 2.0),
+                  child: Icon(Icons.schedule),
+                ),
+                Text("Verschieben"),
+              ],
+            ),
+            onPressed: () {},
           ),
-          onPressed: () {},
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -180,7 +206,23 @@ class AppointmentDetails extends StatelessWidget {
       leadingWidget: CupertinoNavigationBarBackButton(
         previousPageTitle: "Termine",
       ),
-      trailing: Container(height: 0, width: 0,),
+      trailing: Container(
+        height: 0,
+        width: 0,
+      ),
     );
+  }
+}
+
+class _ViewModel {
+  final LocationData location;
+  final Function requestUserLocation;
+
+  _ViewModel({this.location, this.requestUserLocation});
+
+  static _ViewModel fromState(prefix0.Store<AppState> store) {
+    return _ViewModel(
+        location: store.state.userViewModel.currentLocation,
+        requestUserLocation: () => store.dispatch(LoadUserLocationAction()));
   }
 }

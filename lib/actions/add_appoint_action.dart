@@ -1,4 +1,3 @@
-import 'package:appoint/models/appoint.dart';
 import 'package:appoint/models/company.dart';
 import 'package:appoint/models/period.dart';
 

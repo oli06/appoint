@@ -10,9 +10,9 @@ import 'package:appoint/models/period.dart';
 import 'package:appoint/pages/select_period.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:appoint/widgets/company_tile.dart';
+import 'package:appoint/widgets/icon_circle_gradient.dart';
 import 'package:appoint/widgets/navBar.dart';
 import 'package:appoint/pages/select_company.dart';
-import 'package:appoint/widgets/period_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -331,9 +331,7 @@ class AddAppointState extends State<AddAppoint>
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
                                 children: <Widget>[
-                                  PeriodBar(
-                                    period: _period,
-                                  ),
+                                  IconCircleGradient.periodIndicator(_period.duration.inMinutes / 60),
                                   Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Text(

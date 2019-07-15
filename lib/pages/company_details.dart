@@ -1,8 +1,10 @@
 import 'package:appoint/assets/company_icons_icons.dart';
 import 'package:appoint/models/company.dart';
+import 'package:appoint/utils/ios_url_scheme.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CompanyDetails extends StatelessWidget {
   static final routeName = "/company_details";
@@ -75,7 +77,13 @@ class CompanyDetails extends StatelessWidget {
               SizedBox(height: 5),
               GestureDetector(
                 onTap: () {
-                  //TODO: launch("tel:${company.phone}") PACKAGE url_launcher
+                  final noSpacePhoneNumber =
+                      UrlScheme.getTelUrl(company.phone);
+                  canLaunch(noSpacePhoneNumber).then((result) {
+                    if (result) {
+                      launch(noSpacePhoneNumber);
+                    }
+                  });
                 },
                 child: Text(
                   company.phone,
@@ -103,35 +111,37 @@ class CompanyDetails extends StatelessWidget {
   }
 
   Widget _buildActionButtons(Company company) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: <Widget>[
-        CupertinoButton(
-          child: Row(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(2.0),
-                child: Icon(Icons.add),
-              ),
-              Text("Termin vereinbaren"),
-            ],
-          ),
-          onPressed: () {},
-        ),
-        CupertinoButton(
-          child: Row(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(2.0),
-                child: Icon(CompanyIcons.heart_empty),
-              ),
-              Text("Zu Favoriten"),
-            ],
-          ),
-          onPressed: () {},
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      child: Row(
 
-      ],
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            child: Row(
+              children: <Widget>[
+                Icon(Icons.add),
+                Text("Termin vereinbaren"),
+              ],
+            ),
+            onPressed: () {},
+          ),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            child: Row(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(right: 2.0),
+                  child: Icon(CompanyIcons.heart_empty),
+                ),
+                Text("Zu Favoriten"),
+              ],
+            ),
+            onPressed: () {},
+          ),
+        ],
+      ),
     );
   }
 }

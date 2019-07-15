@@ -1,4 +1,5 @@
 import 'package:appoint/actions/appointments_action.dart';
+import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/appoint.dart';
 import 'package:appoint/models/day.dart';
@@ -6,6 +7,7 @@ import 'package:appoint/pages/add_appoint.dart';
 import 'package:appoint/pages/appointment_details.dart';
 import 'package:appoint/pages/profile.dart';
 import 'package:appoint/selectors/selectors.dart';
+import 'package:appoint/utils/ios_url_scheme.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:appoint/view_models/appointments_vm.dart';
 import 'package:appoint/widgets/appointment_tile.dart';
@@ -16,6 +18,7 @@ import 'package:appoint/widgets/navBar.dart';
 import 'package:badges/badges.dart';
 import 'package:flutter_cupertino_date_picker/flutter_cupertino_date_picker.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:location/location.dart';
 import 'package:redux/redux.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
@@ -29,15 +32,20 @@ class _AppointmentPageState extends State<AppointmentPage> {
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
       converter: (store) => _ViewModel.fromState(store),
-      onInit: (store) => store.dispatch(LoadAppointmentsAction()),
+      onInit: (store) {
+        store.dispatch(LoadAppointmentsAction());
+        if (store.state.userViewModel.currentLocation == null) {
+          store.dispatch(LoadUserLocationAction());
+        }
+      },
       builder: (context, vm) => Scaffold(
-            appBar: _buildNavBar(),
-            body: vm.appointmentsViewModel.isLoading
-                ? _buildLoading()
-                : vm.appointmentsViewModel.appointments.length == 0
-                    ? _buildEmptyList()
-                    : _buildAppointmentsList(vm),
-          ),
+        appBar: _buildNavBar(),
+        body: vm.appointmentsViewModel.isLoading
+            ? _buildLoading()
+            : vm.appointmentsViewModel.appointments.length == 0
+                ? _buildEmptyList()
+                : _buildAppointmentsList(vm),
+      ),
     );
   }
 
@@ -46,23 +54,23 @@ class _AppointmentPageState extends State<AppointmentPage> {
   Widget _buildAppointmentsList(_ViewModel vm) {
     final List<Day<Appoint>> days =
         groupAppointmentsByDate(vm.appointmentsViewModel.appointments);
-    
+
     //filter next Appointment
     final Appoint upcomingAppointment = days[0].events[0];
     days[0].events.removeAt(0);
     if (days[0].events.length == 0) {
       days.remove(0);
     }
-    
+
     days.forEach((d) => listElements.add(
         _ListHeader(childrenCount: d.events.length, value: d.date.toUtc())));
 
     final List<Widget> slivers = List<Widget>();
     days.asMap().forEach((index, day) =>
-        slivers.addAll(_buildHeaderBuilderLists(context, index, 1, day)));
+        slivers.addAll(_buildHeaderBuilderLists(context, index, 1, day, vm.location)));
     return Column(
       children: <Widget>[
-        _buildUpcomingEventDescription(upcomingAppointment),
+        _buildUpcomingEventDescription(upcomingAppointment, vm),
         _buildUpcomingAppointment(upcomingAppointment),
         Expanded(
           child: CupertinoScrollbar(
@@ -77,38 +85,46 @@ class _AppointmentPageState extends State<AppointmentPage> {
     );
   }
 
-  Padding _buildUpcomingEventDescription(Appoint upcomingAppointment) {
+  Padding _buildUpcomingEventDescription(
+      Appoint upcomingAppointment, _ViewModel vm) {
     return Padding(
-        padding: const EdgeInsets.only(left: 8.0, right: 8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Text("Termin in ${Parse.convertDateDifferenceToReadable(DateTime.now(), upcomingAppointment.period.start)}:", style: TextStyle(fontSize: 18),),
-            CupertinoButton(
-              padding: EdgeInsets.zero,
-              child: Row(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: Icon(Icons.map),
-                  ),
-                  Text("Route"),
-                ],
-              ),
-              onPressed: () {},
+      padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Text(
+            "Termin in ${Parse.convertDateDifferenceToReadable(DateTime.now(), upcomingAppointment.period.start)}:",
+            style: TextStyle(fontSize: 18),
+          ),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            child: Row(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: Icon(Icons.map),
+                ),
+                Text("Route"),
+              ],
             ),
-          ],
-        ),
-      );
+            onPressed: () => UrlScheme.buildRouteCupertinoActionSheet(
+                context,
+                vm.location.latitude,
+                vm.location.longitude,
+                upcomingAppointment.company.address.latitude,
+                upcomingAppointment.company.address.longitude),
+          ),
+        ],
+      ),
+    );
   }
 
   Padding _buildUpcomingAppointment(Appoint upcomingAppointment) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 0, 8, 8),
       child: GestureDetector(
-        onTap: () => Navigator.pushNamed(
-                      context, AppointmentDetails.routeName,
-                      arguments: upcomingAppointment),
+        onTap: () => Navigator.pushNamed(context, AppointmentDetails.routeName,
+            arguments: upcomingAppointment),
         child: Container(
           padding: EdgeInsets.all(4.0),
           height: 68,
@@ -174,23 +190,24 @@ class _AppointmentPageState extends State<AppointmentPage> {
   }
 
   List<Widget> _buildHeaderBuilderLists(
-      BuildContext context, int firstIndex, int count, Day<Appoint> day) {
+      BuildContext context, int firstIndex, int count, Day<Appoint> day, LocationData userLocation) {
     return List.generate(count, (sliverIndex) {
       sliverIndex += firstIndex;
       return new SliverStickyHeaderBuilder(
         builder: (context, state) => AnimatedListHeader(
-              onTap: () => listHeaderTap(day),
-              start: day.date,
-              state: state,
-            ),
+          onTap: () => listHeaderTap(day),
+          start: day.date,
+          state: state,
+        ),
         sliver: new SliverList(
           delegate: new SliverChildBuilderDelegate(
             (context, i) => AppointmentTile(
-                  appoint: day.events[i],
-                  onTap: () => Navigator.pushNamed(
-                      context, AppointmentDetails.routeName,
-                      arguments: day.events[i]),
-                ),
+              appoint: day.events[i],
+              userLocation: userLocation,
+              onTap: () => Navigator.pushNamed(
+                  context, AppointmentDetails.routeName,
+                  arguments: day.events[i]),
+            ),
             childCount: day.events.length,
           ),
         ),
@@ -230,12 +247,13 @@ class _AppointmentPageState extends State<AppointmentPage> {
             textAlign: TextAlign.center,
           ),
           FlatButton(
-            child: Text("Jetzt Termin vereinbaren"),
+            child: Text("Jetzt Termin vereinbaren",
+                style: TextStyle(
+                    color: Theme.of(context).primaryColor, fontSize: 20)),
             onPressed: () => showCupertinoModalPopup(
-                  context: context,
-                  builder: (BuildContext context) =>
-                      AddAppoint(isEditing: false),
-                ),
+              context: context,
+              builder: (BuildContext context) => AddAppoint(isEditing: false),
+            ),
           ),
         ],
       ),
@@ -271,9 +289,9 @@ class _AppointmentPageState extends State<AppointmentPage> {
             icon: Icon(CupertinoIcons.profile_circled),
             color: Theme.of(context).primaryColor,
             onPressed: () => showCupertinoModalPopup(
-                  context: context,
-                  builder: (context) => ProfilePage(),
-                ),
+              context: context,
+              builder: (context) => ProfilePage(),
+            ),
           ),
         ],
       ),
@@ -318,11 +336,18 @@ class _AppointmentPageState extends State<AppointmentPage> {
 
 class _ViewModel {
   final AppointmentsViewModel appointmentsViewModel;
+  final LocationData location;
 
-  _ViewModel({this.appointmentsViewModel});
+  _ViewModel({
+    this.appointmentsViewModel,
+    this.location,
+  });
 
   static _ViewModel fromState(Store<AppState> store) {
-    return _ViewModel(appointmentsViewModel: store.state.appointmentsViewModel);
+    return _ViewModel(
+      appointmentsViewModel: store.state.appointmentsViewModel,
+      location: store.state.userViewModel.currentLocation,
+    );
   }
 }
 

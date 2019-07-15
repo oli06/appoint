@@ -6,8 +6,8 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
 
-// String url = 'https://23e51889.ngrok.io';
-String url = 'http://localhost:8000';
+String url = 'https://15a05228.ngrok.io';
+//String url = 'http://localhost:8000';
 
 class Api {
   Future<List<Company>> getCompanies() async {
