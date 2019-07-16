@@ -144,8 +144,11 @@ class _CompanyPageState extends State<CompanyPage>
       itemBuilder: (context, index, cpy) {
         return CompanyTile(
           company: cpy,
-          onTap: () => Navigator.pushNamed(context, CompanyDetails.routeName,
-              arguments: cpy),
+          onTap: () => Navigator.pushNamed(
+            context,
+            CompanyDetails.routeName,
+            arguments: cpy,
+          ),
         );
       },
     );

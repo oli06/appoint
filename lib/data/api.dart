@@ -33,6 +33,57 @@ class Api {
     return false;
   }
 
+  Future<bool> removeUserFavorites(
+      int userId, List<int> favoriteCompanyIds) async {
+    //theres is no multi http-delete, which is why we use http.post and list the ids inside body
+    final response = await http.post('$url/user/$userId/companyfavorites/delete',
+        body: json.encode({
+          'data': {
+            'ids': [favoriteCompanyIds],
+          }
+        }));
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    }
+
+    return false;
+  }
+
+    Future<bool> addUserFavorite(
+      int userId, int favoriteCompanyIds) async {
+    final response = await http.post('$url/user/$userId/companyfavorites',
+        body: json.encode({
+          'data': {
+            'ids': [favoriteCompanyIds],
+          }
+        }));
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    }
+
+    return false;
+  }
+
+  Future<List<Company>> getUserFavorites(List<int> companyIds) async {
+    //FIXME: Mock Server cant handle ?id=xxx
+    //thats why we use /compfav till then
+    //format should be: $url/companies?id=1,2,3
+    String ids = "id=";
+    companyIds.forEach((id) => ids += "$id,");
+    ids = ids.substring(0, ids.length - 1); //removing last ','
+
+    final response = await http.get('$url/compfav');
+
+    if (response.statusCode == 200) {
+      List<dynamic> list = json.decode(response.body);
+      return list.map((model) => Company.fromJson(model)).toList();
+    }
+
+    return [];
+  }
+
   Future<User> getUser() async {
     final response = await http.get('$url/user/1');
 

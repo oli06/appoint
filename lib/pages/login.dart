@@ -107,7 +107,9 @@ class _LoginState extends State<Login> {
                                               hintText: "Benutzername",
                                               suffixIcon: IconButton(
                                                   icon: Icon(
-                                                      CupertinoIcons.clear),
+                                                    CupertinoIcons.clear,
+                                                    size: 32,
+                                                  ),
                                                   onPressed: () =>
                                                       _usernameController.text =
                                                           ""),
@@ -149,14 +151,16 @@ class _LoginState extends State<Login> {
                                             if (_formKey.currentState
                                                 .validate())
                                               Navigator.pushReplacementNamed(
-                                                  context, "/app");
+                                                  context, "app");
                                             //TODO auth
                                           },
                                           decoration: InputDecoration(
                                             hintText: "Passwort",
                                             suffixIcon: IconButton(
-                                                icon:
-                                                    Icon(CupertinoIcons.clear),
+                                                icon: Icon(
+                                                  CupertinoIcons.clear,
+                                                  size: 32,
+                                                ),
                                                 onPressed: () =>
                                                     _passwordController.text =
                                                         ""),
@@ -169,14 +173,14 @@ class _LoginState extends State<Login> {
                               ),
                               FlatButton(
                                 textColor: Color(0xff333f52),
-                                color: Color(0xff1991eb),
                                 child: Text(
                                   "Einloggen",
                                   style: TextStyle(fontSize: 17),
                                 ),
                                 onPressed: () {
                                   if (_formKey.currentState.validate())
-                                    Navigator.pushReplacementNamed(context, "/app");
+                                    Navigator.pushReplacementNamed(
+                                        context, "app");
                                   //TODO auth
                                 },
                               ),

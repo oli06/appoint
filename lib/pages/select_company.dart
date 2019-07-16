@@ -80,6 +80,7 @@ class SelectCompanyState extends State<SelectCompany>
       Navigator.pop(context, cpy);
     };
     return CompanyTile(
+      isStatic: true,
       company: cpy,
       onTap: onTap,
     );

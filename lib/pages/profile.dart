@@ -1,5 +1,6 @@
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/models/app_state.dart';
+import 'package:appoint/pages/favorites.dart';
 import 'package:appoint/view_models/user_vm.dart';
 import 'package:appoint/widgets/dialog.dart' as appoint;
 import 'package:code_input/code_input.dart' as pubdev;
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:appoint/widgets/navBar.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfilePage extends StatelessWidget {
   @override
@@ -29,7 +31,7 @@ class ProfilePage extends StatelessWidget {
                 SizedBox(
                   height: 20,
                 ),
-                _buildListView(),
+                _buildListView(context),
                 Container(
                   child: Expanded(
                     child: Align(
@@ -117,7 +119,7 @@ class ProfilePage extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
             child: Text(
-              "Durch die Verifizierung ihrer Person erhalten Sie die Möglichkeit, Termine mit noch mehr Unternehmen zu vereinbaren. Gleichzeitig bietet die Verifizeriung den Unternehmen eine zusätliche Terminsicherheit bei der Planung.",
+              "Durch die Verifizierung erhalten Sie die Möglichkeit, Termine mit noch mehr Unternehmen zu vereinbaren. Gleichzeitig bietet die Verifizeriung eine höhere Vertrauenswürdigkeit gegenüber den Unternehmen.",
               style: TextStyle(color: Colors.grey, fontSize: 14),
             ),
           ),
@@ -186,7 +188,7 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildListView() {
+  Widget _buildListView(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: Column(
@@ -194,9 +196,7 @@ class ProfilePage extends StatelessWidget {
           ListTile(
             title: Text("Favoriten"),
             trailing: Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              //TODO:
-            },
+            onTap: () => Navigator.pushNamed(context, FavoritesPage.routeName),
           ),
           Divider(height: 1),
           ListTile(
@@ -210,18 +210,14 @@ class ProfilePage extends StatelessWidget {
           ListTile(
             title: Text("Tutorial"),
             trailing: Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              //TODO:
-            },
+            onTap: null,
           ),
           Divider(height: 1),
           ListTile(
-            title: Text("Über uns"),
-            trailing: Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              //TODO:
-            },
-          ),
+              title: Text("Über uns"),
+              trailing: Icon(Icons.arrow_forward_ios),
+              //TODO: about-us url
+              onTap: () => launch("https://www.example.com/about-us")),
           Divider(height: 1),
         ],
       ),

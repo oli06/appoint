@@ -1,13 +1,16 @@
 import 'package:appoint/home.dart';
 import 'package:appoint/pages/appointment_details.dart';
 import 'package:appoint/pages/company_details.dart';
+import 'package:appoint/pages/favorites.dart';
 import 'package:appoint/pages/login.dart';
 import 'package:appoint/pages/signup.dart';
 
 final routes = {
-  '/signup': (context) => SignUp(),
-  '/app': (context) => HomePage(),
-  '/': (context) => Login(),
+  'signup': (context) => SignUp(),
+  'login': (context) => Login(),
   CompanyDetails.routeName: (context) => CompanyDetails(),
   AppointmentDetails.routeName: (context) => AppointmentDetails(),
+  FavoritesPage.routeName: (context) => FavoritesPage(),
+  'app': (context) => HomePage(),
+
 };

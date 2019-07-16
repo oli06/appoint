@@ -1,5 +1,6 @@
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/models/appoint.dart';
+import 'package:appoint/pages/add_appoint.dart';
 import 'package:appoint/utils/ios_url_scheme.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:appoint/widgets/company_tile.dart';
@@ -47,6 +48,7 @@ class AppointmentDetails extends StatelessWidget {
                       _buildDivider(),
                       CompanyTile(
                         company: appointment.company,
+                        isStatic: true,
                       ),
                     ],
                   ),
@@ -192,7 +194,13 @@ class AppointmentDetails extends StatelessWidget {
                 Text("Verschieben"),
               ],
             ),
-            onPressed: () {},
+            onPressed: () => showCupertinoModalPopup(
+              context: context,
+              builder: (context) => AddAppoint(
+                isEditing: true,
+                appoint: appoint,
+              ),
+            ),
           ),
         ],
       ),

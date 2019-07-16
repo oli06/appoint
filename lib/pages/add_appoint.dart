@@ -159,7 +159,7 @@ class AddAppointState extends State<AddAppoint>
 
   Widget buildNavBar(_ViewModel vm) {
     return NavBar(
-      "Neuer Termin",
+      isEditing ? "Bearbeiten" : "Neuer Termin",
       height: 57,
       leadingWidget: IconButton(
         icon: Icon(Icons.close),
@@ -180,10 +180,12 @@ class AddAppointState extends State<AddAppoint>
         onPressed: _isValid()
             ? () {
                 vm.saveAppoint(Appoint(
-                    title: _title,
-                    company: _company,
-                    period: _period,
-                    description: _description));
+                  id: isEditing ? widget.appoint.id : null,
+                  title: _title,
+                  company: _company,
+                  period: _period,
+                  description: _description,
+                ));
                 Navigator.pop(context);
               }
             : null,
@@ -277,9 +279,13 @@ class AddAppointState extends State<AddAppoint>
                       onPressed: companyTap,
                     ),
                   )
-                : CompanyTile(
-                    company: _company,
-                    onTap: companyTap,
+                : Container(
+                    color: isEditing ? Colors.grey[350] : null,
+                    child: CompanyTile(
+                      isStatic: true,
+                      company: _company,
+                      onTap: isEditing ? null : companyTap,
+                    ),
                   ),
           ],
         ),
@@ -331,7 +337,8 @@ class AddAppointState extends State<AddAppoint>
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
                                 children: <Widget>[
-                                  IconCircleGradient.periodIndicator(_period.duration.inMinutes / 60),
+                                  IconCircleGradient.periodIndicator(
+                                      _period.duration.inMinutes / 60),
                                   Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Text(
@@ -393,15 +400,17 @@ class AddAppointState extends State<AddAppoint>
   void _selectPeriodPressed() => showCupertinoModalPopup(
         context: context,
         builder: (context) => SelectPeriod(
-              companyId: _company.id,
-            ),
-      ).then((selectedPeriod) {
-        if (selectedPeriod != null) {
-          setState(() {
-            _period = selectedPeriod;
-          });
-        }
-      });
+          companyId: _company.id,
+        ),
+      ).then(
+        (selectedPeriod) {
+          if (selectedPeriod != null) {
+            setState(() {
+              _period = selectedPeriod;
+            });
+          }
+        },
+      );
 }
 
 class _ViewModel {

@@ -1,5 +1,6 @@
 import 'package:appoint/actions/appointments_action.dart';
 import 'package:appoint/actions/companies_action.dart';
+import 'package:appoint/actions/favorites_action.dart';
 import 'package:appoint/actions/select_period_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/data/api.dart';
@@ -18,6 +19,9 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
   final loadUser = _createLoadUser(api);
   final verifyUser = _createUserVerifcation(api);
   final loadUserLocation = _createLoadUserLocation();
+  final loadUserFavorites = _createLoadUserFavorites(api);
+  final removeUserFavorites = _createRemoveFromUserFavorites(api);
+  final addUserFavorite = _createAddToUserFavorites(api);
 
   return [
     TypedMiddleware<AppState, LoadCompaniesAction>(loadCompanies),
@@ -26,6 +30,9 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
     TypedMiddleware<AppState, LoadUserAction>(loadUser),
     TypedMiddleware<AppState, VerifyUserAction>(verifyUser),
     TypedMiddleware<AppState, LoadUserLocationAction>(loadUserLocation),
+    TypedMiddleware<AppState, LoadFavoritesAction>(loadUserFavorites),
+    TypedMiddleware<AppState, RemoveFromUserFavoritesAction>(removeUserFavorites),
+    TypedMiddleware<AppState, AddToUserFavoritesAction>(addUserFavorite),
   ];
 }
 
@@ -126,8 +133,46 @@ Middleware<AppState> _createLoadUser(Api api) {
 Middleware<AppState> _createLoadUserLocation() {
   return (Store<AppState> store, action, next) {
     final locator = Location();
-    locator.getLocation().then((pos) => store.dispatch(LoadedUserLocationAction(pos)));
+    locator
+        .getLocation()
+        .then((pos) => store.dispatch(LoadedUserLocationAction(pos)));
 
+    next(action);
+  };
+}
+
+Middleware<AppState> _createLoadUserFavorites(Api api) {
+  return (Store<AppState> store, action, next) {
+    if (action.favoriteIds.length == 0) {
+      store.dispatch(LoadedFavoritesAction([]));
+    } else {
+      store.dispatch(UpdateIsLoadingFavoritesAction(true));
+      api.getUserFavorites(action.favoriteIds).then((result) {
+        store.dispatch(LoadedFavoritesAction(result));
+        store.dispatch(UpdateIsLoadingFavoritesAction(false));
+      });
+    }
+
+    next(action);
+  };
+}
+
+Middleware<AppState> _createRemoveFromUserFavorites(Api api) {
+  return (Store<AppState> store, action, next) {
+    api.removeUserFavorites(action.userId, action.companyIds).then((res) {
+      //TODO: use user.favorites stream to reload them 
+    });
+    
+    next(action);
+  };
+}
+
+Middleware<AppState> _createAddToUserFavorites(Api api) {
+  return (Store<AppState> store, action, next) {
+    api.addUserFavorite(action.userId, action.companyId).then((res) {
+      //TODO: use user.favorites stream to reload them 
+    });
+    
     next(action);
   };
 }

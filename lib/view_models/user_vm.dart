@@ -7,5 +7,9 @@ class UserViewModel {
 
   final LocationData currentLocation;
 
-  const UserViewModel({this.user, this.isLoading, this.currentLocation});
+  const UserViewModel({
+    this.user,
+    this.isLoading,
+    this.currentLocation,
+  });
 }

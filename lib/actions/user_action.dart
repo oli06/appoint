@@ -28,10 +28,24 @@ class UpdateUserLoadingAction {
   UpdateUserLoadingAction(this.isLoading);
 }
 
-class LoadUserLocationAction { }
+class LoadUserLocationAction {}
 
 class LoadedUserLocationAction {
   final LocationData location;
 
   LoadedUserLocationAction(this.location);
+}
+
+class RemoveFromUserFavoritesAction {
+  final List<int> companyIds;
+  final int userId;
+
+  RemoveFromUserFavoritesAction(this.companyIds, this.userId);
+}
+
+class AddToUserFavoritesAction {
+  final int companyId;
+  final int userId;
+
+  AddToUserFavoritesAction(this.companyId, this.userId);
 }

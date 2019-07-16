@@ -1,9 +1,13 @@
+import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/assets/company_icons_icons.dart';
+import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/company.dart';
 import 'package:appoint/utils/ios_url_scheme.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux/redux.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CompanyDetails extends StatelessWidget {
@@ -77,8 +81,7 @@ class CompanyDetails extends StatelessWidget {
               SizedBox(height: 5),
               GestureDetector(
                 onTap: () {
-                  final noSpacePhoneNumber =
-                      UrlScheme.getTelUrl(company.phone);
+                  final noSpacePhoneNumber = UrlScheme.getTelUrl(company.phone);
                   canLaunch(noSpacePhoneNumber).then((result) {
                     if (result) {
                       launch(noSpacePhoneNumber);
@@ -114,7 +117,6 @@ class CompanyDetails extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
       child: Row(
-
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           CupertinoButton(
@@ -127,21 +129,59 @@ class CompanyDetails extends StatelessWidget {
             ),
             onPressed: () {},
           ),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            child: Row(
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(right: 2.0),
-                  child: Icon(CompanyIcons.heart_empty),
-                ),
-                Text("Zu Favoriten"),
-              ],
+          StoreConnector<AppState, _ViewModel>(
+            converter: (store) => _ViewModel.fromState(store),
+            builder: (context, vm) => vm.userFavoriteIds.contains(company.id) ? CupertinoButton(
+              padding: EdgeInsets.zero,
+              child: Row(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(right: 2.0),
+                    child: Icon(CompanyIcons.heart),
+                  ),
+                  Text("Aus Favoriten entfernen"),
+                ],
+              ),
+              onPressed: () => vm.removeFromFavorites(company.id),
+            ) : CupertinoButton(
+              padding: EdgeInsets.zero,
+              child: Row(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(right: 2.0),
+                    child: Icon(CompanyIcons.heart_empty),
+                  ),
+                  Text("Zu Favoriten hinzufügen"),
+                ],
+              ),
+              onPressed: () => vm.addToFavorites(company.id),
             ),
-            onPressed: () {},
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ViewModel {
+  final List<int> userFavoriteIds;
+  final Function(int companyId) removeFromFavorites;
+  final Function(int companyId) addToFavorites;
+
+  _ViewModel({
+    this.userFavoriteIds,
+    this.removeFromFavorites,
+    this.addToFavorites,
+  });
+
+  static _ViewModel fromState(Store<AppState> store) {
+    return _ViewModel(
+      userFavoriteIds: store.state.userViewModel.user.companyFavorites,
+      removeFromFavorites: (companyId) => store.dispatch(
+          RemoveFromUserFavoritesAction(
+              [companyId], store.state.userViewModel.user.id)),
+      addToFavorites: (companyId) => store.dispatch(AddToUserFavoritesAction(
+          companyId, store.state.userViewModel.user.id)),
     );
   }
 }
