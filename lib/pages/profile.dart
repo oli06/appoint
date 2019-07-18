@@ -1,6 +1,7 @@
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/pages/favorites.dart';
+import 'package:appoint/pages/login.dart';
 import 'package:appoint/view_models/user_vm.dart';
 import 'package:appoint/widgets/dialog.dart' as appoint;
 import 'package:code_input/code_input.dart' as pubdev;
@@ -148,6 +149,7 @@ class ProfilePage extends StatelessWidget {
                   child: Text("Ja, ausloggen"),
                   onPressed: () {
                     //TODO: logout
+                    Navigator.pushReplacementNamed(context, Login.namedRoute);
                   },
                 )
               ],

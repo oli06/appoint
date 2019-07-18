@@ -12,9 +12,10 @@ import 'package:redux_remote_devtools/redux_remote_devtools.dart';
 import 'package:redux_dev_tools/redux_dev_tools.dart';
 
 void main() async {
+    debugPaintSizeEnabled = false;
+
   /* var remoteDevtools = RemoteDevToolsMiddleware('0.0.0.0:8001');
 
-  debugPaintSizeEnabled = false;
   await remoteDevtools.connect(); */
   final store = DevToolsStore<AppState>(
     appReducer,

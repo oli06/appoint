@@ -9,6 +9,12 @@ class LoadedUserAction {
   LoadedUserAction(this.user);
 }
 
+class RegisterUserAction {
+  final User user;
+  
+  RegisterUserAction(this.user);
+}
+
 class VerifyUserAction {
   final int userId;
   final String verificationCode;

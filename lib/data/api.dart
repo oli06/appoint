@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
 
-String url = 'https://15a05228.ngrok.io';
+String url = 'https://4ea8a803.ngrok.io';
 //String url = 'http://localhost:8000';
 
 class Api {
@@ -33,14 +33,10 @@ class Api {
     return false;
   }
 
-  Future<bool> removeUserFavorites(
-      int userId, List<int> favoriteCompanyIds) async {
-    //theres is no multi http-delete, which is why we use http.post and list the ids inside body
-    final response = await http.post('$url/user/$userId/companyfavorites/delete',
+  Future<bool> registerUser(User user) async {
+    final response = await http.post('$url/users',
         body: json.encode({
-          'data': {
-            'ids': [favoriteCompanyIds],
-          }
+          'data': {'user': json.encode(user)}
         }));
 
     if (response.statusCode == 200) {
@@ -50,8 +46,38 @@ class Api {
     return false;
   }
 
-    Future<bool> addUserFavorite(
-      int userId, int favoriteCompanyIds) async {
+  Future<bool> loginUser(String username, String password) async {
+    final response = await http.post('$url/login',
+        body: json.encode({
+          'data': {'username': username, 'password': password}
+        }));
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    }
+
+    return false;
+  }
+
+  Future<bool> removeUserFavorites(
+      int userId, List<int> favoriteCompanyIds) async {
+    //theres is no multi http-delete, which is why we use http.post and list the ids inside body
+    final response =
+        await http.post('$url/user/$userId/companyfavorites/delete',
+            body: json.encode({
+              'data': {
+                'ids': [favoriteCompanyIds],
+              }
+            }));
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    }
+
+    return false;
+  }
+
+  Future<bool> addUserFavorite(int userId, int favoriteCompanyIds) async {
     final response = await http.post('$url/user/$userId/companyfavorites',
         body: json.encode({
           'data': {

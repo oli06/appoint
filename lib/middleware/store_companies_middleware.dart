@@ -22,6 +22,7 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
   final loadUserFavorites = _createLoadUserFavorites(api);
   final removeUserFavorites = _createRemoveFromUserFavorites(api);
   final addUserFavorite = _createAddToUserFavorites(api);
+  final signUpNewUser = _createRegisterUser(api);
 
   return [
     TypedMiddleware<AppState, LoadCompaniesAction>(loadCompanies),
@@ -33,6 +34,7 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
     TypedMiddleware<AppState, LoadFavoritesAction>(loadUserFavorites),
     TypedMiddleware<AppState, RemoveFromUserFavoritesAction>(removeUserFavorites),
     TypedMiddleware<AppState, AddToUserFavoritesAction>(addUserFavorite),
+    TypedMiddleware<AppState, RegisterUserAction>(signUpNewUser),
   ];
 }
 
@@ -56,6 +58,21 @@ Middleware<AppState> _createLoadAppointments(Api api) {
     api.getAppointments().then((appointments) {
       store.dispatch(LoadedAppointmentsAction(appointments));
       store.dispatch(UpdateAppointmentsIsLoadingAction(false));
+    });
+
+    next(action);
+  };
+}
+
+Middleware<AppState> _createRegisterUser(Api api) {
+  return (Store<AppState> store, action, NextDispatcher next) {
+
+    api.registerUser(action.user).then((result) {
+      if(result) {
+        print("created user with success");
+      } else {
+        print("failed user registration");
+      }
     });
 
     next(action);

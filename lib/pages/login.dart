@@ -1,7 +1,13 @@
+import 'package:appoint/pages/signup.dart';
+import 'package:appoint/widgets/form/form_button.dart';
+import 'package:appoint/widgets/form/text_button.dart';
+import 'package:appoint/widgets/form/appoint_input.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class Login extends StatefulWidget {
+  static final namedRoute = "login";
+  
   Login({Key key}) : super(key: key);
 
   _LoginState createState() => _LoginState();
@@ -10,14 +16,14 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  //final TextEditingController _usernameController = TextEditingController();
+  //final TextEditingController _passwordController = TextEditingController();
   final FocusNode _passwordFocus = FocusNode();
 
   @override
   void dispose() {
-    _usernameController.dispose();
-    _passwordController.dispose();
+/*     _usernameController.dispose();
+    _passwordController.dispose(); */
     _passwordFocus.dispose();
     super.dispose();
   }
@@ -35,166 +41,151 @@ class _LoginState extends State<Login> {
         backgroundColor: Colors.transparent,
         body: Column(
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(bottom: 100.0, top: 100),
+            _buildWelcomeHeader(),
+            _buildLoginForm(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Flexible _buildLoginForm(BuildContext context) {
+    return Flexible(
+      flex: 27,
+      child: Center(
+        child: Column(
+          children: <Widget>[
+            Container(
+              width: 350,
               child: Column(
                 children: <Widget>[
-                  Text(
-                    "Willkommen bei Appoint",
-                    style: TextStyle(
-                        color: Color(0xff333f52),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 22),
+                  Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: <Widget>[
+                            _buildUsernameInput(context),
+                            _buildPasswordInput(context),
+                            _buildLoginButton(context),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(15, 5, 15, 5),
-                    child: Text(
-                      "Melden Sie sich an oder registrieren Sie sich, um Termine erstellen zu können",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: Color(0xff333f52),
-                          fontWeight: FontWeight.w300,
-                          fontSize: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        _buildCreateAccount(context),
+                        _buildForgotPassword(context),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            Center(
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    width: 350,
-                    child: Card(
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5.0)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            children: <Widget>[
-                              Container(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(bottom: 8.0),
-                                  child: Row(
-                                    children: <Widget>[
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Icon(CupertinoIcons.person),
-                                      ),
-                                      Flexible(
-                                        child: Padding(
-                                          padding:
-                                              const EdgeInsets.only(right: 8.0),
-                                          child: TextFormField(
-                                            textInputAction:
-                                                TextInputAction.next,
-                                            onFieldSubmitted: (value) {
-                                              FocusScope.of(context)
-                                                  .requestFocus(_passwordFocus);
-                                            },
-                                            validator: (value) {
-                                              if (value.isEmpty) {
-                                                return "Benutzername fehlt";
-                                              }
-                                              return null;
-                                            },
-                                            style: TextStyle(fontSize: 18),
-                                            controller: _usernameController,
-                                            decoration: InputDecoration(
-                                              hintText: "Benutzername",
-                                              suffixIcon: IconButton(
-                                                  icon: Icon(
-                                                    CupertinoIcons.clear,
-                                                    size: 32,
-                                                  ),
-                                                  onPressed: () =>
-                                                      _usernameController.text =
-                                                          ""),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
-                                child: Row(
-                                  children: <Widget>[
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Icon(
-                                          CupertinoIcons.getIconData(0xf4c8)),
-                                    ),
-                                    Flexible(
-                                      child: Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 8.0),
-                                        child: TextFormField(
-                                          obscureText: true,
-                                          controller: _passwordController,
-                                          validator: (value) {
-                                            if (value.isEmpty) {
-                                              return "Passwort fehlt";
-                                            }
-
-                                            return null;
-                                          },
-                                          style: TextStyle(fontSize: 18),
-                                          focusNode: _passwordFocus,
-                                          textInputAction: TextInputAction.go,
-                                          onFieldSubmitted: (_) {
-                                            if (_formKey.currentState
-                                                .validate())
-                                              Navigator.pushReplacementNamed(
-                                                  context, "app");
-                                            //TODO auth
-                                          },
-                                          decoration: InputDecoration(
-                                            hintText: "Passwort",
-                                            suffixIcon: IconButton(
-                                                icon: Icon(
-                                                  CupertinoIcons.clear,
-                                                  size: 32,
-                                                ),
-                                                onPressed: () =>
-                                                    _passwordController.text =
-                                                        ""),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              FlatButton(
-                                textColor: Color(0xff333f52),
-                                child: Text(
-                                  "Einloggen",
-                                  style: TextStyle(fontSize: 17),
-                                ),
-                                onPressed: () {
-                                  if (_formKey.currentState.validate())
-                                    Navigator.pushReplacementNamed(
-                                        context, "app");
-                                  //TODO auth
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            )
           ],
         ),
+      ),
+    );
+  }
+
+  AppointFormInput _buildPasswordInput(BuildContext context) {
+    return AppointFormInput(
+      //controller: _passwordController,
+      hintText: "Passwort",
+      errorText: "Passwort fehlt",
+      focusNode: _passwordFocus,
+      action: TextInputAction.go,
+      leadingWidget: Icon(CupertinoIcons.getIconData(0xf4c8)),
+      obscureText: true,
+      onFieldSubmitted: (_) {
+        if (_formKey.currentState.validate())
+          Navigator.pushReplacementNamed(context, "app");
+        //TODO auth
+      },
+    );
+  }
+
+  AppointFormInput _buildUsernameInput(BuildContext context) {
+    return AppointFormInput(
+      focusNode: null,
+      onFieldSubmitted: (String value) =>
+          FocusScope.of(context).requestFocus(_passwordFocus),
+      hintText: "Benutzername",
+      errorText: "Benutzername fehlt",
+      //controller: _usernameController,
+    );
+  }
+
+  Row _buildLoginButton(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 0),
+            child: FormButton(
+              text: "Einloggen",
+              onPressed: () {
+                if (_formKey.currentState.validate())
+                  Navigator.pushReplacementNamed(context, "app");
+                //TODO auth
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCreateAccount(BuildContext context) {
+    return new TextButton(
+      onTap: () => Navigator.pushReplacementNamed(context, SignUp.routeName),
+      text: "Account erstellen",
+    );
+  }
+
+  Widget _buildForgotPassword(BuildContext context) {
+    return TextButton(
+      onTap: () {
+        print("forgot pw");
+        //TODO: forgot pw
+      },
+      text: "Passwort vergessen?",
+    );
+  }
+
+  Flexible _buildWelcomeHeader() {
+    return Flexible(
+      flex: 8,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            "Willkommen bei Appoint",
+            style: TextStyle(
+                color: Color(0xff333f52),
+                fontWeight: FontWeight.bold,
+                fontSize: 22),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(15, 5, 15, 5),
+            child: Text(
+              "Melden Sie sich an oder registrieren Sie sich, um Termine erstellen zu können",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Color(0xff333f52),
+                  fontWeight: FontWeight.w300,
+                  fontSize: 16),
+            ),
+          ),
+        ],
       ),
     );
   }

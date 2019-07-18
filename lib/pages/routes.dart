@@ -6,8 +6,8 @@ import 'package:appoint/pages/login.dart';
 import 'package:appoint/pages/signup.dart';
 
 final routes = {
-  'signup': (context) => SignUp(),
-  'login': (context) => Login(),
+  SignUp.routeName: (context) => SignUp(),
+  Login.namedRoute: (context) => Login(),
   CompanyDetails.routeName: (context) => CompanyDetails(),
   AppointmentDetails.routeName: (context) => AppointmentDetails(),
   FavoritesPage.routeName: (context) => FavoritesPage(),

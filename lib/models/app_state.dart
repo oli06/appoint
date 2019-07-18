@@ -4,6 +4,7 @@ import 'package:appoint/view_models/appointments_vm.dart';
 import 'package:appoint/view_models/favorites_vm.dart';
 import 'package:appoint/view_models/select_company_vm.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
+import 'package:appoint/view_models/signin_vm.dart';
 import 'package:appoint/view_models/user_vm.dart';
 
 class AppState {
@@ -13,6 +14,7 @@ class AppState {
   final AppointmentsViewModel appointmentsViewModel;
   final UserViewModel userViewModel;
   final FavoritesViewModel favoritesViewModel;
+  //final SignInViewModel signInViewModel;
 
   AppState({
     this.selectCompanyViewModel = const SelectCompanyViewModel(),
@@ -21,6 +23,7 @@ class AppState {
     this.appointmentsViewModel = const AppointmentsViewModel(),
     this.userViewModel = const UserViewModel(),
     this.favoritesViewModel = const FavoritesViewModel(),
+    //this.signInViewModel = const SignInViewModel(),
   });
 
   factory AppState.initState() => AppState(
@@ -36,8 +39,9 @@ class AppState {
         ),
         appointmentsViewModel: AppointmentsViewModel(isLoading: true),
         userViewModel: UserViewModel(isLoading: true),
-        favoritesViewModel:
-            FavoritesViewModel(isLoading: true, isEditing: false, selectedFavorites: []),
+        favoritesViewModel: FavoritesViewModel(
+            isLoading: true, isEditing: false, selectedFavorites: []),
+        //signInViewModel: SignInViewModel(isLoading: true),
       );
 }
 

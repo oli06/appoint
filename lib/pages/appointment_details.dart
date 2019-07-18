@@ -12,8 +12,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:location/location.dart';
-import 'package:redux/redux.dart' as prefix0;
-import 'package:url_launcher/url_launcher.dart';
+import 'package:redux/redux.dart' as redux;
 
 class AppointmentDetails extends StatelessWidget {
   static const routeName = '/appointment_details';
@@ -228,7 +227,7 @@ class _ViewModel {
 
   _ViewModel({this.location, this.requestUserLocation});
 
-  static _ViewModel fromState(prefix0.Store<AppState> store) {
+  static _ViewModel fromState(redux.Store<AppState> store) {
     return _ViewModel(
         location: store.state.userViewModel.currentLocation,
         requestUserLocation: () => store.dispatch(LoadUserLocationAction()));
