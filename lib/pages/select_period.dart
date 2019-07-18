@@ -143,6 +143,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
             vm.selectPeriodViewModel.periodModel.mode == SelectedPeriodMode.DATE
                 ? "dd-MMMM-yyyy"
                 : "HH:mm",
+                minuteDivider: 15,
         onConfirm: (value, _) {
           if (vm.selectPeriodViewModel.periodModel.mode ==
               SelectedPeriodMode.TIME) {
