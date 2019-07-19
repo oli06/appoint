@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:appoint/actions/add_appoint_action.dart';
 import 'package:appoint/actions/appointments_action.dart';
+import 'package:appoint/utils/calendar.dart';
 import 'package:appoint/view_models/add_appoint_vm.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/appoint.dart';
@@ -186,6 +187,10 @@ class AddAppointState extends State<AddAppoint>
                   period: _period,
                   description: _description,
                 ));
+
+                //TODO: FIXME: calendarId from Redux Store
+                Calendar().createNativeCalendarEvent("", _period.start, _title,
+                    _period.duration, _description, _company.address);
                 Navigator.pop(context);
               }
             : null,
