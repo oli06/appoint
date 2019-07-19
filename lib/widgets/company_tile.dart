@@ -2,8 +2,8 @@ import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/assets/company_icons_icons.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/company.dart';
+import 'package:appoint/utils/distance.dart';
 import 'package:appoint/utils/ios_url_scheme.dart';
-import 'package:appoint/utils/parse.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -108,7 +108,7 @@ class CompanyTile extends StatelessWidget {
                     children: <Widget>[
                       Icon(Icons.compare_arrows),
                       Text(
-                          "${Parse.calculateDistanceBetweenCoordinates(vm.userLocation.latitude, vm.userLocation.longitude, company.address.latitude, company.address.longitude).toStringAsFixed(1)}"),
+                          "${DistanceUtil.calculateDistanceBetweenCoordinates(vm.userLocation.latitude, vm.userLocation.longitude, company.address.latitude, company.address.longitude).toStringAsFixed(1)}"),
                     ],
                   ),
               ],

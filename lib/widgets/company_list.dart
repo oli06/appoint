@@ -7,13 +7,19 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:location/location.dart';
 import 'package:redux/redux.dart';
 
 class CompanyList extends StatefulWidget {
   final Widget Function(BuildContext context, int index, Company cpy)
       itemBuilder;
+  final bool filterWithRange;
+  final bool filterWithVisibility;
 
-  CompanyList({@required this.itemBuilder});
+  CompanyList(
+      {@required this.itemBuilder,
+      this.filterWithRange = false,
+      this.filterWithVisibility = false});
 
   @override
   _CompanyListState createState() => _CompanyListState();
@@ -33,12 +39,21 @@ class _CompanyListState extends State<CompanyList> {
             return _buildEmptyList();
           } else
             return _buildCompanyList(
-              companiesCategoryFilterSelector(
-                  companiesVisibilityFilterSelector(
-                    vm.selectCompanyViewModel.companies,
-                    vm.selectCompanyViewModel.companyVisibilityFilter,
-                  ),
-                  vm.selectCompanyViewModel.categoryFilter),
+              companiesRangeFilter(
+                  companiesCategoryFilterSelector(
+                      companiesVisibilityFilterSelector(
+                        vm.selectCompanyViewModel.companies,
+                        widget.filterWithVisibility
+                            ? vm.selectCompanyViewModel.companyVisibilityFilter
+                            : CompanyVisibilityFilter.all,
+                        vm.companyFavorites,
+                      ),
+                      vm.selectCompanyViewModel.categoryFilter),
+                  widget.filterWithRange
+                      ? vm.selectCompanyViewModel.rangeFilter
+                      : null,
+                  vm.userLocation.latitude,
+                  vm.userLocation.longitude),
             );
         });
   }
@@ -107,12 +122,20 @@ class _CompanyListState extends State<CompanyList> {
 
 class _ViewModel {
   final SelectCompanyViewModel selectCompanyViewModel;
+  final List<int> companyFavorites;
+  final LocationData userLocation;
 
-  _ViewModel({@required this.selectCompanyViewModel});
+  _ViewModel({
+    @required this.selectCompanyViewModel,
+    this.companyFavorites,
+    this.userLocation,
+  });
 
   static _ViewModel fromStore(Store<AppState> store) {
     return _ViewModel(
       selectCompanyViewModel: store.state.selectCompanyViewModel,
+      companyFavorites: store.state.userViewModel.user.companyFavorites,
+      userLocation: store.state.userViewModel.currentLocation,
     );
   }
 }
