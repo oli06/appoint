@@ -33,6 +33,17 @@ class Api {
     return false;
   }
 
+  Future<List<Period>> getPeriodsForMonth(int companyId) async {
+    final response = await http.get("$url/company/$companyId/periods/");
+
+    if (response.statusCode == 200) {
+      List<dynamic> list = json.decode(response.body);
+      return list.map((entry) => Period.fromJson(entry)).toList();
+    }
+
+    return [];
+  }
+
   Future<bool> registerUser(User user) async {
     final response = await http.post('$url/users',
         body: json.encode({

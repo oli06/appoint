@@ -50,7 +50,7 @@ class MyApp extends StatelessWidget {
         converter: (store) => _ViewModel.fromState(store),
         onInit: (store) => store.dispatch(LoadUserAction()),
         builder: (context, vm) => MaterialApp(
-              initialRoute: "login",
+              initialRoute: "app",
               routes: routes,
               theme: theme,
               title: "Appoint",

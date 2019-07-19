@@ -25,7 +25,7 @@ class PeriodTile extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
-                  "${Parse.hoursWithMinutes.format(period.start.toUtc())} - ${Parse.hoursWithMinutes.format(period.getPeriodEnd().toUtc())}",
+                  "${Parse.hoursWithMinutes.format(period.start)} - ${Parse.hoursWithMinutes.format(period.getPeriodEnd())}",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
               ),

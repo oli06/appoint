@@ -1,23 +1,6 @@
 import 'package:appoint/models/period.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
-
-class UpdateModeAction {
-  final SelectedPeriodMode mode;
-
-  UpdateModeAction(this.mode);
-}
-
-class UpdateSelectedValueAction {
-  final dynamic value;
-
-  UpdateSelectedValueAction(this.value);
-}
-
-class UpdateFilterAction {
-  final List<bool> filter;
-
-  UpdateFilterAction(this.filter);
-}
+import 'package:flutter/material.dart';
 
 class SetLoadedPeriodsAction {
   final List<Period> periods;
@@ -33,6 +16,45 @@ class UpdateIsLoadingAction {
 
 class LoadPeriodsAction {
   final int companyId;
+  final int month;
+  LoadPeriodsAction(this.companyId, this.month);
+}
 
-  LoadPeriodsAction(this.companyId);
+class UpdateVisiblePeriodsAction {
+  final Map<DateTime, List> visiblePeriods;
+
+  UpdateVisiblePeriodsAction(
+    this.visiblePeriods,
+  );
+}
+
+class UpdateSelectedDayPeriodsAction {
+  final List selectedDayPeriods;
+
+  UpdateSelectedDayPeriodsAction(this.selectedDayPeriods);
+}
+
+class UpdateVisibilityFilterAction {
+  final DateTime visibleFirstDay;
+  final DateTime visibleLastDay;
+
+  UpdateVisibilityFilterAction(this.visibleFirstDay, this.visibleLastDay);
+}
+
+class UpdateTimeFilterAction {
+  final TimeOfDay timeFilter;
+
+  UpdateTimeFilterAction(this.timeFilter);
+}
+
+class UpdateSelectedDayAction {
+  final DateTime day;
+
+  UpdateSelectedDayAction(this.day);
+}
+
+class UpdatePrioritizePrivateAppointmentsAction {
+  final bool prioritizePrivate;
+
+  UpdatePrioritizePrivateAppointmentsAction(this.prioritizePrivate);
 }

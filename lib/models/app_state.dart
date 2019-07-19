@@ -14,7 +14,6 @@ class AppState {
   final AppointmentsViewModel appointmentsViewModel;
   final UserViewModel userViewModel;
   final FavoritesViewModel favoritesViewModel;
-  //final SignInViewModel signInViewModel;
 
   AppState({
     this.selectCompanyViewModel = const SelectCompanyViewModel(),
@@ -23,7 +22,6 @@ class AppState {
     this.appointmentsViewModel = const AppointmentsViewModel(),
     this.userViewModel = const UserViewModel(),
     this.favoritesViewModel = const FavoritesViewModel(),
-    //this.signInViewModel = const SignInViewModel(),
   });
 
   factory AppState.initState() => AppState(
@@ -33,15 +31,16 @@ class AppState {
             rangeFilter: 9.0,
             categoryFilter: Category.ALL),
         selectPeriodViewModel: SelectedPeriodViewModel(
-          periodModel: PeriodMode(mode: SelectedPeriodMode.DATE),
           isLoading: true,
-          filter: [for (var i = 0; i < 7; i++) true],
+          periods: {},
+          visiblePeriods: {},
+          prioritizePrivateAppointments: false,
+          selectedDay: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
         ),
         appointmentsViewModel: AppointmentsViewModel(isLoading: true),
         userViewModel: UserViewModel(isLoading: true),
         favoritesViewModel: FavoritesViewModel(
             isLoading: true, isEditing: false, selectedFavorites: []),
-        //signInViewModel: SignInViewModel(isLoading: true),
       );
 }
 

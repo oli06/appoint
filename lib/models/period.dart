@@ -20,3 +20,15 @@ class Period {
       'duration': duration,
     };
 }
+
+class PeriodMap {
+  final DateTime day;
+  final List<Period>periods;
+
+  PeriodMap({this.day, this.periods});
+
+    PeriodMap.fromJson(Map<String, dynamic> json)
+      : day = DateTime.fromMillisecondsSinceEpoch(json['day']),
+      periods = json['periods'].map((p) => Period.fromJson(p)).toList();
+
+}

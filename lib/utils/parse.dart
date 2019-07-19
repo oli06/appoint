@@ -19,6 +19,10 @@ class Parse {
     return null;
   }
 
+  static DateTime dateTimeToDateOnly(DateTime dateTime) {
+    return DateTime(dateTime.year, dateTime.month, dateTime.day);
+  }
+
   static String convertTimeOfDay(TimeOfDay time) {
     String _addLeadingZeroIfNeeded(int value) {
       if (value < 10) return '0$value';

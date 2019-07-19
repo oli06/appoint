@@ -2,20 +2,29 @@ import 'package:appoint/models/period.dart';
 import 'package:flutter/material.dart';
 
 class SelectedPeriodViewModel {
-  final List<Period> periods;
-  final PeriodMode periodModel;
+  final Map<DateTime, List<Period>> periods;
+  final Map<DateTime, List> visiblePeriods;
+
   final bool isLoading;
-  final List<bool> filter;
+  final TimeOfDay timeFilter;
+  final bool prioritizePrivateAppointments;
+  final DateTime visibleFirstDay;
+  final DateTime visibleLastDay;
+  final DateTime selectedDay;
 
   const SelectedPeriodViewModel({
     this.periods,
-    this.periodModel,
+    this.visiblePeriods,
     this.isLoading,
-    this.filter,
+    this.timeFilter,
+    this.prioritizePrivateAppointments,
+    this.visibleFirstDay,
+    this.visibleLastDay,
+    this.selectedDay,
   });
 }
 
-class PeriodMode {
+/* class PeriodMode {
   SelectedPeriodMode _mode = SelectedPeriodMode.DATE;
   SelectedPeriodMode get mode => _mode;
 
@@ -40,4 +49,4 @@ class PeriodMode {
 enum SelectedPeriodMode {
   DATE,
   TIME,
-}
+} */

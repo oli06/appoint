@@ -5,6 +5,7 @@ import 'package:appoint/actions/select_period_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/data/api.dart';
 import 'package:appoint/models/app_state.dart';
+import 'package:appoint/selectors/selectors.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:redux/redux.dart';
@@ -83,7 +84,13 @@ Middleware<AppState> _createLoadPeriods(Api api) {
   return (Store<AppState> store, action, next) {
     store.dispatch(UpdateIsLoadingAction(true));
 
-    if (store.state.selectPeriodViewModel.periodModel.mode ==
+    api.getPeriodsForMonth(action.companyId).then((periodMap) {
+      store.dispatch(SetLoadedPeriodsAction(periodMap));
+      store.dispatch(UpdateVisiblePeriodsAction(getVisibleDaysPeriodsList(store.state.selectPeriodViewModel.periods, store.state.selectPeriodViewModel.visibleFirstDay, store.state.selectPeriodViewModel.visibleLastDay)));
+      store.dispatch(UpdateIsLoadingAction(false));
+    });
+
+    /* if (store.state.selectPeriodViewModel.periodModel.mode ==
         SelectedPeriodMode.DATE) {
       final date = store.state.selectPeriodViewModel.periodModel.date;
       print(
@@ -113,7 +120,7 @@ Middleware<AppState> _createLoadPeriods(Api api) {
         );
         store.dispatch(UpdateIsLoadingAction(false));
       });
-    }
+    } */
 
     next(action);
   };

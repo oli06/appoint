@@ -4,6 +4,7 @@ import 'package:appoint/models/company.dart';
 import 'package:appoint/models/day.dart';
 import 'package:appoint/models/period.dart';
 import 'package:appoint/utils/parse.dart';
+import 'package:flutter/material.dart';
 
 List<Company> companiesSelector(AppState state) =>
     state.selectCompanyViewModel.companies;
@@ -19,7 +20,7 @@ List<Company> companiesVisibilityFilterSelector(
     } else if (filter == CompanyVisibilityFilter.all) {
       return true;
     }
-    
+
     return false;
   }).toList();
 }
@@ -63,6 +64,43 @@ List<Day<Appoint>> groupAppointmentsByDate(List<Appoint> appointments) {
       .toList();
 
   return days;
+}
+
+Map<DateTime, List> getVisibleDaysPeriodsList(
+    Map<DateTime, List> allPeriods, DateTime first, DateTime last) {
+  if (first == null || last == null) {
+    final Map<DateTime, List> map = {};
+    map.addAll(allPeriods);
+    return map;
+  }
+
+  return Map.fromEntries(allPeriods.entries.where((day) =>
+      day.key.isAfter(first.subtract(const Duration(days: 1))) &&
+      day.key.isBefore(last.add(const Duration(days: 1)))));
+}
+
+Map<DateTime, List> filterDaysPeriodsList(
+    Map<DateTime, List> periods, TimeOfDay tod) {
+  if (tod == null) {
+    return periods;
+  }
+
+  Map<DateTime, List> map2 = Map.fromEntries(periods.entries.map((entry) {
+    MapEntry<DateTime, List> mapEntry = MapEntry(entry.key,
+        entry.value.where((period) => period.start.hour == tod.hour).toList());
+    return mapEntry;
+  }));
+
+   Map<DateTime, List> map3 = Map.from(map2)..removeWhere((entry, v) => v.isEmpty);
+
+/*   final map =  Map.fromEntries(periods.entries.where((day) {
+    
+//    day.value.removeWhere((period) => period.start.hour != tod.hour);
+     day.value.((period) => period.start.hour == tod.hour).toList();
+    return day.value.isNotEmpty;
+  })); */
+
+  return map3;
 }
 
 List<Day<Period>> groupPeriodsByDate(List<Period> periods) {
