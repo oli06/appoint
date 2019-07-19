@@ -42,12 +42,13 @@ class SelectCompanyState extends State<SelectCompany>
               bottom: false,
               child: DirectSelectContainer(
                 child: Padding(
-                  padding: EdgeInsets.only(left: 8, right: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 8),
                   child: Column(
                     children: <Widget>[
                       _buildDropdown(vm),
                       Expanded(
                         child: CompanyList(
+                          filterWithVisibility: true,
                           itemBuilder: (context, index, Company cpy) =>
                               _buildCompanyTile(cpy),
                         ),

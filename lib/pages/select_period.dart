@@ -23,8 +23,6 @@ class SelectPeriod extends StatefulWidget {
 }
 
 class _SelectPeriodState extends State<SelectPeriod> {
-  bool _checked = false;
-
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
@@ -40,7 +38,6 @@ class _SelectPeriodState extends State<SelectPeriod> {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Column(
                 children: <Widget>[
-                  _buildPrivateAppointmentsFavoriteCheckbox(),
                   _buildSelectTimeRow(vm, context),
                   _buildDivider(),
                   _buildCalendar(context, vm),
@@ -116,28 +113,6 @@ class _SelectPeriodState extends State<SelectPeriod> {
     } else {
       return "${vm.selectPeriodViewModel.timeFilter.format(context)} | ändern";
     }
-  }
-
-  Padding _buildPrivateAppointmentsFavoriteCheckbox() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: <Widget>[
-          Checkbox(
-            value: _checked,
-            onChanged: (value) => setState(() {
-              _checked = value;
-            }),
-          ),
-          Expanded(
-            child: Text(
-              "Eigene Termine priorisieren",
-              style: TextStyle(fontSize: 16),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildCalendar(BuildContext context, _ViewModel vm) {

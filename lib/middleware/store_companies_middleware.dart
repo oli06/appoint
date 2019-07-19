@@ -90,38 +90,6 @@ Middleware<AppState> _createLoadPeriods(Api api) {
       store.dispatch(UpdateIsLoadingAction(false));
     });
 
-    /* if (store.state.selectPeriodViewModel.periodModel.mode ==
-        SelectedPeriodMode.DATE) {
-      final date = store.state.selectPeriodViewModel.periodModel.date;
-      print(
-          "loading for date: ${date.toIso8601String()}, company: ${action.companyId}");
-      api
-          .getDatePeriods(
-        action.companyId,
-        Parse.convertDateToPeriodDate(
-            store.state.selectPeriodViewModel.periodModel.date),
-      )
-          .then((periods) {
-        store.dispatch(SetLoadedPeriodsAction(periods));
-        store.dispatch(UpdateIsLoadingAction(false));
-      });
-    } else {
-      final time = store.state.selectPeriodViewModel.periodModel.time;
-      print(
-          "loading for time: ${time.toString()}, company: ${action.companyId}");
-      api
-          .getTimePeriods(
-        action.companyId,
-        Parse.convertTimeOfDay(time),
-      )
-          .then((periods) {
-        store.dispatch(
-          SetLoadedPeriodsAction(periods),
-        );
-        store.dispatch(UpdateIsLoadingAction(false));
-      });
-    } */
-
     next(action);
   };
 }

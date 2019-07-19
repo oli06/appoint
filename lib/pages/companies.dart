@@ -141,6 +141,7 @@ class _CompanyPageState extends State<CompanyPage>
 
   Widget _buildCompanyList() {
     return CompanyList(
+      filterWithRange: true,
       itemBuilder: (context, index, cpy) {
         return CompanyTile(
           company: cpy,

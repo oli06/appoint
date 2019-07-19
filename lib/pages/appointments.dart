@@ -273,18 +273,6 @@ class _AppointmentPageState extends State<AppointmentPage> {
       trailing: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
-          Badge(
-            badgeColor: Color(0xff09c199),
-            animationType: BadgeAnimationType.scale,
-            position: BadgePosition.topRight(top: 0, right: 0),
-            badgeContent: Text("3"),
-            child: IconButton(
-              icon: Icon(Icons.message),
-              onPressed: () {
-                //Benachrichtigungspage anzeigen
-              },
-            ),
-          ),
           IconButton(
             icon: Icon(CupertinoIcons.profile_circled),
             color: Theme.of(context).primaryColor,
