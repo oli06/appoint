@@ -10,7 +10,9 @@ import 'package:appoint/models/company.dart';
 import 'package:appoint/models/period.dart';
 import 'package:appoint/pages/select_period.dart';
 import 'package:appoint/utils/parse.dart';
+import 'package:appoint/view_models/settings_vm.dart';
 import 'package:appoint/widgets/company_tile.dart';
+import 'package:appoint/widgets/dialog.dart' as prefix0;
 import 'package:appoint/widgets/icon_circle_gradient.dart';
 import 'package:appoint/widgets/navBar.dart';
 import 'package:appoint/pages/select_company.dart';
@@ -188,10 +190,37 @@ class AddAppointState extends State<AddAppoint>
                   description: _description,
                 ));
 
-                //TODO: FIXME: calendarId from Redux Store
-                Calendar().createNativeCalendarEvent("", _period.start, _title,
-                    _period.duration, _description, _company.address);
-                Navigator.pop(context);
+                if (vm.settingsViewModel.settings["calendarIntegration"] ==
+                    true) {
+                  Calendar()
+                      .createNativeCalendarEvent(
+                          vm.settingsViewModel.settings["calendarId"],
+                          _period.start,
+                          _title,
+                          _period.duration,
+                          _description,
+                          _company)
+                      .then((res) {
+                    if (res) {
+                      //TODO: show indicator that an event was created inside calendar
+                      /* showCupertinoDialog(
+                        context: context,
+                        builder: (context) => prefix0.Dialog(
+                          title: "Termin erstellt",
+                          information:
+                              "Termin wurde in den Kalender übertragen",
+                          informationTextSize: 24,
+                        ),
+                      ); 
+                      Future.delayed(Duration(milliseconds: 200), () {
+                        //first: pop dialog, then pop add_appoint page
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      }); */
+                    }
+                  Navigator.pop(context);
+                  });
+                } 
               }
             : null,
       ),
@@ -422,12 +451,13 @@ class _ViewModel {
   final AddAppointViewModel addAppointViewModel;
   final Function(Appoint appoint) saveAppoint;
   final Function cancelEditOrAdd;
+  final SettingsViewModel settingsViewModel;
 
-  _ViewModel({
-    @required this.addAppointViewModel,
-    this.saveAppoint,
-    this.cancelEditOrAdd,
-  });
+  _ViewModel(
+      {@required this.addAppointViewModel,
+      this.saveAppoint,
+      this.cancelEditOrAdd,
+      this.settingsViewModel});
 
   static _ViewModel fromStore(Store<AppState> store) {
     return _ViewModel(
@@ -435,6 +465,7 @@ class _ViewModel {
       saveAppoint: (Appoint appoint) =>
           store.dispatch(AddAppointmentAction(appoint)),
       cancelEditOrAdd: () => store.dispatch(CancelEditOrAddAppointAction()),
+      settingsViewModel: store.state.settingsViewModel,
     );
   }
 }

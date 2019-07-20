@@ -2,6 +2,7 @@ import 'package:appoint/actions/appointments_action.dart';
 import 'package:appoint/actions/companies_action.dart';
 import 'package:appoint/actions/favorites_action.dart';
 import 'package:appoint/actions/select_period_action.dart';
+import 'package:appoint/actions/settings_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/data/api.dart';
 import 'package:appoint/models/app_state.dart';
@@ -10,6 +11,7 @@ import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:redux/redux.dart';
 import 'package:location/location.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 List<Middleware<AppState>> createStoreCompaniesMiddleware() {
   final Api api = Api();
@@ -24,6 +26,7 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
   final removeUserFavorites = _createRemoveFromUserFavorites(api);
   final addUserFavorite = _createAddToUserFavorites(api);
   final signUpNewUser = _createRegisterUser(api);
+  final loadSharedPreferences = _createLoadSharedPreferences();
 
   return [
     TypedMiddleware<AppState, LoadCompaniesAction>(loadCompanies),
@@ -33,9 +36,12 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
     TypedMiddleware<AppState, VerifyUserAction>(verifyUser),
     TypedMiddleware<AppState, LoadUserLocationAction>(loadUserLocation),
     TypedMiddleware<AppState, LoadFavoritesAction>(loadUserFavorites),
-    TypedMiddleware<AppState, RemoveFromUserFavoritesAction>(removeUserFavorites),
+    TypedMiddleware<AppState, RemoveFromUserFavoritesAction>(
+        removeUserFavorites),
     TypedMiddleware<AppState, AddToUserFavoritesAction>(addUserFavorite),
     TypedMiddleware<AppState, RegisterUserAction>(signUpNewUser),
+    TypedMiddleware<AppState, LoadSharedPreferencesAction>(
+        loadSharedPreferences),
   ];
 }
 
@@ -67,9 +73,8 @@ Middleware<AppState> _createLoadAppointments(Api api) {
 
 Middleware<AppState> _createRegisterUser(Api api) {
   return (Store<AppState> store, action, NextDispatcher next) {
-
     api.registerUser(action.user).then((result) {
-      if(result) {
+      if (result) {
         print("created user with success");
       } else {
         print("failed user registration");
@@ -86,7 +91,10 @@ Middleware<AppState> _createLoadPeriods(Api api) {
 
     api.getPeriodsForMonth(action.companyId).then((periodMap) {
       store.dispatch(SetLoadedPeriodsAction(periodMap));
-      store.dispatch(UpdateVisiblePeriodsAction(getVisibleDaysPeriodsList(store.state.selectPeriodViewModel.periods, store.state.selectPeriodViewModel.visibleFirstDay, store.state.selectPeriodViewModel.visibleLastDay)));
+      store.dispatch(UpdateVisiblePeriodsAction(getVisibleDaysPeriodsList(
+          store.state.selectPeriodViewModel.periods,
+          store.state.selectPeriodViewModel.visibleFirstDay,
+          store.state.selectPeriodViewModel.visibleLastDay)));
       store.dispatch(UpdateIsLoadingAction(false));
     });
 
@@ -104,6 +112,23 @@ Middleware<AppState> _createUserVerifcation(Api api) {
       store.dispatch(VerifyUserResultAction(result));
       store.dispatch(UpdateUserLoadingAction(false));
     });
+
+    next(action);
+  };
+}
+
+Middleware<AppState> _createLoadSharedPreferences() {
+  return (Store<AppState> store, action, next) async {
+    final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+
+    final keys = sharedPreferences.getKeys();
+    Map<dynamic, dynamic> settings = {};
+    keys.forEach((k) {
+      settings[k] = sharedPreferences.get(k);
+    });
+
+    store.dispatch(LoadedSharedPreferencesAction(settings));
 
     next(action);
   };
@@ -152,9 +177,9 @@ Middleware<AppState> _createLoadUserFavorites(Api api) {
 Middleware<AppState> _createRemoveFromUserFavorites(Api api) {
   return (Store<AppState> store, action, next) {
     api.removeUserFavorites(action.userId, action.companyIds).then((res) {
-      //TODO: use user.favorites stream to reload them 
+      //TODO: use user.favorites stream to reload them
     });
-    
+
     next(action);
   };
 }
@@ -162,9 +187,9 @@ Middleware<AppState> _createRemoveFromUserFavorites(Api api) {
 Middleware<AppState> _createAddToUserFavorites(Api api) {
   return (Store<AppState> store, action, next) {
     api.addUserFavorite(action.userId, action.companyId).then((res) {
-      //TODO: use user.favorites stream to reload them 
+      //TODO: use user.favorites stream to reload them
     });
-    
+
     next(action);
   };
 }

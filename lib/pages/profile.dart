@@ -2,6 +2,7 @@ import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/pages/favorites.dart';
 import 'package:appoint/pages/login.dart';
+import 'package:appoint/pages/settings.dart';
 import 'package:appoint/view_models/user_vm.dart';
 import 'package:appoint/widgets/dialog.dart' as appoint;
 import 'package:code_input/code_input.dart' as pubdev;
@@ -204,9 +205,7 @@ class ProfilePage extends StatelessWidget {
           ListTile(
             title: Text("Einstellungen"),
             trailing: Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              //TODO:
-            },
+            onTap: () => Navigator.pushNamed(context, SettingsPage.routeName),
           ),
           Divider(height: 1),
           ListTile(

@@ -55,7 +55,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
       onPressed: () =>
         showCupertinoModalPopup(
           context: context,
-          builder: (BuildContext context) => AddAppoint(isEditing: false),
+          builder: (BuildContext context) => AddAppoint(isEditing: false,),
         ),
       
       child: Icon(Icons.add),

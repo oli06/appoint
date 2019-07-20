@@ -153,7 +153,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
               onTap: () => Navigator.pop(
                   context,
                   vm.selectPeriodViewModel
-                      .visiblePeriods[vm.selectPeriodViewModel.selectedDay]),
+                      .visiblePeriods[vm.selectPeriodViewModel.selectedDay][index]),
             ),
           ),
         ),

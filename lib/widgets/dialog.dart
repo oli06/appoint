@@ -51,7 +51,7 @@ class Dialog extends StatelessWidget {
                             ? informationTextSize
                             : 14),
                   ),
-                  userActionWidget
+                  if(userActionWidget != null) userActionWidget,
                 ],
               )),
         ],

@@ -17,13 +17,16 @@ import 'package:redux/redux.dart' as redux;
 class AppointmentDetails extends StatelessWidget {
   static const routeName = '/appointment_details';
 
+
   const AppointmentDetails({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
     final Appoint appointment = ModalRoute.of(context).settings.arguments;
     return Scaffold(
       appBar: _buildNavBar(),
+      key: _scaffoldKey,
       body: Padding(
         padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
         child: CupertinoScrollbar(
@@ -78,7 +81,7 @@ class AppointmentDetails extends StatelessWidget {
                   ),
                 ),
               ),
-              _buildActionButtons(appointment, context),
+              _buildActionButtons(appointment, context, _scaffoldKey),
             ],
           ),
         ),
@@ -137,7 +140,7 @@ class AppointmentDetails extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(Appoint appoint, BuildContext context) {
+  Widget _buildActionButtons(Appoint appoint, BuildContext context, GlobalKey<ScaffoldState> scaffoldKey) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
       child: Row(
@@ -198,6 +201,7 @@ class AppointmentDetails extends StatelessWidget {
               builder: (context) => AddAppoint(
                 isEditing: true,
                 appoint: appoint,
+                key: scaffoldKey,
               ),
             ),
           ),
