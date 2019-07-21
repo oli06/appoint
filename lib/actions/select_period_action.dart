@@ -1,5 +1,6 @@
 import 'package:appoint/models/period.dart';
-import 'package:appoint/view_models/select_period_vm.dart';
+import 'package:appoint/widgets/expandable_period_tile.dart';
+import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
 
 class SetLoadedPeriodsAction {
@@ -28,6 +29,8 @@ class UpdateVisiblePeriodsAction {
   );
 }
 
+class ResetSelectPeriodViewModelAction {}
+
 class UpdateSelectedDayPeriodsAction {
   final List selectedDayPeriods;
 
@@ -53,8 +56,30 @@ class UpdateSelectedDayAction {
   UpdateSelectedDayAction(this.day);
 }
 
-class UpdatePrioritizePrivateAppointmentsAction {
-  final bool prioritizePrivate;
+class LoadEventsForDayAction {
+  final DateTime day;
 
-  UpdatePrioritizePrivateAppointmentsAction(this.prioritizePrivate);
+  LoadEventsForDayAction(this.day);
+}
+
+class LoadedPeriodTilesAction {
+  final List<ExpandablePeriodTile> periodTiles;
+
+  LoadedPeriodTilesAction(this.periodTiles);
+}
+
+class UpdateFilteredPeriodTilesAction {
+  final List<ExpandablePeriodTile> periodTiles;
+
+  UpdateFilteredPeriodTilesAction(this.periodTiles);
+}
+
+class LoadPeriodTilesAction {
+  BuildContext context;
+  DateTime day;
+
+  LoadPeriodTilesAction(
+    this.context,
+    this.day,
+   );
 }

@@ -11,15 +11,18 @@ final selectPeriodReudcer = combineReducers<SelectedPeriodViewModel>([
       _updateIsLoading),
   TypedReducer<SelectedPeriodViewModel, UpdateVisiblePeriodsAction>(
       _updateVisiblePeriods),
-  TypedReducer<SelectedPeriodViewModel,
-          UpdatePrioritizePrivateAppointmentsAction>(
-      _updatePrioritizePrivateAppointments),
   TypedReducer<SelectedPeriodViewModel, UpdateTimeFilterAction>(
       _updateTimeFilter),
   TypedReducer<SelectedPeriodViewModel, UpdateVisibilityFilterAction>(
       _updateVisiblityFilter),
   TypedReducer<SelectedPeriodViewModel, UpdateSelectedDayAction>(
       _updateSelectedDay),
+  TypedReducer<SelectedPeriodViewModel, LoadedPeriodTilesAction>(
+      _loadedPeriodTiles),
+  TypedReducer<SelectedPeriodViewModel, ResetSelectPeriodViewModelAction>(
+      _resetSelectPeriodViewModel),
+  TypedReducer<SelectedPeriodViewModel, UpdateFilteredPeriodTilesAction>(
+      _updateFilteredPeriodTiles),
 ]);
 
 SelectedPeriodViewModel _updateVisiblePeriods(
@@ -28,11 +31,28 @@ SelectedPeriodViewModel _updateVisiblePeriods(
     periods: vm.periods,
     visiblePeriods: action.visiblePeriods,
     isLoading: vm.isLoading,
-    prioritizePrivateAppointments: vm.prioritizePrivateAppointments,
     timeFilter: vm.timeFilter,
     visibleFirstDay: vm.visibleFirstDay,
     visibleLastDay: vm.visibleLastDay,
     selectedDay: vm.selectedDay,
+    periodTiles: vm.periodTiles,
+    filteredPeriodTiles: vm.filteredPeriodTiles,
+  );
+}
+
+SelectedPeriodViewModel _resetSelectPeriodViewModel(
+    SelectedPeriodViewModel vm, ResetSelectPeriodViewModelAction action) {
+  return SelectedPeriodViewModel(
+    periods: {},
+    visiblePeriods: {},
+    isLoading: true,
+    timeFilter: null,
+    visibleFirstDay: null,
+    visibleLastDay: null,
+    selectedDay:
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
+    periodTiles: [],
+    filteredPeriodTiles: [],
   );
 }
 
@@ -42,11 +62,12 @@ SelectedPeriodViewModel _updateVisiblityFilter(
     periods: vm.periods,
     visiblePeriods: vm.visiblePeriods,
     isLoading: vm.isLoading,
-    prioritizePrivateAppointments: vm.prioritizePrivateAppointments,
     timeFilter: vm.timeFilter,
     visibleFirstDay: action.visibleFirstDay,
     visibleLastDay: action.visibleLastDay,
     selectedDay: vm.selectedDay,
+    filteredPeriodTiles: vm.filteredPeriodTiles,
+    periodTiles: vm.periodTiles,
   );
 }
 
@@ -56,26 +77,12 @@ SelectedPeriodViewModel _updateSelectedDay(
     periods: vm.periods,
     visiblePeriods: vm.visiblePeriods,
     isLoading: vm.isLoading,
-    prioritizePrivateAppointments: vm.prioritizePrivateAppointments,
+    periodTiles: vm.periodTiles,
     timeFilter: vm.timeFilter,
     visibleFirstDay: vm.visibleFirstDay,
     visibleLastDay: vm.visibleLastDay,
+    filteredPeriodTiles: vm.filteredPeriodTiles,
     selectedDay: action.day,
-  );
-}
-
-SelectedPeriodViewModel _updatePrioritizePrivateAppointments(
-    SelectedPeriodViewModel vm,
-    UpdatePrioritizePrivateAppointmentsAction action) {
-  return SelectedPeriodViewModel(
-    periods: vm.periods,
-    visiblePeriods: vm.visiblePeriods,
-    isLoading: vm.isLoading,
-    prioritizePrivateAppointments: action.prioritizePrivate,
-    timeFilter: vm.timeFilter,
-    visibleFirstDay: vm.visibleFirstDay,
-    visibleLastDay: vm.visibleLastDay,
-    selectedDay: vm.selectedDay,
   );
 }
 
@@ -85,9 +92,10 @@ SelectedPeriodViewModel _updateTimeFilter(
     periods: vm.periods,
     visiblePeriods: vm.visiblePeriods,
     isLoading: vm.isLoading,
-    prioritizePrivateAppointments: vm.prioritizePrivateAppointments,
+    periodTiles: vm.periodTiles,
     timeFilter: action.timeFilter,
     visibleFirstDay: vm.visibleFirstDay,
+    filteredPeriodTiles: vm.filteredPeriodTiles,
     visibleLastDay: vm.visibleLastDay,
     selectedDay: vm.selectedDay,
   );
@@ -101,15 +109,15 @@ SelectedPeriodViewModel _setLoadedPeriods(
     days.containsKey(date) ? days[date].add(period) : days[date] = [period];
   });
 
-  //action.periods.forEach((period) => vm.periods.putIfAbsent(period.start, () => [period]));
   vm.periods.addAll(days);
   return SelectedPeriodViewModel(
     periods: vm.periods,
     visiblePeriods: vm.visiblePeriods,
     isLoading: vm.isLoading,
-    prioritizePrivateAppointments: vm.prioritizePrivateAppointments,
+    filteredPeriodTiles: vm.filteredPeriodTiles,
     timeFilter: vm.timeFilter,
     visibleFirstDay: vm.visibleFirstDay,
+    periodTiles: vm.periodTiles,
     visibleLastDay: vm.visibleLastDay,
     selectedDay: vm.selectedDay,
   );
@@ -123,8 +131,39 @@ SelectedPeriodViewModel _updateIsLoading(
     periods: vm.periods,
     visibleFirstDay: vm.visibleFirstDay,
     visibleLastDay: vm.visibleLastDay,
+    filteredPeriodTiles: vm.filteredPeriodTiles,
+    periodTiles: vm.periodTiles,
     timeFilter: vm.timeFilter,
-    prioritizePrivateAppointments: vm.prioritizePrivateAppointments,
+    selectedDay: vm.selectedDay,
+  );
+}
+
+SelectedPeriodViewModel _loadedPeriodTiles(
+    SelectedPeriodViewModel vm, LoadedPeriodTilesAction action) {
+  return SelectedPeriodViewModel(
+    isLoading: vm.isLoading,
+    visiblePeriods: vm.visiblePeriods,
+    periods: vm.periods,
+    visibleFirstDay: vm.visibleFirstDay,
+    visibleLastDay: vm.visibleLastDay,
+    filteredPeriodTiles: vm.filteredPeriodTiles,
+    periodTiles: action.periodTiles,
+    timeFilter: vm.timeFilter,
+    selectedDay: vm.selectedDay,
+  );
+}
+
+SelectedPeriodViewModel _updateFilteredPeriodTiles(
+    SelectedPeriodViewModel vm, UpdateFilteredPeriodTilesAction action) {
+  return SelectedPeriodViewModel(
+    isLoading: vm.isLoading,
+    visiblePeriods: vm.visiblePeriods,
+    periods: vm.periods,
+    visibleFirstDay: vm.visibleFirstDay,
+    visibleLastDay: vm.visibleLastDay,
+    filteredPeriodTiles: action.periodTiles,
+    periodTiles: vm.periodTiles,
+    timeFilter: vm.timeFilter,
     selectedDay: vm.selectedDay,
   );
 }

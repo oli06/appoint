@@ -7,14 +7,19 @@ import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/data/api.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/selectors/selectors.dart';
-import 'package:appoint/view_models/select_period_vm.dart';
+import 'package:appoint/utils/calendar.dart';
+import 'package:appoint/utils/constants.dart';
 import 'package:appoint/utils/parse.dart';
+import 'package:appoint/widgets/expandable_period_tile.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:redux/redux.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 List<Middleware<AppState>> createStoreCompaniesMiddleware() {
   final Api api = Api();
+  final Calendar calendar = Calendar();
 
   final loadCompanies = _createLoadCompanies(api);
   final loadPeriods = _createLoadPeriods(api);
@@ -27,6 +32,7 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
   final addUserFavorite = _createAddToUserFavorites(api);
   final signUpNewUser = _createRegisterUser(api);
   final loadSharedPreferences = _createLoadSharedPreferences();
+  final loadPeriodTiles = _createLoadPeriodTiles(calendar);
 
   return [
     TypedMiddleware<AppState, LoadCompaniesAction>(loadCompanies),
@@ -42,6 +48,7 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
     TypedMiddleware<AppState, RegisterUserAction>(signUpNewUser),
     TypedMiddleware<AppState, LoadSharedPreferencesAction>(
         loadSharedPreferences),
+    TypedMiddleware<AppState, LoadPeriodTilesAction>(loadPeriodTiles),
   ];
 }
 
@@ -130,6 +137,100 @@ Middleware<AppState> _createLoadSharedPreferences() {
 
     store.dispatch(LoadedSharedPreferencesAction(settings));
 
+    next(action);
+  };
+}
+
+Middleware<AppState> _createLoadPeriodTiles(Calendar calendar) {
+  return (Store<AppState> store, action, next) async {
+    if (!store.state.settingsViewModel.settings[kSettingsCalendarIntegration]) {
+      List<ExpandablePeriodTile> _periods = [];
+      if (store.state.selectPeriodViewModel
+              .visiblePeriods[store.state.selectPeriodViewModel.selectedDay] !=
+          null) {
+        store.state.selectPeriodViewModel
+            .visiblePeriods[store.state.selectPeriodViewModel.selectedDay]
+            .forEach((period) {
+          _periods.add(ExpandablePeriodTile(
+            period: period,
+            onTap: () {
+              store.dispatch(ResetSelectPeriodViewModelAction());
+              Navigator.pop(action.context, period);
+            },
+            trailing: null,
+            children: null,
+          ));
+        });
+      }
+      store.dispatch(LoadedPeriodTilesAction(_periods));
+      store.dispatch(UpdateFilteredPeriodTilesAction(_periods));
+
+      return;
+    } else {
+      store.dispatch(UpdateIsLoadingAction(true));
+
+      calendar
+          .retrieveCalendarEvents(
+              store.state.settingsViewModel.settings[kSettingsCalendarId], action.day)
+          .then((result) {
+        List<ExpandablePeriodTile> _periods = [];
+
+        if (store.state.selectPeriodViewModel.visiblePeriods[
+                store.state.selectPeriodViewModel.selectedDay] !=
+            null) {
+          store.state.selectPeriodViewModel
+              .visiblePeriods[store.state.selectPeriodViewModel.selectedDay]
+              .forEach((period) {
+            final eventConflicts = result.data.where((event) {
+              if (event.start.isBefore(period.start) &&
+                  !event.end.isBefore(period.start)) {
+                return true;
+              }
+              if (!event.start.isBefore(period.start) &&
+                  event.start.isBefore(period.start.add(period.duration))) {
+                return true;
+              }
+              return false;
+            }).toList();
+            print("event conflicts are: ${eventConflicts.length}");
+            _periods.add(ExpandablePeriodTile(
+              period: period,
+              onTap: () {
+                store.dispatch(ResetSelectPeriodViewModelAction());
+                Navigator.pop(action.context, period);
+              },
+              trailing: eventConflicts.length != 0 ? Icon(Icons.warning) : null,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        "Konflikte mit folgenden Terminen:",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      ...eventConflicts
+                          .map((event) => Text(
+                              "${event.title}, ${Parse.hoursWithMinutes.format(event.start)} - ${Parse.hoursWithMinutes.format(event.end)}"))
+                          .toList(),
+                    ],
+                  ),
+                ),
+              ],
+            ));
+          });
+          print(
+              "returning calculated data now, with leght: ${_periods.length}");
+          store.dispatch(LoadedPeriodTilesAction(_periods));
+          store.dispatch(UpdateFilteredPeriodTilesAction(_periods));
+        } else {
+          print("periods are nulll");
+        }
+
+        store.dispatch(UpdateIsLoadingAction(false));
+      });
+    }
     next(action);
   };
 }

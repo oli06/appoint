@@ -36,7 +36,6 @@ class AppState {
           isLoading: true,
           periods: {},
           visiblePeriods: {},
-          prioritizePrivateAppointments: false,
           selectedDay: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
         ),
         appointmentsViewModel: AppointmentsViewModel(isLoading: true),

@@ -376,7 +376,7 @@ class AddAppointState extends State<AddAppoint>
                                   Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Text(
-                                      "${Parse.hoursWithMinutes.format(_period.start.toUtc())} - ${Parse.hoursWithMinutes.format(_period.getPeriodEnd().toUtc())}",
+                                      "${Parse.hoursWithMinutes.format(_period.start)} - ${Parse.hoursWithMinutes.format(_period.getPeriodEnd())}",
                                       style: TextStyle(fontSize: 15),
                                     ),
                                   ),

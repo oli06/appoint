@@ -3,8 +3,8 @@ import 'package:appoint/models/app_state.dart';
 import 'package:appoint/selectors/selectors.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:appoint/widgets/appoint_calendar.dart';
-import 'package:appoint/widgets/dialog.dart' as prefix0;
-import 'package:appoint/widgets/period_tile.dart';
+import 'package:appoint/widgets/dialog.dart' as appoint;
+import 'package:appoint/widgets/expandable_period_tile.dart';
 import 'package:flutter_cupertino_date_picker/flutter_cupertino_date_picker.dart';
 import 'package:appoint/widgets/navBar.dart';
 import 'package:flutter/cupertino.dart';
@@ -24,11 +24,21 @@ class SelectPeriod extends StatefulWidget {
 
 class _SelectPeriodState extends State<SelectPeriod> {
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
       converter: _ViewModel.fromStore,
-      onInit: (store) => store
-          .dispatch(LoadPeriodsAction(widget.companyId, DateTime.now().month)),
+      onInit: (store) {
+        store.dispatch(
+            LoadPeriodsAction(widget.companyId, DateTime.now().month));
+        //initial selection is today --> load conflicts for today
+        store.dispatch(LoadEventsForDayAction(DateTime.now()));
+        store.dispatch(LoadPeriodTilesAction(context, DateTime.now()));
+      },
       builder: (context, vm) {
         return Scaffold(
           appBar: _buildNavBar(vm),
@@ -51,7 +61,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
                             style: TextStyle(fontSize: 18),
                           ),
                         )
-                      : _buildEventList(vm),
+                      : _buildPeriodList(vm),
                 ],
               ),
             ),
@@ -70,7 +80,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
 
   Padding _buildSelectTimeRow(_ViewModel vm, BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      padding: const EdgeInsets.only(top: 4.0, left: 8.0, right: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
@@ -93,13 +103,19 @@ class _SelectPeriodState extends State<SelectPeriod> {
             icon: Icon(CupertinoIcons.clear, size: 32),
             padding: EdgeInsets.zero,
             onPressed: () {
+              if (vm.selectPeriodViewModel.timeFilter == null) {
+                return;
+              }
               vm.updateTimeFilter(null);
-              vm.updateVisiblePeriods(filterDaysPeriodsList(
-                  getVisibleDaysPeriodsList(
-                      vm.selectPeriodViewModel.periods,
-                      vm.selectPeriodViewModel.visibleFirstDay,
-                      vm.selectPeriodViewModel.visibleLastDay),
-                  null));
+              vm.updateVisiblePeriods(
+                getVisibleDaysPeriodsList(
+                    vm.selectPeriodViewModel.periods,
+                    vm.selectPeriodViewModel.visibleFirstDay,
+                    vm.selectPeriodViewModel.visibleLastDay),
+              );
+
+              vm.updateFilteredPeriodTiles(
+                  vm.selectPeriodViewModel.periodTiles);
             },
           ),
         ],
@@ -121,7 +137,9 @@ class _SelectPeriodState extends State<SelectPeriod> {
       context: context,
       onDaySelected: (DateTime day, List events) {
         print("update day selected to: ${day.day}");
-        vm.updateSelectedDay(DateTime(day.year, day.month, day.day));
+        final dt = DateTime(day.year, day.month, day.day);
+        vm.updateSelectedDay(dt);
+        vm.loadPeriodTiles(context, dt);
       },
       onVisibleDaysChanged:
           (DateTime first, DateTime last, CalendarFormat format) {
@@ -136,27 +154,25 @@ class _SelectPeriodState extends State<SelectPeriod> {
     );
   }
 
-  Widget _buildEventList(_ViewModel vm) {
+  Widget _buildPeriodList(_ViewModel vm) {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: CupertinoScrollbar(
-          child: ListView.separated(
-            itemCount: vm.selectPeriodViewModel
-                .visiblePeriods[vm.selectPeriodViewModel.selectedDay].length,
-            separatorBuilder: (context, index) => Divider(
-              height: 1,
-            ),
-            itemBuilder: (context, index) => PeriodTile(
-              period: vm.selectPeriodViewModel
-                  .visiblePeriods[vm.selectPeriodViewModel.selectedDay][index],
-              onTap: () => Navigator.pop(
-                  context,
-                  vm.selectPeriodViewModel
-                      .visiblePeriods[vm.selectPeriodViewModel.selectedDay][index]),
-            ),
-          ),
-        ),
+        child: vm.selectPeriodViewModel.isLoading
+            ? Column(
+                children: <Widget>[
+                  Center(child: CupertinoActivityIndicator()),
+                ],
+              )
+            : CupertinoScrollbar(
+                child: ListView.separated(
+                  itemCount:
+                      vm.selectPeriodViewModel.filteredPeriodTiles.length,
+                  separatorBuilder: (context, index) => Divider(height: 1),
+                  itemBuilder: (context, index) =>
+                      vm.selectPeriodViewModel.filteredPeriodTiles[index],
+                ),
+              ),
       ),
     );
   }
@@ -185,7 +201,11 @@ class _SelectPeriodState extends State<SelectPeriod> {
                 vm.selectPeriodViewModel.visibleLastDay,
               ),
               TimeOfDay.fromDateTime(value)));
+
           vm.updateTimeFilter(TimeOfDay.fromDateTime(value));
+          vm.updateFilteredPeriodTiles(filterPeriodTiles(
+              vm.selectPeriodViewModel.periodTiles,
+              TimeOfDay.fromDateTime(value)));
         },
         pickerMode: DateTimePickerMode.time,
         initialDateTime: initialDate,
@@ -218,6 +238,8 @@ class _SelectPeriodState extends State<SelectPeriod> {
             value));
 
         vm.updateTimeFilter(value);
+        vm.updateFilteredPeriodTiles(
+            filterPeriodTiles(vm.selectPeriodViewModel.periodTiles, value));
       });
     }
   }
@@ -230,7 +252,10 @@ class _SelectPeriodState extends State<SelectPeriod> {
           icon: Icon(
             Icons.arrow_back_ios,
           ),
-          onPressed: () => Navigator.pop(context)),
+          onPressed: () {
+            vm.resetViewModel();
+            Navigator.pop(context);
+          }),
       secondHeader: "Zeitraum wählen",
       trailing: IconButton(
         color: Theme.of(context).primaryColor,
@@ -240,10 +265,10 @@ class _SelectPeriodState extends State<SelectPeriod> {
         onPressed: () {
           showCupertinoDialog(
             context: context,
-            builder: (context) => prefix0.Dialog(
+            builder: (context) => appoint.Dialog(
               title: "Hilfe",
               information:
-                  "Um einen Termin vereinbaren zu k��nnen, muss zuerst ein freier Zeitraum bei dem sowohl das Unternehmen, als auch Sie Zeit haben. Die angezeigten Zeiträume entsprechen bereits den freien Zeiträumen des jeweiligen Unternehmens. \n Damit Ihnen die Suche nicht so schwer fällt haben Sie verschiedene Möglichkeiten. \n \t 1. Ein bestimmtes Datum wählen, um freie Zeiten an diesem Tag anzeigen zu lassen \n \t 2. Auf den Uhrzeit-Modus umschalten, um Tage anzuzeigen, an denen das Unternehmen beispielsweise um 17:00 Uhr Zeit hat \n \n Außerdem können Sie einzelne Wochentage ausschließen, sodass von diesem Wochentag keine freie Zeiten angezeigt werden.",
+                  "Um einen Termin vereinbaren zu können, muss zuerst ein freier Zeitraum bei dem sowohl das Unternehmen, als auch Sie Zeit haben. Die angezeigten Zeiträume entsprechen bereits den freien Zeiträumen des jeweiligen Unternehmens. \n Damit Ihnen die Suche nicht so schwer fällt haben Sie verschiedene Möglichkeiten. \n \t 1. Ein bestimmtes Datum wählen, um freie Zeiten an diesem Tag anzeigen zu lassen \n \t 2. Auf den Uhrzeit-Modus umschalten, um Tage anzuzeigen, an denen das Unternehmen beispielsweise um 17:00 Uhr Zeit hat \n \n Außerdem können Sie einzelne Wochentage ausschließen, sodass von diesem Wochentag keine freie Zeiten angezeigt werden.",
               userActionWidget: CupertinoButton(
                 child: Text("Alles klar!"),
                 onPressed: () => Navigator.pop(context),
@@ -257,7 +282,6 @@ class _SelectPeriodState extends State<SelectPeriod> {
 }
 
 class _ViewModel {
-  //final Function(List selectedDayPeriods) updateSelectedDayPeriods;
   final Function(DateTime selectedDay) updateSelectedDay;
   final SelectedPeriodViewModel selectPeriodViewModel;
   final Function(int companyId, int month) loadPeriods;
@@ -265,17 +289,26 @@ class _ViewModel {
   final Function(DateTime visibleFirstDay, DateTime visibleLastDay)
       updateVisibilityFilter;
   final Function(TimeOfDay timeFilter) updateTimeFilter;
-  final Function(bool prioritizePrivateAppointments)
-      updatePrioritizePrivateAppointments;
+
+  final Function(bool isLoading) updateIsLoading;
+  final Function(List<ExpandablePeriodTile> periodTiles) loadedPeriodTiles;
+  final Function(BuildContext context, DateTime day) loadPeriodTiles;
+  final Function resetViewModel;
+  final Function(List<ExpandablePeriodTile> filteredPeriodTiles)
+      updateFilteredPeriodTiles;
 
   _ViewModel({
     @required this.selectPeriodViewModel,
     this.updateTimeFilter,
     this.loadPeriods,
     this.updateVisiblePeriods,
-    this.updatePrioritizePrivateAppointments,
     this.updateVisibilityFilter,
     this.updateSelectedDay,
+    this.resetViewModel,
+    this.loadedPeriodTiles,
+    this.updateIsLoading,
+    this.updateFilteredPeriodTiles,
+    this.loadPeriodTiles,
   });
 
   static _ViewModel fromStore(Store<AppState> store) {
@@ -284,16 +317,22 @@ class _ViewModel {
       loadPeriods: (int companyId, int month) {
         store.dispatch(LoadPeriodsAction(companyId, month));
       },
+      loadPeriodTiles: (context, day) =>
+          store.dispatch(LoadPeriodTilesAction(context, day)),
       updateTimeFilter: (timeFilter) =>
           store.dispatch(UpdateTimeFilterAction(timeFilter)),
-      updatePrioritizePrivateAppointments: (value) =>
-          store.dispatch(UpdatePrioritizePrivateAppointmentsAction(value)),
       updateVisiblePeriods: (map) {
         store.dispatch(UpdateVisiblePeriodsAction(map));
       },
       updateVisibilityFilter: (first, last) =>
           store.dispatch(UpdateVisibilityFilterAction(first, last)),
       updateSelectedDay: (day) => store.dispatch(UpdateSelectedDayAction(day)),
+      updateIsLoading: (value) => store.dispatch(UpdateIsLoadingAction(value)),
+      loadedPeriodTiles: (value) =>
+          store.dispatch(LoadedPeriodTilesAction(value)),
+      resetViewModel: () => store.dispatch(ResetSelectPeriodViewModelAction()),
+      updateFilteredPeriodTiles: (periods) =>
+          store.dispatch(UpdateFilteredPeriodTilesAction(periods)),
     );
   }
 }

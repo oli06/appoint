@@ -2,6 +2,7 @@ import 'package:appoint/actions/favorites_action.dart';
 import 'package:appoint/actions/settings_action.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/utils/calendar.dart';
+import 'package:appoint/utils/constants.dart';
 import 'package:appoint/view_models/settings_vm.dart';
 import 'package:appoint/widgets/navBar.dart';
 import 'package:appoint/widgets/switch.dart';
@@ -61,7 +62,7 @@ class SettingsPage extends StatelessWidget {
                 PlatformSpecificSwitch(
                   onChanged: (value) =>
                       calendarIntegrationChanged(value, context, vm),
-                  value: vm.settingsViewModel.settings['calendarIntegration'] ??
+                  value: vm.settingsViewModel.settings[kSettingsCalendarIntegration] ??
                       false,
                 )
               ],
@@ -74,12 +75,12 @@ class SettingsPage extends StatelessWidget {
 
   void calendarIntegrationChanged(
       bool value, BuildContext context, _ViewModel vm) async {
-    vm.updateValueForKey('calendarIntegration', value);
+    vm.updateValueForKey(kSettingsCalendarIntegration, value);
     final sharedPreferencesInstance = await SharedPreferences.getInstance();
-    sharedPreferencesInstance.setBool('calendarIntegration', value);
+    sharedPreferencesInstance.setBool(kSettingsCalendarIntegration, value);
 
     if (!value) {
-      vm.updateValueForKey('calendarId', null);
+      vm.updateValueForKey(kSettingsCalendarId, null);
       return;
     }
 
@@ -95,7 +96,7 @@ class SettingsPage extends StatelessWidget {
 
         //If the user doesnt select another item, there would be no notice,
         //that the initial value (index 0) is selected --> no entry in redux
-        vm.updateValueForKey('calendarId', writeAccessCalendars[0].id);
+        vm.updateValueForKey(kSettingsCalendarId, writeAccessCalendars[0].id);
 
         showModalBottomSheet(
           context: context,
@@ -115,8 +116,7 @@ class SettingsPage extends StatelessWidget {
                     itemExtent: 32.0,
                     onSelectedItemChanged: (int index) {
                       vm.updateValueForKey(
-                          'calendarId', writeAccessCalendars[index].id);
-                      print(index);
+                          kSettingsCalendarId, writeAccessCalendars[index].id);
                     },
                     children: new List<Widget>.generate(
                       writeAccessCalendars.length,
@@ -133,7 +133,7 @@ class SettingsPage extends StatelessWidget {
           ),
         ).then(
           (_) => sharedPreferencesInstance.setString(
-              'calendarId', vm.settingsViewModel.settings['calendarId']),
+              kSettingsCalendarId, vm.settingsViewModel.settings[kSettingsCalendarId]),
         );
       },
     );

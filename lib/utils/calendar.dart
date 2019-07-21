@@ -8,6 +8,7 @@ class Calendar {
 
   Calendar() {
     _deviceCalendarPlugin = pubdev.DeviceCalendarPlugin();
+    retrieveCalendars();
   }
 
   Future<List<pubdev.Calendar>> retrieveCalendars() async {
@@ -24,6 +25,20 @@ class Calendar {
       _calendars = calendarsResult?.data;
       return Future.value(_calendars);
     } on PlatformException catch (e) {
+      print(e);
+      return null;
+    }
+  }
+
+  Future<pubdev.Result<List<pubdev.Event>>> retrieveCalendarEvents(
+      String calendarId, DateTime date) async {
+    try {
+      final day = DateTime(date.year, date.month, date.day);
+      final retrieveEventsParams = new pubdev.RetrieveEventsParams(
+          startDate: day, endDate: day.add(Duration(days: 1)));
+      return _deviceCalendarPlugin.retrieveEvents(
+          calendarId, retrieveEventsParams);
+    } catch (e) {
       print(e);
       return null;
     }

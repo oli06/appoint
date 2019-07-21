@@ -17,12 +17,12 @@ import 'package:redux/redux.dart' as redux;
 class AppointmentDetails extends StatelessWidget {
   static const routeName = '/appointment_details';
 
-
   const AppointmentDetails({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+    final GlobalKey<ScaffoldState> _scaffoldKey =
+        new GlobalKey<ScaffoldState>();
     final Appoint appointment = ModalRoute.of(context).settings.arguments;
     return Scaffold(
       appBar: _buildNavBar(),
@@ -71,9 +71,12 @@ class AppointmentDetails extends StatelessWidget {
                         _buildDivider(),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            appointment.description,
-                            style: TextStyle(fontSize: 16),
+                          child: Align(
+                            alignment: Alignment.topLeft,
+                            child: Text(
+                              appointment.description,
+                              style: TextStyle(fontSize: 16),
+                            ),
                           ),
                         )
                       ],
@@ -140,7 +143,8 @@ class AppointmentDetails extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons(Appoint appoint, BuildContext context, GlobalKey<ScaffoldState> scaffoldKey) {
+  Widget _buildActionButtons(Appoint appoint, BuildContext context,
+      GlobalKey<ScaffoldState> scaffoldKey) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
       child: Row(
