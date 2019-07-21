@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:appoint/actions/add_appoint_action.dart';
 import 'package:appoint/actions/appointments_action.dart';
 import 'package:appoint/utils/calendar.dart';
+import 'package:appoint/utils/constants.dart';
 import 'package:appoint/view_models/add_appoint_vm.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/appoint.dart';
@@ -12,7 +13,6 @@ import 'package:appoint/pages/select_period.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:appoint/view_models/settings_vm.dart';
 import 'package:appoint/widgets/company_tile.dart';
-import 'package:appoint/widgets/dialog.dart' as prefix0;
 import 'package:appoint/widgets/icon_circle_gradient.dart';
 import 'package:appoint/widgets/navBar.dart';
 import 'package:appoint/pages/select_company.dart';
@@ -190,11 +190,14 @@ class AddAppointState extends State<AddAppoint>
                   description: _description,
                 ));
 
-                if (vm.settingsViewModel.settings["calendarIntegration"] ==
-                    true) {
+                if (vm.settingsViewModel
+                            .settings[kSettingsCalendarIntegration] ==
+                        true &&
+                    vm.settingsViewModel.settings[kSettingsSaveToCalendar] ==
+                        true) {
                   Calendar()
                       .createNativeCalendarEvent(
-                          vm.settingsViewModel.settings["calendarId"],
+                          vm.settingsViewModel.settings[kSettingsCalendarId],
                           _period.start,
                           _title,
                           _period.duration,
@@ -218,9 +221,9 @@ class AddAppointState extends State<AddAppoint>
                         Navigator.pop(context);
                       }); */
                     }
-                  Navigator.pop(context);
                   });
-                } 
+                }
+                Navigator.pop(context);
               }
             : null,
       ),
