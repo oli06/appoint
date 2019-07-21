@@ -5,6 +5,7 @@ import 'package:appoint/models/day.dart';
 import 'package:appoint/models/period.dart';
 import 'package:appoint/utils/distance.dart';
 import 'package:appoint/utils/parse.dart';
+import 'package:appoint/widgets/expandable_period_tile.dart';
 import 'package:flutter/material.dart';
 
 List<Company> companiesSelector(AppState state) =>
@@ -105,6 +106,15 @@ Map<DateTime, List> filterDaysPeriodsList(
   }));
 
   return Map.from(map2)..removeWhere((entry, v) => v.isEmpty);
+}
+
+List<ExpandablePeriodTile> filterPeriodTiles(
+    List<ExpandablePeriodTile> periodTile, TimeOfDay tod) {
+  if (tod == null) {
+    return periodTile;
+  }
+
+  return periodTile.where((periodTile) => periodTile.period.start.hour == tod.hour).toList();
 }
 
 List<Day<Period>> groupPeriodsByDate(List<Period> periods) {

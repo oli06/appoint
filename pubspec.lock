@@ -162,6 +162,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.1.0+2"
+  device_calendar:
+    dependency: "direct main"
+    description:
+      path: device_calendar
+      ref: HEAD
+      resolved-ref: "1549d7bcf7dec9dba34d5dccdecce6497675a985"
+      url: "git://github.com/oli06/flutter_plugins.git"
+    source: git
+    version: "0.1.3"
   direct_select_flutter:
     dependency: "direct main"
     description:
@@ -426,6 +435,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.0.9"
+  shared_preferences:
+    dependency: "direct main"
+    description:
+      name: shared_preferences
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.5.3+4"
   shelf:
     dependency: transitive
     description:

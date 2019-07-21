@@ -15,7 +15,6 @@ import 'package:appoint/widgets/list_header.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:appoint/widgets/navBar.dart';
-import 'package:badges/badges.dart';
 import 'package:flutter_cupertino_date_picker/flutter_cupertino_date_picker.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:location/location.dart';
@@ -66,8 +65,8 @@ class _AppointmentPageState extends State<AppointmentPage> {
         _ListHeader(childrenCount: d.events.length, value: d.date.toUtc())));
 
     final List<Widget> slivers = List<Widget>();
-    days.asMap().forEach((index, day) =>
-        slivers.addAll(_buildHeaderBuilderLists(context, index, 1, day, vm.location)));
+    days.asMap().forEach((index, day) => slivers
+        .addAll(_buildHeaderBuilderLists(context, index, 1, day, vm.location)));
     return Column(
       children: <Widget>[
         _buildUpcomingEventDescription(upcomingAppointment, vm),
@@ -189,8 +188,8 @@ class _AppointmentPageState extends State<AppointmentPage> {
     );
   }
 
-  List<Widget> _buildHeaderBuilderLists(
-      BuildContext context, int firstIndex, int count, Day<Appoint> day, LocationData userLocation) {
+  List<Widget> _buildHeaderBuilderLists(BuildContext context, int firstIndex,
+      int count, Day<Appoint> day, LocationData userLocation) {
     return List.generate(count, (sliverIndex) {
       sliverIndex += firstIndex;
       return new SliverStickyHeaderBuilder(
@@ -252,7 +251,9 @@ class _AppointmentPageState extends State<AppointmentPage> {
                     color: Theme.of(context).primaryColor, fontSize: 20)),
             onPressed: () => showCupertinoModalPopup(
               context: context,
-              builder: (BuildContext context) => AddAppoint(isEditing: false),
+              builder: (BuildContext context) => AddAppoint(
+                isEditing: false,
+              ),
             ),
           ),
         ],

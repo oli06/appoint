@@ -4,6 +4,7 @@ import 'package:appoint/view_models/appointments_vm.dart';
 import 'package:appoint/view_models/favorites_vm.dart';
 import 'package:appoint/view_models/select_company_vm.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
+import 'package:appoint/view_models/settings_vm.dart';
 import 'package:appoint/view_models/signin_vm.dart';
 import 'package:appoint/view_models/user_vm.dart';
 
@@ -14,7 +15,7 @@ class AppState {
   final AppointmentsViewModel appointmentsViewModel;
   final UserViewModel userViewModel;
   final FavoritesViewModel favoritesViewModel;
-
+  final SettingsViewModel settingsViewModel;
   AppState({
     this.selectCompanyViewModel = const SelectCompanyViewModel(),
     this.selectPeriodViewModel = const SelectedPeriodViewModel(),
@@ -22,6 +23,7 @@ class AppState {
     this.appointmentsViewModel = const AppointmentsViewModel(),
     this.userViewModel = const UserViewModel(),
     this.favoritesViewModel = const FavoritesViewModel(),
+    this.settingsViewModel = const SettingsViewModel(),
   });
 
   factory AppState.initState() => AppState(
@@ -34,13 +36,13 @@ class AppState {
           isLoading: true,
           periods: {},
           visiblePeriods: {},
-          prioritizePrivateAppointments: false,
           selectedDay: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
         ),
         appointmentsViewModel: AppointmentsViewModel(isLoading: true),
         userViewModel: UserViewModel(isLoading: true),
         favoritesViewModel: FavoritesViewModel(
             isLoading: true, isEditing: false, selectedFavorites: []),
+            settingsViewModel: SettingsViewModel(settings: {}),
       );
 }
 

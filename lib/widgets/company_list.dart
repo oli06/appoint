@@ -106,10 +106,14 @@ class _CompanyListState extends State<CompanyList> {
       },
       child: Container(
         child: CupertinoScrollbar(
-          child: ListView.builder(
+          child: ListView.separated(
             shrinkWrap: true,
             physics: ClampingScrollPhysics(),
             itemCount: companies.length,
+            separatorBuilder: (context, index) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Divider(height: 1),
+            ),
             itemBuilder: (context, index) {
               return widget.itemBuilder(context, index, companies[index]);
             },

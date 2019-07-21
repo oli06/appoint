@@ -1,3 +1,4 @@
+import 'package:appoint/actions/settings_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/middleware/store_companies_middleware.dart';
 import 'package:appoint/models/app_state.dart';
@@ -12,7 +13,7 @@ import 'package:redux_remote_devtools/redux_remote_devtools.dart';
 import 'package:redux_dev_tools/redux_dev_tools.dart';
 
 void main() async {
-    debugPaintSizeEnabled = false;
+  debugPaintSizeEnabled = false;
 
   /* var remoteDevtools = RemoteDevToolsMiddleware('0.0.0.0:8001');
 
@@ -48,17 +49,21 @@ class MyApp extends StatelessWidget {
       store: store,
       child: StoreConnector<AppState, _ViewModel>(
         converter: (store) => _ViewModel.fromState(store),
-        onInit: (store) => store.dispatch(LoadUserAction()),
+        onInit: (store) {
+          store.dispatch(LoadUserAction());
+          store.dispatch(LoadSharedPreferencesAction());
+        },
         builder: (context, vm) => MaterialApp(
-              initialRoute: "app",
-              routes: routes,
-              theme: theme,
-              title: "Appoint",
-            ),
+          initialRoute: "app",
+          routes: routes,
+          theme: theme,
+          title: "Appoint",
+        ),
       ),
     );
   }
 }
+
 class _ViewModel {
   final User user;
 

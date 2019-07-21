@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
 
-String url = 'https://4ea8a803.ngrok.io';
+String url = 'https://833e43e1.ngrok.io';
 //String url = 'http://localhost:8000';
 
 class Api {

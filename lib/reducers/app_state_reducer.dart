@@ -6,6 +6,7 @@ import 'package:appoint/reducers/favorites_reducer.dart';
 import 'package:appoint/reducers/select_period_reducer.dart';
 //import 'package:appoint/reducers/signin_reducer.dart';
 import 'package:appoint/reducers/user_reducer.dart';
+import 'package:appoint/reducers/settings_reducer.dart';
 
 AppState appReducer(AppState state, action) {
   return AppState(
@@ -19,5 +20,6 @@ AppState appReducer(AppState state, action) {
     userViewModel: userReducer(state.userViewModel, action),
     favoritesViewModel: favoritesReducer(state.favoritesViewModel, action),
     //signInViewModel: signInReducer(state.signInViewModel, action),
+    settingsViewModel: settingsReducer(state.settingsViewModel, action),
   );
 }

@@ -2,17 +2,24 @@ import 'package:appoint/actions/appointments_action.dart';
 import 'package:appoint/actions/companies_action.dart';
 import 'package:appoint/actions/favorites_action.dart';
 import 'package:appoint/actions/select_period_action.dart';
+import 'package:appoint/actions/settings_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/data/api.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/selectors/selectors.dart';
-import 'package:appoint/view_models/select_period_vm.dart';
+import 'package:appoint/utils/calendar.dart';
+import 'package:appoint/utils/constants.dart';
 import 'package:appoint/utils/parse.dart';
+import 'package:appoint/widgets/expandable_period_tile.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:redux/redux.dart';
 import 'package:location/location.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 List<Middleware<AppState>> createStoreCompaniesMiddleware() {
   final Api api = Api();
+  final Calendar calendar = Calendar();
 
   final loadCompanies = _createLoadCompanies(api);
   final loadPeriods = _createLoadPeriods(api);
@@ -24,6 +31,8 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
   final removeUserFavorites = _createRemoveFromUserFavorites(api);
   final addUserFavorite = _createAddToUserFavorites(api);
   final signUpNewUser = _createRegisterUser(api);
+  final loadSharedPreferences = _createLoadSharedPreferences();
+  final loadPeriodTiles = _createLoadPeriodTiles(calendar);
 
   return [
     TypedMiddleware<AppState, LoadCompaniesAction>(loadCompanies),
@@ -33,9 +42,13 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
     TypedMiddleware<AppState, VerifyUserAction>(verifyUser),
     TypedMiddleware<AppState, LoadUserLocationAction>(loadUserLocation),
     TypedMiddleware<AppState, LoadFavoritesAction>(loadUserFavorites),
-    TypedMiddleware<AppState, RemoveFromUserFavoritesAction>(removeUserFavorites),
+    TypedMiddleware<AppState, RemoveFromUserFavoritesAction>(
+        removeUserFavorites),
     TypedMiddleware<AppState, AddToUserFavoritesAction>(addUserFavorite),
     TypedMiddleware<AppState, RegisterUserAction>(signUpNewUser),
+    TypedMiddleware<AppState, LoadSharedPreferencesAction>(
+        loadSharedPreferences),
+    TypedMiddleware<AppState, LoadPeriodTilesAction>(loadPeriodTiles),
   ];
 }
 
@@ -67,9 +80,8 @@ Middleware<AppState> _createLoadAppointments(Api api) {
 
 Middleware<AppState> _createRegisterUser(Api api) {
   return (Store<AppState> store, action, NextDispatcher next) {
-
     api.registerUser(action.user).then((result) {
-      if(result) {
+      if (result) {
         print("created user with success");
       } else {
         print("failed user registration");
@@ -86,7 +98,10 @@ Middleware<AppState> _createLoadPeriods(Api api) {
 
     api.getPeriodsForMonth(action.companyId).then((periodMap) {
       store.dispatch(SetLoadedPeriodsAction(periodMap));
-      store.dispatch(UpdateVisiblePeriodsAction(getVisibleDaysPeriodsList(store.state.selectPeriodViewModel.periods, store.state.selectPeriodViewModel.visibleFirstDay, store.state.selectPeriodViewModel.visibleLastDay)));
+      store.dispatch(UpdateVisiblePeriodsAction(getVisibleDaysPeriodsList(
+          store.state.selectPeriodViewModel.periods,
+          store.state.selectPeriodViewModel.visibleFirstDay,
+          store.state.selectPeriodViewModel.visibleLastDay)));
       store.dispatch(UpdateIsLoadingAction(false));
     });
 
@@ -105,6 +120,117 @@ Middleware<AppState> _createUserVerifcation(Api api) {
       store.dispatch(UpdateUserLoadingAction(false));
     });
 
+    next(action);
+  };
+}
+
+Middleware<AppState> _createLoadSharedPreferences() {
+  return (Store<AppState> store, action, next) async {
+    final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+
+    final keys = sharedPreferences.getKeys();
+    Map<dynamic, dynamic> settings = {};
+    keys.forEach((k) {
+      settings[k] = sharedPreferences.get(k);
+    });
+
+    store.dispatch(LoadedSharedPreferencesAction(settings));
+
+    next(action);
+  };
+}
+
+Middleware<AppState> _createLoadPeriodTiles(Calendar calendar) {
+  return (Store<AppState> store, action, next) async {
+    if (!store.state.settingsViewModel.settings[kSettingsCalendarIntegration]) {
+      List<ExpandablePeriodTile> _periods = [];
+      if (store.state.selectPeriodViewModel
+              .visiblePeriods[store.state.selectPeriodViewModel.selectedDay] !=
+          null) {
+        store.state.selectPeriodViewModel
+            .visiblePeriods[store.state.selectPeriodViewModel.selectedDay]
+            .forEach((period) {
+          _periods.add(ExpandablePeriodTile(
+            period: period,
+            onTap: () {
+              store.dispatch(ResetSelectPeriodViewModelAction());
+              Navigator.pop(action.context, period);
+            },
+            trailing: null,
+            children: null,
+          ));
+        });
+      }
+      store.dispatch(LoadedPeriodTilesAction(_periods));
+      store.dispatch(UpdateFilteredPeriodTilesAction(_periods));
+
+      return;
+    } else {
+      store.dispatch(UpdateIsLoadingAction(true));
+
+      calendar
+          .retrieveCalendarEvents(
+              store.state.settingsViewModel.settings[kSettingsCalendarId], action.day)
+          .then((result) {
+        List<ExpandablePeriodTile> _periods = [];
+
+        if (store.state.selectPeriodViewModel.visiblePeriods[
+                store.state.selectPeriodViewModel.selectedDay] !=
+            null) {
+          store.state.selectPeriodViewModel
+              .visiblePeriods[store.state.selectPeriodViewModel.selectedDay]
+              .forEach((period) {
+            final eventConflicts = result.data.where((event) {
+              if (event.start.isBefore(period.start) &&
+                  !event.end.isBefore(period.start)) {
+                return true;
+              }
+              if (!event.start.isBefore(period.start) &&
+                  event.start.isBefore(period.start.add(period.duration))) {
+                return true;
+              }
+              return false;
+            }).toList();
+            print("event conflicts are: ${eventConflicts.length}");
+            _periods.add(ExpandablePeriodTile(
+              period: period,
+              onTap: () {
+                store.dispatch(ResetSelectPeriodViewModelAction());
+                Navigator.pop(action.context, period);
+              },
+              trailing: eventConflicts.length != 0 ? Icon(Icons.warning) : null,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        "Konflikte mit folgenden Terminen:",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      ...eventConflicts
+                          .map((event) => Text(
+                              "${event.title}, ${Parse.hoursWithMinutes.format(event.start)} - ${Parse.hoursWithMinutes.format(event.end)}"))
+                          .toList(),
+                    ],
+                  ),
+                ),
+              ],
+            ));
+          });
+          print(
+              "returning calculated data now, with leght: ${_periods.length}");
+          store.dispatch(LoadedPeriodTilesAction(_periods));
+          store.dispatch(UpdateFilteredPeriodTilesAction(_periods));
+        } else {
+          print("periods are nulll");
+        }
+
+        store.dispatch(UpdateIsLoadingAction(false));
+      });
+    }
     next(action);
   };
 }
@@ -152,9 +278,9 @@ Middleware<AppState> _createLoadUserFavorites(Api api) {
 Middleware<AppState> _createRemoveFromUserFavorites(Api api) {
   return (Store<AppState> store, action, next) {
     api.removeUserFavorites(action.userId, action.companyIds).then((res) {
-      //TODO: use user.favorites stream to reload them 
+      //TODO: use user.favorites stream to reload them
     });
-    
+
     next(action);
   };
 }
@@ -162,9 +288,9 @@ Middleware<AppState> _createRemoveFromUserFavorites(Api api) {
 Middleware<AppState> _createAddToUserFavorites(Api api) {
   return (Store<AppState> store, action, next) {
     api.addUserFavorite(action.userId, action.companyId).then((res) {
-      //TODO: use user.favorites stream to reload them 
+      //TODO: use user.favorites stream to reload them
     });
-    
+
     next(action);
   };
 }

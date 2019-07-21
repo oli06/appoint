@@ -7,8 +7,15 @@ import 'package:flutter/material.dart';
 class PeriodTile extends StatelessWidget {
   final Period period;
   final Function onTap;
+  final Widget trailing;
+  final Function trailingOnTap;
 
-  PeriodTile({this.period, this.onTap});
+  PeriodTile({
+    this.period,
+    this.onTap,
+    this.trailing,
+    this.trailingOnTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +28,8 @@ class PeriodTile extends StatelessWidget {
               .transparent, //make background transparent to use gesture detector on whole tile
           child: Row(
             children: <Widget>[
-              IconCircleGradient.periodIndicator(period.duration.inMinutes / 60),
+              IconCircleGradient.periodIndicator(
+                  period.duration.inMinutes / 60),
               Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Text(
@@ -29,6 +37,17 @@ class PeriodTile extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
               ),
+              if (trailing != null)
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                  onTap: trailingOnTap,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: trailing,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

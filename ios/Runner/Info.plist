@@ -29,7 +29,8 @@
 	</array>
 		<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Wird für die Entfernungsberechnung zu Unternehmen benötigt</string>
-
+	<key>NSCalendarsUsageDescription</key>
+	<string>Der Zugriff auf den Kalender erlaubt die bessere Integration und automatische Übertragung von erstellten Terminen in den Kalender</string>
 	<!--added end-->
 	
 	<key>LSRequiresIPhoneOS</key>

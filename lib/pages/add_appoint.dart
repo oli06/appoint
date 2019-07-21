@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:appoint/actions/add_appoint_action.dart';
 import 'package:appoint/actions/appointments_action.dart';
+import 'package:appoint/utils/calendar.dart';
+import 'package:appoint/utils/constants.dart';
 import 'package:appoint/view_models/add_appoint_vm.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/appoint.dart';
@@ -9,6 +11,7 @@ import 'package:appoint/models/company.dart';
 import 'package:appoint/models/period.dart';
 import 'package:appoint/pages/select_period.dart';
 import 'package:appoint/utils/parse.dart';
+import 'package:appoint/view_models/settings_vm.dart';
 import 'package:appoint/widgets/company_tile.dart';
 import 'package:appoint/widgets/icon_circle_gradient.dart';
 import 'package:appoint/widgets/navBar.dart';
@@ -186,6 +189,40 @@ class AddAppointState extends State<AddAppoint>
                   period: _period,
                   description: _description,
                 ));
+
+                if (vm.settingsViewModel
+                            .settings[kSettingsCalendarIntegration] ==
+                        true &&
+                    vm.settingsViewModel.settings[kSettingsSaveToCalendar] ==
+                        true) {
+                  Calendar()
+                      .createNativeCalendarEvent(
+                          vm.settingsViewModel.settings[kSettingsCalendarId],
+                          _period.start,
+                          _title,
+                          _period.duration,
+                          _description,
+                          _company)
+                      .then((res) {
+                    if (res) {
+                      //TODO: show indicator that an event was created inside calendar
+                      /* showCupertinoDialog(
+                        context: context,
+                        builder: (context) => prefix0.Dialog(
+                          title: "Termin erstellt",
+                          information:
+                              "Termin wurde in den Kalender übertragen",
+                          informationTextSize: 24,
+                        ),
+                      ); 
+                      Future.delayed(Duration(milliseconds: 200), () {
+                        //first: pop dialog, then pop add_appoint page
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      }); */
+                    }
+                  });
+                }
                 Navigator.pop(context);
               }
             : null,
@@ -342,7 +379,7 @@ class AddAppointState extends State<AddAppoint>
                                   Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Text(
-                                      "${Parse.hoursWithMinutes.format(_period.start.toUtc())} - ${Parse.hoursWithMinutes.format(_period.getPeriodEnd().toUtc())}",
+                                      "${Parse.hoursWithMinutes.format(_period.start)} - ${Parse.hoursWithMinutes.format(_period.getPeriodEnd())}",
                                       style: TextStyle(fontSize: 15),
                                     ),
                                   ),
@@ -417,12 +454,13 @@ class _ViewModel {
   final AddAppointViewModel addAppointViewModel;
   final Function(Appoint appoint) saveAppoint;
   final Function cancelEditOrAdd;
+  final SettingsViewModel settingsViewModel;
 
-  _ViewModel({
-    @required this.addAppointViewModel,
-    this.saveAppoint,
-    this.cancelEditOrAdd,
-  });
+  _ViewModel(
+      {@required this.addAppointViewModel,
+      this.saveAppoint,
+      this.cancelEditOrAdd,
+      this.settingsViewModel});
 
   static _ViewModel fromStore(Store<AppState> store) {
     return _ViewModel(
@@ -430,6 +468,7 @@ class _ViewModel {
       saveAppoint: (Appoint appoint) =>
           store.dispatch(AddAppointmentAction(appoint)),
       cancelEditOrAdd: () => store.dispatch(CancelEditOrAddAppointAction()),
+      settingsViewModel: store.state.settingsViewModel,
     );
   }
 }

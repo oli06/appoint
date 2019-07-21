@@ -26,6 +26,10 @@ class Address {
     return "$street $houseNumber - $zip $city";
   }
 
+  String toStringWithComma() {
+    return "$street $houseNumber, $zip $city";
+  }
+
   String toCityString() {
     return "$zip $city";
   }
