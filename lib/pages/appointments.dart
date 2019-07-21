@@ -66,8 +66,8 @@ class _AppointmentPageState extends State<AppointmentPage> {
         _ListHeader(childrenCount: d.events.length, value: d.date.toUtc())));
 
     final List<Widget> slivers = List<Widget>();
-    days.asMap().forEach((index, day) =>
-        slivers.addAll(_buildHeaderBuilderLists(context, index, 1, day, vm.location)));
+    days.asMap().forEach((index, day) => slivers
+        .addAll(_buildHeaderBuilderLists(context, index, 1, day, vm.location)));
     return Column(
       children: <Widget>[
         _buildUpcomingEventDescription(upcomingAppointment, vm),
@@ -189,8 +189,8 @@ class _AppointmentPageState extends State<AppointmentPage> {
     );
   }
 
-  List<Widget> _buildHeaderBuilderLists(
-      BuildContext context, int firstIndex, int count, Day<Appoint> day, LocationData userLocation) {
+  List<Widget> _buildHeaderBuilderLists(BuildContext context, int firstIndex,
+      int count, Day<Appoint> day, LocationData userLocation) {
     return List.generate(count, (sliverIndex) {
       sliverIndex += firstIndex;
       return new SliverStickyHeaderBuilder(
@@ -273,6 +273,19 @@ class _AppointmentPageState extends State<AppointmentPage> {
       trailing: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
+          //TODO: v2.0 Feature
+          Badge(
+            badgeColor: Color(0xff09c199),
+            animationType: BadgeAnimationType.scale,
+            position: BadgePosition.topRight(top: 0, right: 0),
+            badgeContent: Text("3"),
+            child: IconButton(
+              icon: Icon(Icons.message),
+              onPressed: () {
+                //Benachrichtigungspage anzeigen
+              },
+            ),
+          ),
           IconButton(
             icon: Icon(CupertinoIcons.profile_circled),
             color: Theme.of(context).primaryColor,
