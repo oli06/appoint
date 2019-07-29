@@ -251,211 +251,157 @@ class AddAppointState extends State<AddAppoint>
         elevation: 2,
         child: Column(
           children: <Widget>[
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: Container(
-                    height: 50,
-                    padding: EdgeInsets.only(
-                      left: 15,
-                      right: 15,
-                    ),
-                    child: Align(
-                      child: TextFormField(
-                        controller: _titleController,
-                        autofocus: isEditing ? false : true,
-                        style: TextStyle(color: Colors.black),
-                        textInputAction: TextInputAction.next,
-                        onFieldSubmitted: (_) {
-                          _titleFocus.unfocus();
-                          companyTap();
-                        },
-                        decoration: InputDecoration(
-                            hintText: "Titel",
-                            suffixIcon: _titleController.text.isNotEmpty
-                                ? IconButton(
-                                    icon: Icon(
-                                      CupertinoIcons.clear_circled_solid,
-                                      size: 16,
-                                      color: Colors.grey[350],
-                                    ),
-                                    onPressed: () => _titleController.text = "",
-                                  )
-                                : null,
-                            border: InputBorder.none),
-                      ),
-                    ),
-                    alignment: Alignment.centerLeft,
-                  ),
-                ),
-              ],
-            ),
-            Container(
-              padding: EdgeInsets.only(
-                left: 15,
-                right: 15,
-              ),
-              child: Divider(
-                height: 1,
-              ),
-            ),
+            _buildTitleTextField(companyTap),
+            _buildDivider(),
             _company == null
-                ? Container(
-                    height: 50,
-                    child: FlatButton(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("Unternehmen auswählen..."),
-                          Icon(
-                            CupertinoIcons.getIconData(0xf3d0),
-                            color: Colors.black,
-                          ),
-                        ],
-                      ),
-                      onPressed: companyTap,
-                    ),
-                  )
-                : Container(
-                    color: isEditing ? Colors.grey[350] : null,
-                    child: CompanyTile(
-                      isStatic: true,
-                      company: _company,
-                      onTap: isEditing ? null : companyTap,
-                    ),
-                  ),
-            Container(
-              padding: EdgeInsets.only(
-                left: 15,
-                right: 15,
-              ),
-              child: Divider(
-                height: 1,
-              ),
-            ),
-            _period == null
-                ? Container(
-                    height: 50,
-                    child: FlatButton(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("Zeitraum auswählen..."),
-                          Icon(
-                            CupertinoIcons.getIconData(0xf3d0),
-                            color: Colors.grey[350],
-                          ),
-                        ],
-                      ),
-                      onPressed: _company == null ? null : _selectPeriodPressed,
-                    ),
-                  )
-                : GestureDetector(
-                    onTap: _selectPeriodPressed,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        color: Colors
-                            .transparent, //hack: make widget also clickable where no other (text) widget is placed
-                        child: Column(
-                          children: <Widget>[
-                            Align(
-                              child: Text(
-                                Parse.dateWithWeekday.format(_period.start),
-                                style: TextStyle(fontSize: 17),
-                              ),
-                              alignment: Alignment.centerLeft,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Row(
-                                children: <Widget>[
-                                  IconCircleGradient.periodIndicator(
-                                      _period.duration.inMinutes / 60),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "${Parse.hoursWithMinutes.format(_period.start)} - ${Parse.hoursWithMinutes.format(_period.getPeriodEnd())}",
-                                      style: TextStyle(fontSize: 15),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                ? _buildSelectCompanyButton(companyTap)
+                : _buildCompanyTile(companyTap),
+            _buildDivider(),
+            _period == null ? _buildSelectPeriodButton() : _buildPeriodTile(),
           ],
         ),
       ),
     );
   }
 
-  Card _secondCard() {
-    return Card(
-      color: _company == null ? Colors.grey[350] : null,
-      elevation: 2,
-      child: Container(
-        child: Column(
-          children: <Widget>[
-            _period == null
-                ? Container(
-                    height: 50,
-                    child: FlatButton(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("Zeitraum auswählen..."),
-                          Icon(
-                            CupertinoIcons.getIconData(0xf3d0),
-                            color: Colors.black,
-                          ),
-                        ],
-                      ),
-                      onPressed: _company == null ? null : _selectPeriodPressed,
-                    ),
-                  )
-                : GestureDetector(
-                    onTap: _selectPeriodPressed,
-                    child: Padding(
+  GestureDetector _buildPeriodTile() {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _selectPeriodPressed,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          child: Column(
+            children: <Widget>[
+              Align(
+                child: Text(
+                  Parse.dateWithWeekday.format(_period.start),
+                  style: TextStyle(fontSize: 17),
+                ),
+                alignment: Alignment.centerLeft,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: <Widget>[
+                    IconCircleGradient.periodIndicator(
+                        _period.duration.inMinutes / 60),
+                    Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        color: Colors
-                            .transparent, //hack: make widget also clickable where no other (text) widget is placed
-                        child: Column(
-                          children: <Widget>[
-                            Align(
-                              child: Text(
-                                Parse.dateWithWeekday.format(_period.start),
-                                style: TextStyle(fontSize: 17),
-                              ),
-                              alignment: Alignment.centerLeft,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Row(
-                                children: <Widget>[
-                                  IconCircleGradient.periodIndicator(
-                                      _period.duration.inMinutes / 60),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "${Parse.hoursWithMinutes.format(_period.start)} - ${Parse.hoursWithMinutes.format(_period.getPeriodEnd())}",
-                                      style: TextStyle(fontSize: 15),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          ],
-                        ),
+                      child: Text(
+                        "${Parse.hoursWithMinutes.format(_period.start)} - ${Parse.hoursWithMinutes.format(_period.getPeriodEnd())}",
+                        style: TextStyle(fontSize: 15),
                       ),
                     ),
-                  ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Container _buildSelectPeriodButton() {
+    return Container(
+      height: 50,
+      child: FlatButton(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Zeitraum auswählen..."),
+            Icon(
+              CupertinoIcons.getIconData(0xf3d0),
+              color: Colors.grey[350],
+            ),
           ],
         ),
+        onPressed: _company == null ? null : _selectPeriodPressed,
+      ),
+    );
+  }
+
+  Container _buildCompanyTile(Function companyTap) {
+    return Container(
+      color: isEditing ? Colors.grey[350] : null,
+      child: CompanyTile(
+        isStatic: true,
+        company: _company,
+        onTap: isEditing ? null : companyTap,
+      ),
+    );
+  }
+
+  Container _buildSelectCompanyButton(Function companyTap) {
+    return Container(
+      height: 50,
+      child: FlatButton(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Unternehmen auswählen..."),
+            Icon(
+              CupertinoIcons.getIconData(0xf3d0),
+              color: Colors.black,
+            ),
+          ],
+        ),
+        onPressed: companyTap,
+      ),
+    );
+  }
+
+  Row _buildTitleTextField(Function companyTap) {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: Container(
+            height: 50,
+            padding: EdgeInsets.only(
+              left: 15,
+              right: 15,
+            ),
+            child: Align(
+              child: TextFormField(
+                controller: _titleController,
+                autofocus: isEditing ? false : true,
+                style: TextStyle(color: Colors.black),
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) {
+                  _titleFocus.unfocus();
+                  companyTap();
+                },
+                decoration: InputDecoration(
+                    hintText: "Titel",
+                    suffixIcon: _titleController.text.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(
+                              CupertinoIcons.clear_circled_solid,
+                              size: 16,
+                              color: Colors.grey[350],
+                            ),
+                            onPressed: () => _titleController.text = "",
+                          )
+                        : null,
+                    border: InputBorder.none),
+              ),
+            ),
+            alignment: Alignment.centerLeft,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Container _buildDivider() {
+    return Container(
+      padding: EdgeInsets.only(
+        left: 15,
+        right: 15,
+      ),
+      child: Divider(
+        height: 1,
       ),
     );
   }
