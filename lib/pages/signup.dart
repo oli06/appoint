@@ -1,9 +1,10 @@
-import 'package:appoint/actions/user_action.dart';
-import 'package:appoint/models/app_state.dart';
-import 'package:appoint/models/user.dart';
+import 'dart:convert';
+
+import 'package:appoint/data/api.dart';
+import 'package:appoint/models/useraccount.dart';
 import 'package:appoint/pages/login.dart';
+import 'package:appoint/pages/signup_success.dart';
 import 'package:appoint/utils/parse.dart';
-import 'package:appoint/widgets/bottom_picker.dart';
 import 'package:appoint/widgets/form/appoint_input.dart';
 import 'package:appoint/widgets/form/form_button.dart';
 import 'package:appoint/widgets/form/text_button.dart';
@@ -12,8 +13,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cupertino_date_picker/date_picker.dart';
 import 'package:flutter_cupertino_date_picker/date_picker_theme.dart';
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:redux/redux.dart';
 
 class SignUp extends StatefulWidget {
   static final routeName = "signup";
@@ -25,6 +24,8 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
   final _formKey = GlobalKey<FormState>();
+
+  String info = "";
 
   String _firstName;
   String _lastName;
@@ -83,6 +84,14 @@ class _SignUpState extends State<SignUp> {
         body: Column(
           children: <Widget>[
             _buildWelcomeHeader(),
+            if (info.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Text(
+                  info,
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
             Flexible(
               flex: 27,
               child: Center(
@@ -136,17 +145,29 @@ class _SignUpState extends State<SignUp> {
                 if (_formKey.currentState.validate() &&
                     _hasAgreed &&
                     _birthday != null) {
-                  StoreProvider.of<AppState>(context).dispatch(
-                      RegisterUserAction(User(
-                          birthday: _birthday,
-                          firstName: _firstName,
-                          lastName: _lastName,
-                          phone: _phone,
-                          email: _email)));
-//TODO: instead of loginRoute: route mit Informationen über e-Mail Bestätigung etc
-                  Navigator.pushReplacementNamed(context, Login.namedRoute);
+                  _formKey.currentState.save();
+                  Api()
+                      .register(UserAccount(
+                    password: _password,
+                    birthday: _birthday,
+                    email: _email,
+                    firstName: _firstName,
+                    lastName: _lastName,
+                    phone: _phone,
+                  ))
+                      .then((result) {
+                    if (result.statusCode == 200) {
+                      print("created user with success");
+                      Navigator.pushReplacementNamed(
+                          context, SignupSuccess.namedRoute);
+                    } else {
+                      print("failed user registration");
+                      setState(() {
+                        info = json.decode(result.body);
+                      });
+                    }
+                  });
                 }
-                //TODO auth
               },
             ),
           ),
@@ -235,6 +256,7 @@ class _SignUpState extends State<SignUp> {
         ),
       ),
       errorText: "Passwort fehlt",
+      onSaved: (value) => _password = value,
       onFieldSubmitted: (value) {
         FocusScope.of(context).requestFocus(_repeatPasswordFocus);
         _password = value;
@@ -337,9 +359,10 @@ class _SignUpState extends State<SignUp> {
         ),
       ),
       errorText: "Telefonnummer fehlt",
+      onSaved: (value) => _phone = value,
       onFieldSubmitted: (value) {
         FocusScope.of(context).requestFocus(_passwordFocus);
-        _phone = value;
+        //_phone = value;
       },
       showSuffixIcon: true,
     );
@@ -350,6 +373,7 @@ class _SignUpState extends State<SignUp> {
       hintText: "e-Mail Adresse",
       focusNode: _mailAdressFocus,
       keyboardType: TextInputType.emailAddress,
+      onSaved: (value) => _email = value,
       leadingWidget: Card(
         child: Padding(
           padding: const EdgeInsets.all(2.0),
@@ -359,6 +383,7 @@ class _SignUpState extends State<SignUp> {
       errorText: "e-Mail Adresse fehlt",
       onFieldSubmitted: (value) {
         _email = value;
+        print("saving email, new value: $_email");
         _birthdayInputClicked();
       },
       showSuffixIcon: true,
@@ -373,9 +398,10 @@ class _SignUpState extends State<SignUp> {
             focusNode: null,
             hintText: "Vorname",
             errorText: "Vorname fehlt",
+            onSaved: (value) => _firstName = value,
             onFieldSubmitted: (value) {
               FocusScope.of(context).requestFocus(_lastNameFocus);
-              _firstName = value;
+              //_firstName = value;
             },
             showSuffixIcon: false,
             leadingWidget: Card(
@@ -393,9 +419,10 @@ class _SignUpState extends State<SignUp> {
             hintText: "Nachname",
             errorText: "Nachname fehlt",
             showSuffixIcon: false,
+            onSaved: (value) => _lastName = value,
             onFieldSubmitted: (value) {
               FocusScope.of(context).requestFocus(_mailAdressFocus);
-              _lastName = value;
+              //_lastName = value;
             },
           ),
         ),

@@ -6,6 +6,7 @@ import 'package:appoint/actions/settings_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/data/api.dart';
 import 'package:appoint/models/app_state.dart';
+import 'package:appoint/models/category.dart';
 import 'package:appoint/selectors/selectors.dart';
 import 'package:appoint/utils/calendar.dart';
 import 'package:appoint/utils/constants.dart';
@@ -24,31 +25,36 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
   final loadCompanies = _createLoadCompanies(api);
   final loadPeriods = _createLoadPeriods(api);
   final loadAppointments = _createLoadAppointments(api);
-  final loadUser = _createLoadUser(api);
   final verifyUser = _createUserVerifcation(api);
   final loadUserLocation = _createLoadUserLocation();
   final loadUserFavorites = _createLoadUserFavorites(api);
   final removeUserFavorites = _createRemoveFromUserFavorites(api);
   final addUserFavorite = _createAddToUserFavorites(api);
-  final signUpNewUser = _createRegisterUser(api);
   final loadSharedPreferences = _createLoadSharedPreferences();
   final loadPeriodTiles = _createLoadPeriodTiles(calendar);
+  final loadCategories = _createLoadCategories(api);
+
+  final authenticate = _authenticate(api);
+  final loginProcessDone = _loadedUserConfigurationAction();
+  //final login = _login(api);
 
   return [
     TypedMiddleware<AppState, LoadCompaniesAction>(loadCompanies),
     TypedMiddleware<AppState, LoadPeriodsAction>(loadPeriods),
     TypedMiddleware<AppState, LoadAppointmentsAction>(loadAppointments),
-    TypedMiddleware<AppState, LoadUserAction>(loadUser),
     TypedMiddleware<AppState, VerifyUserAction>(verifyUser),
     TypedMiddleware<AppState, LoadUserLocationAction>(loadUserLocation),
     TypedMiddleware<AppState, LoadFavoritesAction>(loadUserFavorites),
     TypedMiddleware<AppState, RemoveFromUserFavoritesAction>(
         removeUserFavorites),
     TypedMiddleware<AppState, AddToUserFavoritesAction>(addUserFavorite),
-    TypedMiddleware<AppState, RegisterUserAction>(signUpNewUser),
     TypedMiddleware<AppState, LoadSharedPreferencesAction>(
         loadSharedPreferences),
     TypedMiddleware<AppState, LoadPeriodTilesAction>(loadPeriodTiles),
+    TypedMiddleware<AppState, LoadCategoriesAction>(loadCategories),
+    TypedMiddleware<AppState, AuthenticateAction>(authenticate),
+    TypedMiddleware<AppState, LoadedUserConfigurationAction>(loginProcessDone),
+    //TypedMiddleware<AppState, UserLoginAction>(login),
   ];
 }
 
@@ -56,7 +62,7 @@ Middleware<AppState> _createLoadCompanies(Api api) {
   return (Store<AppState> store, action, NextDispatcher next) {
     store.dispatch(UpdateCompanyIsLoadingAction(true));
 
-    api.getCompanies().then((companies) {
+    api.getCompanies(store.state.userViewModel.token).then((companies) {
       store.dispatch(LoadedCompaniesAction(companies));
       store.dispatch(UpdateCompanyIsLoadingAction(false));
     });
@@ -69,7 +75,9 @@ Middleware<AppState> _createLoadAppointments(Api api) {
   return (Store<AppState> store, action, NextDispatcher next) {
     store.dispatch(UpdateAppointmentsIsLoadingAction(true));
 
-    api.getAppointments().then((appointments) {
+    api
+        .getAppointments(action.userId, store.state.userViewModel.token)
+        .then((appointments) {
       store.dispatch(LoadedAppointmentsAction(appointments));
       store.dispatch(UpdateAppointmentsIsLoadingAction(false));
     });
@@ -78,15 +86,44 @@ Middleware<AppState> _createLoadAppointments(Api api) {
   };
 }
 
-Middleware<AppState> _createRegisterUser(Api api) {
-  return (Store<AppState> store, action, NextDispatcher next) {
-    api.registerUser(action.user).then((result) {
-      if (result) {
-        print("created user with success");
-      } else {
-        print("failed user registration");
-      }
-    });
+Middleware<AppState> _loadedUserConfigurationAction() {
+  return (Store<AppState> store, action, NextDispatcher next) async {
+
+    final sharedPreferences = await SharedPreferences.getInstance();
+    sharedPreferences.setString(kUserIdKey, action.user.id);
+    sharedPreferences.setString(kTokenKey, action.token);
+
+    store.dispatch(LoadedUserAction(action.user, action.token));
+    store.dispatch(LoadCategoriesAction());
+    store.dispatch(UpdateLoginProcessIsActiveAction(false));
+
+    next(action);
+  };
+}
+
+Middleware<AppState> _authenticate(Api api) {
+  return (Store<AppState> store, action, NextDispatcher next) async {
+    final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+
+    print("authentication soon");
+
+    if (sharedPreferences.containsKey(kTokenKey)) {
+      store.dispatch(UpdateLoginProcessIsActiveAction(true));
+
+      print("user is authenticated");
+      final token = sharedPreferences.getString(kTokenKey);
+      final userId = sharedPreferences.getString(kUserIdKey);
+
+      api.getUser(userId, token).then((user) {
+        if (user != null) {
+          store.dispatch(LoadedUserConfigurationAction(user, token));
+        }
+        store.dispatch(UpdateLoginProcessIsActiveAction(false));
+      });
+    } else {
+      print("user isnot authenticated");
+    }
 
     next(action);
   };
@@ -96,6 +133,20 @@ Middleware<AppState> _createLoadPeriods(Api api) {
   return (Store<AppState> store, action, next) {
     store.dispatch(UpdateIsLoadingAction(true));
 
+    /*api.getPeriods(action.companyId).then((periodMap) {
+      if (periodMap == null) {
+        store.dispatch(UpdateIsLoadingAction(false));
+      } else {
+        store.dispatch(SetLoadedPeriodsAction(periodMap));
+        store.dispatch(UpdateVisiblePeriodsAction(getVisibleDaysPeriodsList(
+            store.state.selectPeriodViewModel.periods,
+            store.state.selectPeriodViewModel.visibleFirstDay,
+            store.state.selectPeriodViewModel.visibleLastDay)));
+        store.dispatch(UpdateIsLoadingAction(false));
+      }
+    });
+
+*/
     api.getPeriodsForMonth(action.companyId).then((periodMap) {
       store.dispatch(SetLoadedPeriodsAction(periodMap));
       store.dispatch(UpdateVisiblePeriodsAction(getVisibleDaysPeriodsList(
@@ -114,10 +165,26 @@ Middleware<AppState> _createUserVerifcation(Api api) {
     store.dispatch(UpdateUserLoadingAction(true));
 
     api
-        .postUserVerificationCode(action.userId, action.verificationCode)
+        .postUserVerificationCode(action.userId, action.verificationCode,
+            store.state.userViewModel.token)
         .then((result) {
       store.dispatch(VerifyUserResultAction(result));
       store.dispatch(UpdateUserLoadingAction(false));
+    });
+
+    next(action);
+  };
+}
+
+Middleware<AppState> _createLoadCategories(Api api) {
+  return (Store<AppState> store, action, next) {
+    //TODO: check, if categories should use a own viewmodel
+    store.dispatch(UpdateCompanyIsLoadingAction(true));
+
+    api.getCategories(store.state.userViewModel.token).then((result) {
+      result.insert(0, Category(id: -1, value: "Alle"));
+      store.dispatch(LoadedCategoriesAction(result));
+      store.dispatch(UpdateCompanyIsLoadingAction(false));
     });
 
     next(action);
@@ -132,6 +199,7 @@ Middleware<AppState> _createLoadSharedPreferences() {
     final keys = sharedPreferences.getKeys();
     Map<dynamic, dynamic> settings = {};
     keys.forEach((k) {
+    print("setting loaded: $k");
       settings[k] = sharedPreferences.get(k);
     });
 
@@ -171,7 +239,8 @@ Middleware<AppState> _createLoadPeriodTiles(Calendar calendar) {
 
       calendar
           .retrieveCalendarEvents(
-              store.state.settingsViewModel.settings[kSettingsCalendarId], action.day)
+              store.state.settingsViewModel.settings[kSettingsCalendarId],
+              action.day)
           .then((result) {
         List<ExpandablePeriodTile> _periods = [];
 
@@ -235,19 +304,6 @@ Middleware<AppState> _createLoadPeriodTiles(Calendar calendar) {
   };
 }
 
-Middleware<AppState> _createLoadUser(Api api) {
-  return (Store<AppState> store, action, next) {
-    store.dispatch(UpdateUserLoadingAction(true));
-
-    api.getUser().then((user) {
-      store.dispatch(LoadedUserAction(user));
-      store.dispatch(UpdateUserLoadingAction(false));
-    });
-
-    next(action);
-  };
-}
-
 Middleware<AppState> _createLoadUserLocation() {
   return (Store<AppState> store, action, next) {
     final locator = Location();
@@ -261,15 +317,13 @@ Middleware<AppState> _createLoadUserLocation() {
 
 Middleware<AppState> _createLoadUserFavorites(Api api) {
   return (Store<AppState> store, action, next) {
-    if (action.favoriteIds.length == 0) {
-      store.dispatch(LoadedFavoritesAction([]));
-    } else {
-      store.dispatch(UpdateIsLoadingFavoritesAction(true));
-      api.getUserFavorites(action.favoriteIds).then((result) {
-        store.dispatch(LoadedFavoritesAction(result));
-        store.dispatch(UpdateIsLoadingFavoritesAction(false));
-      });
-    }
+    store.dispatch(UpdateIsLoadingFavoritesAction(true));
+    api
+        .getUserFavorites(action.userId, store.state.userViewModel.token)
+        .then((result) {
+      store.dispatch(LoadedFavoritesAction(result));
+      store.dispatch(UpdateIsLoadingFavoritesAction(false));
+    });
 
     next(action);
   };
@@ -277,7 +331,10 @@ Middleware<AppState> _createLoadUserFavorites(Api api) {
 
 Middleware<AppState> _createRemoveFromUserFavorites(Api api) {
   return (Store<AppState> store, action, next) {
-    api.removeUserFavorites(action.userId, action.companyIds).then((res) {
+    api
+        .removeUserFavorites(
+            action.userId, action.companyIds, store.state.userViewModel.token)
+        .then((res) {
       //TODO: use user.favorites stream to reload them
     });
 
@@ -287,7 +344,10 @@ Middleware<AppState> _createRemoveFromUserFavorites(Api api) {
 
 Middleware<AppState> _createAddToUserFavorites(Api api) {
   return (Store<AppState> store, action, next) {
-    api.addUserFavorite(action.userId, action.companyId).then((res) {
+    api
+        .addUserFavorite(
+            action.userId, action.companyId, store.state.userViewModel.token)
+        .then((res) {
       //TODO: use user.favorites stream to reload them
     });
 

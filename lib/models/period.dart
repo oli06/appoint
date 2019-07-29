@@ -11,12 +11,12 @@ class Period {
   }
 
   Period.fromJson(Map<String, dynamic> json)
-      : start = DateTime.fromMillisecondsSinceEpoch(json['start']),
+      : start = DateTime.parse(json['start']),
         duration = Duration(minutes: json['duration']);
 
   Map<String, dynamic> toJson() =>
     {
-      'start': start.millisecondsSinceEpoch,
+      'start': start.toIso8601String(),
       'duration': duration,
     };
 }

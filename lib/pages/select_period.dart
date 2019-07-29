@@ -36,7 +36,6 @@ class _SelectPeriodState extends State<SelectPeriod> {
         store.dispatch(
             LoadPeriodsAction(widget.companyId, DateTime.now().month));
         //initial selection is today --> load conflicts for today
-        store.dispatch(LoadEventsForDayAction(DateTime.now()));
         store.dispatch(LoadPeriodTilesAction(context, DateTime.now()));
       },
       builder: (context, vm) {
@@ -132,26 +131,40 @@ class _SelectPeriodState extends State<SelectPeriod> {
   }
 
   Widget _buildCalendar(BuildContext context, _ViewModel vm) {
-    return AppointCalendar(
-      visibleEvents: vm.selectPeriodViewModel.visiblePeriods,
-      context: context,
-      onDaySelected: (DateTime day, List events) {
-        print("update day selected to: ${day.day}");
-        final dt = DateTime(day.year, day.month, day.day);
-        vm.updateSelectedDay(dt);
-        vm.loadPeriodTiles(context, dt);
-      },
-      onVisibleDaysChanged:
-          (DateTime first, DateTime last, CalendarFormat format) {
-        print("called visible days changed");
-        vm.updateVisiblePeriods(filterDaysPeriodsList(
-            getVisibleDaysPeriodsList(
-                vm.selectPeriodViewModel.periods, first, last),
-            vm.selectPeriodViewModel.timeFilter));
+    print("is loading?: ${vm.selectPeriodViewModel.isLoading}");
 
-        vm.updateVisibilityFilter(first, last);
-      },
-    );
+    return vm.selectPeriodViewModel.isLoading
+        ? Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  CupertinoActivityIndicator(),
+                  Text("freie Termine werden geladen"),
+                ],
+              ),
+            ),
+          )
+        : AppointCalendar(
+            visibleEvents: vm.selectPeriodViewModel.visiblePeriods,
+            context: context,
+            onDaySelected: (DateTime day, List events) {
+              print("update day selected to: ${day.day}");
+              final dt = DateTime(day.year, day.month, day.day);
+              vm.updateSelectedDay(dt);
+              vm.loadPeriodTiles(context, dt);
+            },
+            onVisibleDaysChanged:
+                (DateTime first, DateTime last, CalendarFormat format) {
+              print("called visible days changed");
+              vm.updateVisiblePeriods(filterDaysPeriodsList(
+                  getVisibleDaysPeriodsList(
+                      vm.selectPeriodViewModel.periods, first, last),
+                  vm.selectPeriodViewModel.timeFilter));
+
+              vm.updateVisibilityFilter(first, last);
+            },
+          );
   }
 
   Widget _buildPeriodList(_ViewModel vm) {

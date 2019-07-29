@@ -141,10 +141,10 @@ class AddAppointState extends State<AddAppoint>
                         height: 10,
                       ),
                       _firstCard(),
-                      SizedBox(
+                      /*SizedBox(
                         height: 20,
-                      ),
-                      _secondCard(),
+                      ),*/
+                      //_secondCard(),
                       SizedBox(
                         height: 20,
                       ),
@@ -322,6 +322,69 @@ class AddAppointState extends State<AddAppoint>
                       isStatic: true,
                       company: _company,
                       onTap: isEditing ? null : companyTap,
+                    ),
+                  ),
+            Container(
+              padding: EdgeInsets.only(
+                left: 15,
+                right: 15,
+              ),
+              child: Divider(
+                height: 1,
+              ),
+            ),
+            _period == null
+                ? Container(
+                    height: 50,
+                    child: FlatButton(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Zeitraum auswählen..."),
+                          Icon(
+                            CupertinoIcons.getIconData(0xf3d0),
+                            color: Colors.grey[350],
+                          ),
+                        ],
+                      ),
+                      onPressed: _company == null ? null : _selectPeriodPressed,
+                    ),
+                  )
+                : GestureDetector(
+                    onTap: _selectPeriodPressed,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        color: Colors
+                            .transparent, //hack: make widget also clickable where no other (text) widget is placed
+                        child: Column(
+                          children: <Widget>[
+                            Align(
+                              child: Text(
+                                Parse.dateWithWeekday.format(_period.start),
+                                style: TextStyle(fontSize: 17),
+                              ),
+                              alignment: Alignment.centerLeft,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                children: <Widget>[
+                                  IconCircleGradient.periodIndicator(
+                                      _period.duration.inMinutes / 60),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      "${Parse.hoursWithMinutes.format(_period.start)} - ${Parse.hoursWithMinutes.format(_period.getPeriodEnd())}",
+                                      style: TextStyle(fontSize: 15),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
                     ),
                   ),
           ],

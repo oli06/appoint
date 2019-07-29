@@ -1,6 +1,5 @@
 import 'package:appoint/models/period.dart';
 import 'package:appoint/widgets/expandable_period_tile.dart';
-import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
 
 class SetLoadedPeriodsAction {
@@ -54,12 +53,6 @@ class UpdateSelectedDayAction {
   final DateTime day;
 
   UpdateSelectedDayAction(this.day);
-}
-
-class LoadEventsForDayAction {
-  final DateTime day;
-
-  LoadEventsForDayAction(this.day);
 }
 
 class LoadedPeriodTilesAction {

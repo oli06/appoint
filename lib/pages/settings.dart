@@ -23,7 +23,7 @@ class SettingsPage extends StatelessWidget {
       converter: (store) => _ViewModel.fromStore(store),
       onInit: (store) {
         store.dispatch(LoadFavoritesAction(
-            store.state.userViewModel.user.companyFavorites));
+            store.state.userViewModel.user.id));
       },
       builder: (context, vm) => Scaffold(
         appBar: _buildNavBar(context),
@@ -85,7 +85,7 @@ class SettingsPage extends StatelessWidget {
       ),
       vm.settingsViewModel.settings[kSettingsCalendarIntegration] ?? false
           ? Text(
-              "Terminkonflikte mit dem Kalender \"${vm.settingsViewModel.settings[kSettingsCalendarName]}\" werden angezeigt",
+              "Terminüberschneidungen mit dem Kalender \"${vm.settingsViewModel.settings[kSettingsCalendarName]}\" werden angezeigt",
               style: const TextStyle(fontSize: 14, color: Colors.grey),
             )
           : Text(

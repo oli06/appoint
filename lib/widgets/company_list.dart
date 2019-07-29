@@ -95,8 +95,11 @@ class _CompanyListState extends State<CompanyList> {
   }
 
   Widget _buildCompanyList(List<Company> companies) {
-    print(companies.length);
     //TODO: FIXME: test, if hideKeyboard on scroll wirklich gescheit funktionert
+
+    if(companies.length == 0) {
+      return _buildEmptyList();
+    }
 
     return NotificationListener(
       onNotification: (t) {
@@ -138,7 +141,7 @@ class _ViewModel {
   static _ViewModel fromStore(Store<AppState> store) {
     return _ViewModel(
       selectCompanyViewModel: store.state.selectCompanyViewModel,
-      companyFavorites: store.state.userViewModel.user.companyFavorites,
+      companyFavorites: store.state.userViewModel.user.favorites,
       userLocation: store.state.userViewModel.currentLocation,
     );
   }

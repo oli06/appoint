@@ -1,9 +1,9 @@
 import 'package:appoint/models/company.dart';
 
 class LoadFavoritesAction {
-  final List<int> favoriteIds;
+  final String userId;
 
-  LoadFavoritesAction(this.favoriteIds);
+  LoadFavoritesAction(this.userId);
 }
 
 class LoadedFavoritesAction {

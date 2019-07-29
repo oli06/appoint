@@ -1,3 +1,4 @@
+import 'package:appoint/models/category.dart';
 import 'package:appoint/models/company.dart';
 
 class LoadedCompaniesAction {
@@ -21,13 +22,21 @@ class UpdateCompanyVisibilityFilterAction {
 }
 
 class UpdateCategoryFilterAction {
-  final Category filter;
+  final int categoryId;
 
-  UpdateCategoryFilterAction(this.filter);
+  UpdateCategoryFilterAction(this.categoryId);
 }
 
 class UpdateRangeFilterAction {
   final double range;
 
   UpdateRangeFilterAction(this.range);
+}
+
+class LoadCategoriesAction {}
+
+class LoadedCategoriesAction {
+  final List<Category> categories;
+
+  LoadedCategoriesAction(this.categories);
 }

@@ -13,6 +13,8 @@ final selectCompanyReducer = combineReducers<SelectCompanyViewModel>([
       _updateCategoryFilter),
   TypedReducer<SelectCompanyViewModel, UpdateRangeFilterAction>(
       _updateRangeFilter),
+  TypedReducer<SelectCompanyViewModel, LoadedCategoriesAction>(
+      _loadedCategories),
 ]);
 
 SelectCompanyViewModel _setLoadedCompanies(
@@ -23,6 +25,18 @@ SelectCompanyViewModel _setLoadedCompanies(
     companyVisibilityFilter: vm.companyVisibilityFilter,
     categoryFilter: vm.categoryFilter,
     rangeFilter: vm.rangeFilter,
+    categories: vm.categories,
+  );
+}
+SelectCompanyViewModel _loadedCategories(
+    SelectCompanyViewModel vm, LoadedCategoriesAction action) {
+  return SelectCompanyViewModel(
+    isLoading: vm.isLoading,
+    companies: vm.companies,
+    companyVisibilityFilter: vm.companyVisibilityFilter,
+    categoryFilter: vm.categoryFilter,
+    rangeFilter: vm.rangeFilter,
+    categories: action.categories,
   );
 }
 
@@ -34,6 +48,7 @@ SelectCompanyViewModel _updateIsLoading(
     companyVisibilityFilter: vm.companyVisibilityFilter,
     categoryFilter: vm.categoryFilter,
     rangeFilter: vm.rangeFilter,
+    categories: vm.categories,
   );
 }
 
@@ -45,6 +60,7 @@ SelectCompanyViewModel _updateCompanyVisibilityFilter(
     companyVisibilityFilter: action.filter,
     categoryFilter: vm.categoryFilter,
     rangeFilter: vm.rangeFilter,
+    categories: vm.categories,
   );
 }
 
@@ -54,8 +70,9 @@ SelectCompanyViewModel _updateCategoryFilter(
     isLoading: vm.isLoading,
     companies: vm.companies,
     companyVisibilityFilter: vm.companyVisibilityFilter,
-    categoryFilter: action.filter,
+    categoryFilter: action.categoryId,
     rangeFilter: vm.rangeFilter,
+    categories: vm.categories,
   );
 }
 
@@ -67,5 +84,6 @@ SelectCompanyViewModel _updateRangeFilter(
     categoryFilter: vm.categoryFilter,
     companyVisibilityFilter: vm.companyVisibilityFilter,
     rangeFilter: action.range,
+    categories: vm.categories,
   );
 }

@@ -11,6 +11,8 @@ class SelectedPeriodViewModel {
 
   final bool isLoading;
   final TimeOfDay timeFilter;
+
+  ///date range of visible Days, e.g. first of month till last of month
   final DateTime visibleFirstDay;
   final DateTime visibleLastDay;
   final DateTime selectedDay;

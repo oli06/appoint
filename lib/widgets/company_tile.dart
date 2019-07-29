@@ -1,6 +1,7 @@
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/assets/company_icons_icons.dart';
 import 'package:appoint/models/app_state.dart';
+import 'package:appoint/models/category.dart';
 import 'package:appoint/models/company.dart';
 import 'package:appoint/utils/distance.dart';
 import 'package:appoint/utils/ios_url_scheme.dart';
@@ -17,7 +18,11 @@ class CompanyTile extends StatelessWidget {
   final Function onTap;
   final bool isStatic;
 
-  CompanyTile({this.company, this.onTap, this.isStatic = false});
+  CompanyTile({
+    this.company,
+    this.onTap,
+    this.isStatic = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -85,9 +90,16 @@ class CompanyTile extends StatelessWidget {
           ),
           Align(
             alignment: Alignment.centerRight,
-            child: Text(
-              "${company.category.toString().split('.').last}",
-              style: const TextStyle(fontWeight: FontWeight.w200, fontSize: 13),
+            child: StoreConnector<AppState, Category>(
+              converter: (store) => store
+                  .state.selectCompanyViewModel.categories
+                  .firstWhere((c) => c.id == company.category,
+                      orElse: () => Category(id: -2, value: "Nicht gefunden")),
+              builder: (context, category) => Text(
+                category.value,
+                style:
+                    const TextStyle(fontWeight: FontWeight.w200, fontSize: 13),
+              ),
             ),
           ),
         ],
@@ -156,7 +168,7 @@ class _ViewModel {
   static _ViewModel fromState(Store<AppState> store) {
     return _ViewModel(
       userLocation: store.state.userViewModel.currentLocation,
-      userFavoriteIds: store.state.userViewModel.user.companyFavorites,
+      userFavoriteIds: store.state.userViewModel.user.favorites,
       removeFromFavorites: (companyId) => store.dispatch(
           RemoveFromUserFavoritesAction(
               [companyId], store.state.userViewModel.user.id)),

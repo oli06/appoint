@@ -7,31 +7,31 @@ class Address {
   String street;
   String houseNumber;
   String city;
-  int zip;
+  String postal;
 
   double latitude;
-
   double longitude;
 
-  Address(
-      {this.street,
-      this.houseNumber,
-      this.city,
-      this.zip,
-      this.latitude,
-      this.longitude});
+  Address({
+    this.street,
+    this.houseNumber,
+    this.city,
+    this.postal,
+    this.latitude,
+    this.longitude,
+  });
 
   @override
   String toString() {
-    return "$street $houseNumber - $zip $city";
+    return "$street $houseNumber - $postal $city";
   }
 
   String toStringWithComma() {
-    return "$street $houseNumber, $zip $city";
+    return "$street $houseNumber, $postal $city";
   }
 
   String toCityString() {
-    return "$zip $city";
+    return "$postal $city";
   }
 
   String toStreetString() {

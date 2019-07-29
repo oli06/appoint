@@ -1,4 +1,5 @@
 import 'package:appoint/assets/company_icons_icons.dart';
+import 'package:appoint/pages/profile.dart';
 import 'package:appoint/widgets/TabBar/FABBottomAppBarItem.dart';
 import 'package:appoint/pages/appointments.dart';
 import 'package:appoint/pages/companies.dart';
@@ -29,7 +30,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
         backgroundColor: Colors.white,
         items: [
           FABBottomAppBarItem(
-              iconData: CompanyIcons.account_balance, text: "Unternehmen"),
+              iconData: CupertinoIcons.profile_circled, text: "Profil"),
           FABBottomAppBarItem(
               iconData: CupertinoIcons.getIconData(0xf2d1), text: "Termine")
         ],
@@ -47,7 +48,7 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget body() {
-    return _selected == 0 ? CompanyPage() : AppointmentPage();
+    return _selected == 0 ? ProfilePage() : AppointmentPage();
   }
 
   Widget _buildFab(BuildContext context) {

@@ -47,7 +47,7 @@ class Parse {
   static String convertDateDifferenceToReadable(DateTime now, DateTime future) {
     final duration = future.difference(now);
     if (duration.inDays < 2) {
-      return "${duration.inHours} Studen";
+      return "${duration.inHours} Stunden";
     } else {
       return "${duration.inDays} Tagen";
     }

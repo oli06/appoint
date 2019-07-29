@@ -5,25 +5,25 @@ part 'user.g.dart';
 
 @JsonSerializable()
 class User {
-  final int id;
+  final String id;
   final String firstName;
   final String lastName;
   final String email;
-  final bool verified;
+  final bool isVerified;
   final DateTime birthday;
   final String phone;
   final Address address;
 
-  final List<int> companyFavorites;
+  List<int> favorites = [];
 
-  const User({
+  User({
     this.id,
     this.firstName,
     this.lastName,
     this.email,
-    this.verified,
+    this.isVerified,
     this.birthday,
-    this.companyFavorites,
+    this.favorites,
     this.phone,
     this.address,
   });

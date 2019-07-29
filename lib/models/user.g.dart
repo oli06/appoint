@@ -8,16 +8,15 @@ part of 'user.dart';
 
 User _$UserFromJson(Map json) {
   return User(
-      id: json['id'] as int,
+      id: json['id'] as String,
       firstName: json['firstName'] as String,
       lastName: json['lastName'] as String,
       email: json['email'] as String,
-      verified: json['verified'] as bool,
+      isVerified: json['isVerified'] as bool,
       birthday: json['birthday'] == null
           ? null
           : DateTime.parse(json['birthday'] as String),
-      companyFavorites:
-          (json['companyFavorites'] as List)?.map((e) => e as int)?.toList(),
+      favorites: (json['favorites'] as List)?.map((e) => e as int)?.toList(),
       phone: json['phone'] as String,
       address: json['address'] == null
           ? null
@@ -31,9 +30,9 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       'firstName': instance.firstName,
       'lastName': instance.lastName,
       'email': instance.email,
-      'verified': instance.verified,
+      'isVerified': instance.isVerified,
       'birthday': instance.birthday?.toIso8601String(),
       'phone': instance.phone,
       'address': instance.address,
-      'companyFavorites': instance.companyFavorites
+      'favorites': instance.favorites
     };

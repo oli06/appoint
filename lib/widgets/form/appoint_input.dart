@@ -8,11 +8,14 @@ class AppointFormInput extends StatefulWidget {
   final Widget leadingWidget;
   final bool showLeadingWidget;
   final Function(String value) onFieldSubmitted;
+  final Function(String value) onSaved;
   final TextInputAction action;
   final bool obscureText;
   final FocusNode focusNode;
   final TextInputType keyboardType;
-  final Function(String value)validator;
+  final Function(String value) validator;
+  final String initialValue;
+
   //FIXME: currently used as workaround: to have a leading widget for the birthday-input in the signup view
   final Widget customInputWidget;
 
@@ -26,10 +29,12 @@ class AppointFormInput extends StatefulWidget {
     this.obscureText = false,
     @required this.focusNode,
     this.showLeadingWidget = true,
+    this.initialValue,
     this.keyboardType = TextInputType.text,
     this.customInputWidget,
     this.validator,
     this.action,
+    this.onSaved,
   }) : super(key: key);
 
   @override
@@ -43,6 +48,12 @@ class _AppointFormInputState extends State<AppointFormInput> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.text = widget.initialValue ?? "";
   }
 
   @override
@@ -63,33 +74,40 @@ class _AppointFormInputState extends State<AppointFormInput> {
             Flexible(
               child: Padding(
                 padding: const EdgeInsets.only(right: 8.0),
-                child: widget.customInputWidget != null ? widget.customInputWidget : TextFormField(
-                  keyboardType: widget.keyboardType,
-                  focusNode: widget.focusNode,
-                  obscureText: widget.obscureText,
-                  textInputAction:
-                      widget.action != null ? widget.action : TextInputAction.next,
-                  onFieldSubmitted: (value) => widget.onFieldSubmitted(value),
-                  validator: widget.validator == null ? (value) {
-                    if (value.isEmpty) {
-                      return widget.errorText;
-                    }
-                    return null;
-                  } : (value) => widget.validator(value),
-                  style: TextStyle(fontSize: 18),
-                  controller: _controller,
-                  decoration: InputDecoration(
-                    hintText: widget.hintText,
-                    suffixIcon: widget.showSuffixIcon
-                        ? IconButton(
-                            icon: Icon(
-                              CupertinoIcons.clear,
-                              size: 32,
-                            ),
-                            onPressed: () => _controller.text = "")
-                        : null,
-                  ),
-                ),
+                child: widget.customInputWidget != null
+                    ? widget.customInputWidget
+                    : TextFormField(
+                        onSaved: widget.onSaved != null ? (value) => widget.onSaved(value) : (_) {},
+                        keyboardType: widget.keyboardType,
+                        focusNode: widget.focusNode,
+                        obscureText: widget.obscureText,
+                        textInputAction: widget.action != null
+                            ? widget.action
+                            : TextInputAction.next,
+                        onFieldSubmitted: (value) =>
+                            widget.onFieldSubmitted(value),
+                        validator: widget.validator == null
+                            ? (value) {
+                                if (value.isEmpty) {
+                                  return widget.errorText;
+                                }
+                                return null;
+                              }
+                            : (value) => widget.validator(value),
+                        style: TextStyle(fontSize: 18),
+                        controller: _controller,
+                        decoration: InputDecoration(
+                          hintText: widget.hintText,
+                          suffixIcon: widget.showSuffixIcon
+                              ? IconButton(
+                                  icon: Icon(
+                                    CupertinoIcons.clear,
+                                    size: 32,
+                                  ),
+                                  onPressed: () => _controller.text = "")
+                              : null,
+                        ),
+                      ),
               ),
             ),
           ],

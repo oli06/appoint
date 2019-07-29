@@ -5,7 +5,6 @@ import 'package:appoint/view_models/favorites_vm.dart';
 import 'package:appoint/view_models/select_company_vm.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:appoint/view_models/settings_vm.dart';
-import 'package:appoint/view_models/signin_vm.dart';
 import 'package:appoint/view_models/user_vm.dart';
 
 class AppState {
@@ -28,21 +27,25 @@ class AppState {
 
   factory AppState.initState() => AppState(
         selectCompanyViewModel: SelectCompanyViewModel(
-            isLoading: true,
-            companyVisibilityFilter: CompanyVisibilityFilter.favorites,
-            rangeFilter: 9.0,
-            categoryFilter: Category.ALL),
+          categories: [],
+          //index of 'all' (gets added in loadCategoriesAction)
+          categoryFilter: -1,
+          isLoading: true,
+          companyVisibilityFilter: CompanyVisibilityFilter.all,
+          rangeFilter: 9.0,
+        ),
         selectPeriodViewModel: SelectedPeriodViewModel(
           isLoading: true,
           periods: {},
           visiblePeriods: {},
-          selectedDay: DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
+          selectedDay: DateTime(
+              DateTime.now().year, DateTime.now().month, DateTime.now().day),
         ),
         appointmentsViewModel: AppointmentsViewModel(isLoading: true),
-        userViewModel: UserViewModel(isLoading: true),
+        userViewModel: UserViewModel(isLoading: true, loginProcessIsActive: false),
         favoritesViewModel: FavoritesViewModel(
             isLoading: true, isEditing: false, selectedFavorites: []),
-            settingsViewModel: SettingsViewModel(settings: {}),
+        settingsViewModel: SettingsViewModel(settings: {}),
       );
 }
 

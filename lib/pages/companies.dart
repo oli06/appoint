@@ -2,7 +2,7 @@ import 'package:appoint/actions/companies_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/assets/company_icons_icons.dart';
 import 'package:appoint/models/app_state.dart';
-import 'package:appoint/models/company.dart';
+import 'package:appoint/models/category.dart';
 import 'package:appoint/pages/company_details.dart';
 import 'package:appoint/view_models/select_company_vm.dart';
 import 'package:appoint/widgets/company_list.dart';
@@ -97,13 +97,13 @@ class _CompanyPageState extends State<CompanyPage>
     return Padding(
       padding: const EdgeInsets.only(left: 8.0, right: 8.0),
       child: SelectWidget<Category>(
-        dataset: Category.values,
-        itemBuilder: (context, value) {
-          return Text(value.toString().split('.').last);
+        dataset: vm.categories,
+        itemBuilder: (context, category) {
+          return Text(category.value);
         },
-        selectedIndex: vm.selectCompanyViewModel.categoryFilter.index,
+        selectedIndex: vm.categories.indexWhere((c) => c.id == vm.selectCompanyViewModel.categoryFilter),
         onSelectionChanged: (value, index, context) =>
-            vm.updateCategoryFilter(value),
+            vm.updateCategoryFilter(value.id),
       ),
     );
   }
@@ -158,23 +158,26 @@ class _CompanyPageState extends State<CompanyPage>
 
 class _ViewModel {
   final SelectCompanyViewModel selectCompanyViewModel;
-  final Function(Category category) updateCategoryFilter;
+  final Function(int index) updateCategoryFilter;
   final Function(double value) updateRangeFilter;
+  final List<Category> categories;
 
   _ViewModel({
     this.selectCompanyViewModel,
     this.updateCategoryFilter,
     this.updateRangeFilter,
+    this.categories,
   });
 
   static _ViewModel fromState(Store<AppState> store) {
     return _ViewModel(
       selectCompanyViewModel: store.state.selectCompanyViewModel,
-      updateCategoryFilter: (Category category) => store.dispatch(
-        UpdateCategoryFilterAction((category)),
+      updateCategoryFilter: (int index) => store.dispatch(
+        UpdateCategoryFilterAction((index)),
       ),
       updateRangeFilter: (double value) =>
           store.dispatch(UpdateRangeFilterAction(value)),
+      categories: store.state.selectCompanyViewModel.categories,
     );
   }
 }

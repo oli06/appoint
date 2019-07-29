@@ -34,6 +34,10 @@ List<Company> companiesRangeFilter(
         return companies;
       }
   return companies.where((c) {
+    //FIXME: when company latlong cant be null in database: remove
+    if(c.address.latitude == null || c.address.longitude == null) {
+      return true;
+    }
     return DistanceUtil.calculateDistanceBetweenCoordinates(
             userLat, userLon, c.address.latitude, c.address.longitude) <=
         kmRange;
@@ -41,13 +45,13 @@ List<Company> companiesRangeFilter(
 }
 
 List<Company> companiesCategoryFilterSelector(
-    List<Company> companies, Category categoryFilter) {
+    List<Company> companies, int categoryFilterId) {
   return companies.where((cpy) {
-    switch (categoryFilter) {
-      case Category.ALL:
+    switch (categoryFilterId) {
+      case -1:
         return true;
       default:
-        return cpy.category == categoryFilter;
+        return cpy.category == categoryFilterId;
     }
   }).toList();
 }

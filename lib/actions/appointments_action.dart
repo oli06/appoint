@@ -1,6 +1,10 @@
 import 'package:appoint/models/appoint.dart';
 
-class LoadAppointmentsAction {}
+class LoadAppointmentsAction {
+  final String userId;
+
+  LoadAppointmentsAction(this.userId);
+}
 
 class UpdateAppointmentsIsLoadingAction {
   final bool isLoading;
