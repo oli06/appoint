@@ -31,12 +31,16 @@ class _AppointCalendarState extends State<AppointCalendar> {
       startingDayOfWeek: StartingDayOfWeek.monday,
       availableGestures: AvailableGestures.horizontalSwipe,
       availableCalendarFormats: const {
-        CalendarFormat.month: "Monat",
+        CalendarFormat.month: "1 Monat",
         CalendarFormat.twoWeeks: "2 Wochen",
       },
       calendarStyle: CalendarStyle(
         selectedColor: Theme.of(context).accentColor,
         todayColor: Theme.of(context).primaryColor,
+        weekdayStyle: const TextStyle(fontSize: 18),
+        weekendStyle: const TextStyle(fontSize: 18, color: Colors.red),
+        outsideStyle: const TextStyle(fontSize: 18, color: Colors.grey),
+        outsideWeekendStyle: TextStyle(fontSize: 18, color: Colors.red[200]),
       ),
       onDaySelected: widget.onDaySelected,
       onVisibleDaysChanged: widget.onVisibleDaysChanged,
@@ -50,7 +54,10 @@ class _AppointCalendarState extends State<AppointCalendar> {
               borderRadius: BorderRadius.circular(5),
               color: Theme.of(context).accentColor),
           child: Center(
-            child: Text(day.day.toString()),
+            child: Text(
+              day.day.toString(),
+              style: const TextStyle(fontSize: 18),
+            ),
           ),
         );
       }, todayDayBuilder: (context, day, _) {
@@ -61,7 +68,7 @@ class _AppointCalendarState extends State<AppointCalendar> {
                 borderRadius: BorderRadius.circular(5),
                 color: Theme.of(context).primaryColor),
             child: Center(
-              child: Text(day.day.toString()),
+              child: Text(day.day.toString(), style: const TextStyle(fontSize: 18),),
             ),
           ),
         );
@@ -78,10 +85,18 @@ class _AppointCalendarState extends State<AppointCalendar> {
           child: AnimatedContainer(
             duration: Duration(milliseconds: 200),
             decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(3), color: Colors.white),
+                //border: Border.all(color: Theme.of(context).primaryColor),
+                borderRadius: BorderRadius.circular(3),
+                color: Colors.white),
             width: 16,
             height: 16,
-            child: Center(child: Text("${events.length}")),
+            child: Center(
+                child: Text(
+              "${events.length}",
+              style: TextStyle(
+                  color: Theme.of(context).accentColor,
+                  fontWeight: FontWeight.w500),
+            )),
           ),
         ));
 

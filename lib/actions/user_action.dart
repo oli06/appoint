@@ -1,22 +1,43 @@
 import 'package:appoint/models/user.dart';
 import 'package:location/location.dart';
 
-class LoadUserAction {}
+class AuthenticateAction {}
 
-class LoadedUserAction {
-  final User user;
+class UpdateLoginProcessIsActiveAction {
+  final bool loginProcessIsActive;
 
-  LoadedUserAction(this.user);
+  UpdateLoginProcessIsActiveAction(this.loginProcessIsActive);
 }
 
-class RegisterUserAction {
+class UserLoginAction {
+  final String username;
+  final String password;
+
+  UserLoginAction(this.username, this.password);
+}
+
+class LoadedUserConfigurationAction {
+  final String token;
   final User user;
-  
-  RegisterUserAction(this.user);
+
+  LoadedUserConfigurationAction(this.user, this.token);
+}
+
+class LoadedUsernameAction {
+  final String username;
+
+  LoadedUsernameAction(this.username);
+}
+
+class LoadedUserAction {
+  final String token;
+  final User user;
+
+  LoadedUserAction(this.user, this.token);
 }
 
 class VerifyUserAction {
-  final int userId;
+  final String userId;
   final String verificationCode;
 
   VerifyUserAction(this.userId, this.verificationCode);
@@ -44,14 +65,14 @@ class LoadedUserLocationAction {
 
 class RemoveFromUserFavoritesAction {
   final List<int> companyIds;
-  final int userId;
+  final String userId;
 
   RemoveFromUserFavoritesAction(this.companyIds, this.userId);
 }
 
 class AddToUserFavoritesAction {
   final int companyId;
-  final int userId;
+  final String userId;
 
   AddToUserFavoritesAction(this.companyId, this.userId);
 }

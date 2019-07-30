@@ -2,6 +2,7 @@ import 'package:appoint/actions/appointments_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/appoint.dart';
+import 'package:appoint/models/category.dart';
 import 'package:appoint/models/day.dart';
 import 'package:appoint/pages/add_appoint.dart';
 import 'package:appoint/pages/appointment_details.dart';
@@ -12,10 +13,10 @@ import 'package:appoint/utils/parse.dart';
 import 'package:appoint/view_models/appointments_vm.dart';
 import 'package:appoint/widgets/appointment_tile.dart';
 import 'package:appoint/widgets/list_header.dart';
+import 'package:badges/badges.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:appoint/widgets/navBar.dart';
-import 'package:badges/badges.dart';
 import 'package:flutter_cupertino_date_picker/flutter_cupertino_date_picker.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:location/location.dart';
@@ -33,7 +34,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
     return StoreConnector<AppState, _ViewModel>(
       converter: (store) => _ViewModel.fromState(store),
       onInit: (store) {
-        store.dispatch(LoadAppointmentsAction());
+        store.dispatch(LoadAppointmentsAction("abcdef"));
         if (store.state.userViewModel.currentLocation == null) {
           store.dispatch(LoadUserLocationAction());
         }
@@ -71,7 +72,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
     return Column(
       children: <Widget>[
         _buildUpcomingEventDescription(upcomingAppointment, vm),
-        _buildUpcomingAppointment(upcomingAppointment),
+        _buildUpcomingAppointment(upcomingAppointment, vm),
         Expanded(
           child: CupertinoScrollbar(
             child: CustomScrollView(
@@ -119,7 +120,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
     );
   }
 
-  Padding _buildUpcomingAppointment(Appoint upcomingAppointment) {
+  Padding _buildUpcomingAppointment(Appoint upcomingAppointment, _ViewModel vm) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 0, 8, 8),
       child: GestureDetector(
@@ -163,10 +164,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
                               style: TextStyle(fontSize: 15),
                             ),
                           ),
-                          Text(upcomingAppointment.company.category
-                              .toString()
-                              .split(".")
-                              .last),
+                          Text(vm.categories.firstWhere((c) => c.id == upcomingAppointment.company.category, orElse: () => null)?.value ?? "leer"),
                         ],
                       ),
                       Row(
@@ -241,10 +239,13 @@ class _AppointmentPageState extends State<AppointmentPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Text(
-            "Bisher haben Sie noch keine Termine vereinbart.",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w200),
-            textAlign: TextAlign.center,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              "Bisher hast du noch keine Termine vereinbart",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w200),
+              textAlign: TextAlign.center,
+            ),
           ),
           FlatButton(
             child: Text("Jetzt Termin vereinbaren",
@@ -252,7 +253,9 @@ class _AppointmentPageState extends State<AppointmentPage> {
                     color: Theme.of(context).primaryColor, fontSize: 20)),
             onPressed: () => showCupertinoModalPopup(
               context: context,
-              builder: (BuildContext context) => AddAppoint(isEditing: false),
+              builder: (BuildContext context) => AddAppoint(
+                isEditing: false,
+              ),
             ),
           ),
         ],
@@ -286,14 +289,14 @@ class _AppointmentPageState extends State<AppointmentPage> {
               },
             ),
           ),
-          IconButton(
+          /*IconButton(
             icon: Icon(CupertinoIcons.profile_circled),
             color: Theme.of(context).primaryColor,
             onPressed: () => showCupertinoModalPopup(
               context: context,
               builder: (context) => ProfilePage(),
             ),
-          ),
+          ),*/
         ],
       ),
     );
@@ -338,16 +341,19 @@ class _AppointmentPageState extends State<AppointmentPage> {
 class _ViewModel {
   final AppointmentsViewModel appointmentsViewModel;
   final LocationData location;
+  final List<Category> categories;
 
   _ViewModel({
     this.appointmentsViewModel,
     this.location,
+    this.categories,
   });
 
   static _ViewModel fromState(Store<AppState> store) {
     return _ViewModel(
       appointmentsViewModel: store.state.appointmentsViewModel,
       location: store.state.userViewModel.currentLocation,
+      categories: store.state.selectCompanyViewModel.categories,
     );
   }
 }

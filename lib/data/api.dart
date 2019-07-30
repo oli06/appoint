@@ -1,18 +1,28 @@
+import 'dart:io';
+
 import 'package:appoint/models/appoint.dart';
+import 'package:appoint/models/category.dart';
 import 'package:appoint/models/company.dart';
+import 'package:appoint/models/day.dart';
+import 'package:appoint/models/dayresponse.dart';
 import 'package:appoint/models/period.dart';
 import 'package:appoint/models/user.dart';
+import 'package:appoint/models/useraccount.dart';
+import 'package:appoint/utils/parse.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
 
-String url = 'https://4ea8a803.ngrok.io';
+// String url = 'https://ca6b821c.ngrok.io';
+String baseUrl = "https://appointservice.azurewebsites.net/";
+String accessPoint = "api/";
+String url = baseUrl + accessPoint;
 //String url = 'http://localhost:8000';
 
 class Api {
-  Future<List<Company>> getCompanies() async {
-    print("called now");
-    final response = await http.get('$url/companies');
+  Future<List<Company>> getCompanies(String token) async {
+    final response = await http.get('$url/companies',
+        headers: {HttpHeaders.authorizationHeader: "bearer $token"});
 
     if (response.statusCode == 200) {
       List<dynamic> list = json.decode(response.body);
@@ -22,96 +32,144 @@ class Api {
     return [];
   }
 
-  Future<bool> postUserVerificationCode(int userId, String code) async {
-    final response =
-        await http.post('$url/user/$userId/verification', body: code);
-
-    if (response.statusCode == 200) {
-      return json.decode(response.body);
-    }
-
-    return false;
-  }
-
-  Future<List<Period>> getPeriodsForMonth(int companyId) async {
-    final response = await http.get("$url/company/$companyId/periods/");
+  Future<List<Category>> getCategories(String token) async {
+    final response = await http.get('$url/categories',
+        headers: {HttpHeaders.authorizationHeader: "bearer $token"});
 
     if (response.statusCode == 200) {
       List<dynamic> list = json.decode(response.body);
-      return list.map((entry) => Period.fromJson(entry)).toList();
+      return list.map((c) => Category.fromJson(c)).toList();
     }
 
     return [];
   }
 
-  Future<bool> registerUser(User user) async {
-    final response = await http.post('$url/users',
-        body: json.encode({
-          'data': {'user': json.encode(user)}
-        }));
+  Future<bool> postUserVerificationCode(
+      String userId, String code, String token) async {
+    final response = await http.post(
+      '$url/users/$userId/verify',
+      headers: {
+        "Content-Type": "application/json",
+        HttpHeaders.authorizationHeader: "bearer $token"
+      },
+      body: json.encode(code),
+    );
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      return true;
     }
 
     return false;
   }
 
-  Future<bool> loginUser(String username, String password) async {
-    final response = await http.post('$url/login',
-        body: json.encode({
-          'data': {'username': username, 'password': password}
-        }));
+  Future<Map<DateTime, List<Period>>> getPeriodsForMonth(
+      int companyId, DateTime month, String token) async {
+    final response = await http.get(
+      "$url/companies/$companyId/periods/${Parse.dateRequestFormat.format(month)}",
+      headers: {HttpHeaders.authorizationHeader: "bearer $token"},
+    );
 
+    Map<DateTime, List<Period>> map = {};
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      final List<dynamic> list = json.decode(response.body);
+
+      list.forEach((day) {
+        DayResponse dayObj = DayResponse.fromJson(day);
+        /* final Day<Period> dayObj = new Day<Period>(
+            date: DateTime.parse(day['date']),
+            events:
+                day['periods'].map((model) => Period.fromJson(model)).toList()); */
+
+        map[dayObj.date] = dayObj.periods;
+      });
+
+      //var abc = list.map((entry) => {});
+
+      return map;
     }
 
-    return false;
+    return {};
+  }
+
+  Future<List<Period>> getPeriods(int companyId, DateTime month) async {
+    Future<Socket> future = Socket.connect('localhost', 5252);
+    future.then((client) {
+      print('connected to server!');
+      client.handleError((data) {
+        print(data);
+      });
+      client.listen((data) {
+        print(new String.fromCharCodes(data));
+        return data;
+      }, onDone: () {
+        print("Done");
+      }, onError: (error, stackTrace) {
+        print(error);
+        print(stackTrace.toString());
+      });
+
+      client.writeln('getPeriods');
+    });
+    //print('Hello world: ${dart_test.calculate()}!');
+    return null;
+  }
+
+  Future<http.Response> register(UserAccount user) async {
+    final jsonString = user.toJson();
+    final response = await http.post('$url/users/register', body: jsonString);
+
+    return response;
+  }
+
+  Future<http.Response> login(String username, String password) async {
+    print("login request $username, pw: $password");
+    final body = {
+      "grant_type": "password",
+      "username": username,
+      "password": password
+    };
+    final url = baseUrl + "token";
+    return await http.post(url, body: body);
   }
 
   Future<bool> removeUserFavorites(
-      int userId, List<int> favoriteCompanyIds) async {
+      String userId, List<int> companyIds, String token) async {
     //theres is no multi http-delete, which is why we use http.post and list the ids inside body
-    final response =
-        await http.post('$url/user/$userId/companyfavorites/delete',
-            body: json.encode({
-              'data': {
-                'ids': [favoriteCompanyIds],
-              }
-            }));
+    final response = await http.post(
+      '$url/users/$userId/favorites/delete',
+      headers: {
+        "Content-Type": "application/json",
+        HttpHeaders.authorizationHeader: "bearer $token"
+      },
+      body: json.encode(companyIds),
+    );
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      return true;
     }
 
     return false;
   }
 
-  Future<bool> addUserFavorite(int userId, int favoriteCompanyIds) async {
-    final response = await http.post('$url/user/$userId/companyfavorites',
-        body: json.encode({
-          'data': {
-            'ids': [favoriteCompanyIds],
-          }
-        }));
+  Future<bool> addUserFavorite(
+      String userId, int companyId, String token) async {
+    final response = await http.post('$url/users/$userId/favorites',
+        headers: {
+          "Content-Type": "application/json",
+          HttpHeaders.authorizationHeader: "bearer $token"
+        },
+        body: json.encode(companyId));
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      return true;
     }
 
     return false;
   }
 
-  Future<List<Company>> getUserFavorites(List<int> companyIds) async {
-    //FIXME: Mock Server cant handle ?id=xxx
-    //thats why we use /compfav till then
-    //format should be: $url/companies?id=1,2,3
-    String ids = "id=";
-    companyIds.forEach((id) => ids += "$id,");
-    ids = ids.substring(0, ids.length - 1); //removing last ','
-
-    final response = await http.get('$url/compfav');
+  Future<List<Company>> getUserFavorites(String userId, String token) async {
+    final response = await http.get('$url/users/$userId/favorites',
+        headers: {HttpHeaders.authorizationHeader: "bearer $token"});
 
     if (response.statusCode == 200) {
       List<dynamic> list = json.decode(response.body);
@@ -121,8 +179,9 @@ class Api {
     return [];
   }
 
-  Future<User> getUser() async {
-    final response = await http.get('$url/user/1');
+  Future<User> getUser(String userId, String token) async {
+    final response = await http.get('$url/users/$userId',
+        headers: {HttpHeaders.authorizationHeader: "bearer $token"});
 
     if (response.statusCode == 200) {
       dynamic user = json.decode(response.body);
@@ -132,35 +191,13 @@ class Api {
     return null;
   }
 
-  Future<List<Appoint>> getAppointments() async {
-    print("called now");
-    final response = await http.get('$url/user/1/appointments');
+  Future<List<Appoint>> getAppointments(String userId, String token) async {
+    final response = await http.get('$url/users/$userId/appointments',
+        headers: {HttpHeaders.authorizationHeader: "bearer $token"});
 
     if (response.statusCode == 200) {
       List<dynamic> list = json.decode(response.body);
       return list.map((model) => Appoint.fromJson(model)).toList();
-    }
-
-    return [];
-  }
-
-  Future<List<Period>> getDatePeriods(int companyId, String date) async {
-    companyId = 1;
-    final response = await http.get('$url/company/$companyId/day/$date');
-    if (response.statusCode == 200) {
-      List<dynamic> list = json.decode(response.body);
-      return list.map((entry) => Period.fromJson(entry)).toList();
-    }
-
-    return [];
-  }
-
-  Future<List<Period>> getTimePeriods(int companyId, String time) async {
-    time = "08-00";
-    final response = await http.get('$url/company/$companyId/periods/$time');
-    if (response.statusCode == 200) {
-      List<dynamic> list = json.decode(response.body);
-      return list.map((entry) => Period.fromJson(entry)).toList();
     }
 
     return [];

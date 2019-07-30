@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:appoint/actions/add_appoint_action.dart';
 import 'package:appoint/actions/appointments_action.dart';
+import 'package:appoint/utils/calendar.dart';
+import 'package:appoint/utils/constants.dart';
 import 'package:appoint/view_models/add_appoint_vm.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/appoint.dart';
@@ -9,6 +11,7 @@ import 'package:appoint/models/company.dart';
 import 'package:appoint/models/period.dart';
 import 'package:appoint/pages/select_period.dart';
 import 'package:appoint/utils/parse.dart';
+import 'package:appoint/view_models/settings_vm.dart';
 import 'package:appoint/widgets/company_tile.dart';
 import 'package:appoint/widgets/icon_circle_gradient.dart';
 import 'package:appoint/widgets/navBar.dart';
@@ -138,10 +141,10 @@ class AddAppointState extends State<AddAppoint>
                         height: 10,
                       ),
                       _firstCard(),
-                      SizedBox(
+                      /*SizedBox(
                         height: 20,
-                      ),
-                      _secondCard(),
+                      ),*/
+                      //_secondCard(),
                       SizedBox(
                         height: 20,
                       ),
@@ -186,6 +189,40 @@ class AddAppointState extends State<AddAppoint>
                   period: _period,
                   description: _description,
                 ));
+
+                if (vm.settingsViewModel
+                            .settings[kSettingsCalendarIntegration] ==
+                        true &&
+                    vm.settingsViewModel.settings[kSettingsSaveToCalendar] ==
+                        true) {
+                  Calendar()
+                      .createNativeCalendarEvent(
+                          vm.settingsViewModel.settings[kSettingsCalendarId],
+                          _period.start,
+                          _title,
+                          _period.duration,
+                          _description,
+                          _company)
+                      .then((res) {
+                    if (res) {
+                      //TODO: show indicator that an event was created inside calendar
+                      /* showCupertinoDialog(
+                        context: context,
+                        builder: (context) => prefix0.Dialog(
+                          title: "Termin erstellt",
+                          information:
+                              "Termin wurde in den Kalender übertragen",
+                          informationTextSize: 24,
+                        ),
+                      ); 
+                      Future.delayed(Duration(milliseconds: 200), () {
+                        //first: pop dialog, then pop add_appoint page
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      }); */
+                    }
+                  });
+                }
                 Navigator.pop(context);
               }
             : null,
@@ -214,148 +251,157 @@ class AddAppointState extends State<AddAppoint>
         elevation: 2,
         child: Column(
           children: <Widget>[
-            Row(
-              children: <Widget>[
-                Expanded(
-                  child: Container(
-                    height: 50,
-                    padding: EdgeInsets.only(
-                      left: 15,
-                      right: 15,
-                    ),
-                    child: Align(
-                      child: TextFormField(
-                        controller: _titleController,
-                        autofocus: isEditing ? false : true,
-                        style: TextStyle(color: Colors.black),
-                        textInputAction: TextInputAction.next,
-                        onFieldSubmitted: (_) {
-                          _titleFocus.unfocus();
-                          companyTap();
-                        },
-                        decoration: InputDecoration(
-                            hintText: "Titel",
-                            suffixIcon: _titleController.text.isNotEmpty
-                                ? IconButton(
-                                    icon: Icon(
-                                      CupertinoIcons.clear_circled_solid,
-                                      size: 16,
-                                      color: Colors.grey[350],
-                                    ),
-                                    onPressed: () => _titleController.text = "",
-                                  )
-                                : null,
-                            border: InputBorder.none),
-                      ),
-                    ),
-                    alignment: Alignment.centerLeft,
-                  ),
-                ),
-              ],
-            ),
-            Container(
-              padding: EdgeInsets.only(
-                left: 15,
-                right: 15,
-              ),
-              child: Divider(
-                height: 1,
-              ),
-            ),
+            _buildTitleTextField(companyTap),
+            _buildDivider(),
             _company == null
-                ? Container(
-                    height: 50,
-                    child: FlatButton(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("Unternehmen auswählen..."),
-                          Icon(
-                            CupertinoIcons.getIconData(0xf3d0),
-                            color: Colors.black,
-                          ),
-                        ],
-                      ),
-                      onPressed: companyTap,
-                    ),
-                  )
-                : Container(
-                    color: isEditing ? Colors.grey[350] : null,
-                    child: CompanyTile(
-                      isStatic: true,
-                      company: _company,
-                      onTap: isEditing ? null : companyTap,
-                    ),
-                  ),
+                ? _buildSelectCompanyButton(companyTap)
+                : _buildCompanyTile(companyTap),
+            _buildDivider(),
+            _period == null ? _buildSelectPeriodButton() : _buildPeriodTile(),
           ],
         ),
       ),
     );
   }
 
-  Card _secondCard() {
-    return Card(
-      color: _company == null ? Colors.grey[350] : null,
-      elevation: 2,
-      child: Container(
-        child: Column(
-          children: <Widget>[
-            _period == null
-                ? Container(
-                    height: 50,
-                    child: FlatButton(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text("Zeitraum auswählen..."),
-                          Icon(
-                            CupertinoIcons.getIconData(0xf3d0),
-                            color: Colors.black,
-                          ),
-                        ],
-                      ),
-                      onPressed: _company == null ? null : _selectPeriodPressed,
-                    ),
-                  )
-                : GestureDetector(
-                    onTap: _selectPeriodPressed,
-                    child: Padding(
+  GestureDetector _buildPeriodTile() {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _selectPeriodPressed,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          child: Column(
+            children: <Widget>[
+              Align(
+                child: Text(
+                  Parse.dateWithWeekday.format(_period.start),
+                  style: TextStyle(fontSize: 17),
+                ),
+                alignment: Alignment.centerLeft,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: <Widget>[
+                    IconCircleGradient.periodIndicator(
+                        _period.duration.inMinutes / 60),
+                    Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        color: Colors
-                            .transparent, //hack: make widget also clickable where no other (text) widget is placed
-                        child: Column(
-                          children: <Widget>[
-                            Align(
-                              child: Text(
-                                Parse.dateWithWeekday.format(_period.start),
-                                style: TextStyle(fontSize: 17),
-                              ),
-                              alignment: Alignment.centerLeft,
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Row(
-                                children: <Widget>[
-                                  IconCircleGradient.periodIndicator(
-                                      _period.duration.inMinutes / 60),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      "${Parse.hoursWithMinutes.format(_period.start.toUtc())} - ${Parse.hoursWithMinutes.format(_period.getPeriodEnd().toUtc())}",
-                                      style: TextStyle(fontSize: 15),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          ],
-                        ),
+                      child: Text(
+                        "${Parse.hoursWithMinutes.format(_period.start)} - ${Parse.hoursWithMinutes.format(_period.getPeriodEnd())}",
+                        style: TextStyle(fontSize: 15),
                       ),
                     ),
-                  ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Container _buildSelectPeriodButton() {
+    return Container(
+      height: 50,
+      child: FlatButton(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Zeitraum auswählen..."),
+            Icon(
+              CupertinoIcons.getIconData(0xf3d0),
+              color: Colors.grey[350],
+            ),
           ],
         ),
+        onPressed: _company == null ? null : _selectPeriodPressed,
+      ),
+    );
+  }
+
+  Container _buildCompanyTile(Function companyTap) {
+    return Container(
+      color: isEditing ? Colors.grey[350] : null,
+      child: CompanyTile(
+        isStatic: true,
+        company: _company,
+        onTap: isEditing ? null : companyTap,
+      ),
+    );
+  }
+
+  Container _buildSelectCompanyButton(Function companyTap) {
+    return Container(
+      height: 50,
+      child: FlatButton(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text("Unternehmen auswählen..."),
+            Icon(
+              CupertinoIcons.getIconData(0xf3d0),
+              color: Colors.black,
+            ),
+          ],
+        ),
+        onPressed: companyTap,
+      ),
+    );
+  }
+
+  Row _buildTitleTextField(Function companyTap) {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: Container(
+            height: 50,
+            padding: EdgeInsets.only(
+              left: 15,
+              right: 15,
+            ),
+            child: Align(
+              child: TextFormField(
+                controller: _titleController,
+                autofocus: isEditing ? false : true,
+                style: TextStyle(color: Colors.black),
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) {
+                  _titleFocus.unfocus();
+                  companyTap();
+                },
+                decoration: InputDecoration(
+                    hintText: "Titel",
+                    suffixIcon: _titleController.text.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(
+                              CupertinoIcons.clear_circled_solid,
+                              size: 16,
+                              color: Colors.grey[350],
+                            ),
+                            onPressed: () => _titleController.text = "",
+                          )
+                        : null,
+                    border: InputBorder.none),
+              ),
+            ),
+            alignment: Alignment.centerLeft,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Container _buildDivider() {
+    return Container(
+      padding: EdgeInsets.only(
+        left: 15,
+        right: 15,
+      ),
+      child: Divider(
+        height: 1,
       ),
     );
   }
@@ -417,12 +463,13 @@ class _ViewModel {
   final AddAppointViewModel addAppointViewModel;
   final Function(Appoint appoint) saveAppoint;
   final Function cancelEditOrAdd;
+  final SettingsViewModel settingsViewModel;
 
-  _ViewModel({
-    @required this.addAppointViewModel,
-    this.saveAppoint,
-    this.cancelEditOrAdd,
-  });
+  _ViewModel(
+      {@required this.addAppointViewModel,
+      this.saveAppoint,
+      this.cancelEditOrAdd,
+      this.settingsViewModel});
 
   static _ViewModel fromStore(Store<AppState> store) {
     return _ViewModel(
@@ -430,6 +477,7 @@ class _ViewModel {
       saveAppoint: (Appoint appoint) =>
           store.dispatch(AddAppointmentAction(appoint)),
       cancelEditOrAdd: () => store.dispatch(CancelEditOrAddAppointAction()),
+      settingsViewModel: store.state.settingsViewModel,
     );
   }
 }

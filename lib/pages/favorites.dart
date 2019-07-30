@@ -21,8 +21,8 @@ class FavoritesPage extends StatelessWidget {
     return StoreConnector<AppState, _ViewModel>(
       converter: (store) => _ViewModel.fromStore(store),
       onInit: (store) {
-        store.dispatch(LoadFavoritesAction(
-            store.state.userViewModel.user.companyFavorites));
+        store.dispatch(
+            LoadFavoritesAction(store.state.userViewModel.user.id));
       },
       builder: (context, vm) => Scaffold(
         appBar: _buildNavBar(context, vm),
@@ -61,7 +61,6 @@ class FavoritesPage extends StatelessWidget {
                                       );
 
                                       vm.removeFromFavorites(ids);
-                                    
                                     },
                         ),
                       ),
@@ -78,9 +77,16 @@ class FavoritesPage extends StatelessWidget {
 
   Center _buildEmptyList() {
     return Center(
-      child: Container(
-        child: Text(
-            "Unternehmen, die sie als Favorit markiert haben, oder bei denen Sie bereits einen Termin hatten werden hier angezeigt."),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          child: Text(
+            
+            "Unternehmen, die Sie als Favorit markiert haben, oder bei denen Sie bereits einen Termin hatten werden hier angezeigt.",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18),
+          ),
+        ),
       ),
     );
   }
@@ -185,19 +191,19 @@ class _ViewModel {
 
   final Function resetFavoriteViewModel;
 
-  _ViewModel(
-      {this.userFavorites,
-      this.removeSelectedFavorites,
-      this.updateEditing,
-      this.favoritesViewModel,
-      this.addSelectedFavorites,
-      this.resetFavoriteViewModel,
-      this.removeFromFavorites,
-      });
+  _ViewModel({
+    this.userFavorites,
+    this.removeSelectedFavorites,
+    this.updateEditing,
+    this.favoritesViewModel,
+    this.addSelectedFavorites,
+    this.resetFavoriteViewModel,
+    this.removeFromFavorites,
+  });
 
   static _ViewModel fromStore(Store<AppState> store) {
     return _ViewModel(
-      userFavorites: store.state.userViewModel.user.companyFavorites,
+      userFavorites: store.state.userViewModel.user.favorites,
       updateEditing: (bool value) {
         store.dispatch(UpdateIsEditingFavoritesAction(value));
       },
@@ -208,8 +214,9 @@ class _ViewModel {
           store.dispatch(RemoveSelectedFavoriteAction(company)),
       resetFavoriteViewModel: () =>
           store.dispatch(ResetFavoriteViewModelAction()),
-      removeFromFavorites: (List<int> companyIds) =>
-          store.dispatch(RemoveFromUserFavoritesAction(companyIds, store.state.userViewModel.user.id)),
+      removeFromFavorites: (List<int> companyIds) => store.dispatch(
+          RemoveFromUserFavoritesAction(
+              companyIds, store.state.userViewModel.user.id)),
     );
   }
 }

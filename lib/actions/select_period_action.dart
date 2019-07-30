@@ -1,11 +1,11 @@
 import 'package:appoint/models/period.dart';
-import 'package:appoint/view_models/select_period_vm.dart';
+import 'package:appoint/widgets/expandable_period_tile.dart';
 import 'package:flutter/material.dart';
 
 class SetLoadedPeriodsAction {
-  final List<Period> periods;
+  final Map<DateTime, List<Period>> days;
 
-  SetLoadedPeriodsAction(this.periods);
+  SetLoadedPeriodsAction(this.days);
 }
 
 class UpdateIsLoadingAction {
@@ -16,7 +16,7 @@ class UpdateIsLoadingAction {
 
 class LoadPeriodsAction {
   final int companyId;
-  final int month;
+  final DateTime month;
   LoadPeriodsAction(this.companyId, this.month);
 }
 
@@ -27,6 +27,8 @@ class UpdateVisiblePeriodsAction {
     this.visiblePeriods,
   );
 }
+
+class ResetSelectPeriodViewModelAction {}
 
 class UpdateSelectedDayPeriodsAction {
   final List selectedDayPeriods;
@@ -53,8 +55,24 @@ class UpdateSelectedDayAction {
   UpdateSelectedDayAction(this.day);
 }
 
-class UpdatePrioritizePrivateAppointmentsAction {
-  final bool prioritizePrivate;
+class LoadedPeriodTilesAction {
+  final List<ExpandablePeriodTile> periodTiles;
 
-  UpdatePrioritizePrivateAppointmentsAction(this.prioritizePrivate);
+  LoadedPeriodTilesAction(this.periodTiles);
+}
+
+class UpdateFilteredPeriodTilesAction {
+  final List<ExpandablePeriodTile> periodTiles;
+
+  UpdateFilteredPeriodTilesAction(this.periodTiles);
+}
+
+class LoadPeriodTilesAction {
+  BuildContext context;
+  DateTime day;
+
+  LoadPeriodTilesAction(
+    this.context,
+    this.day,
+   );
 }

@@ -10,7 +10,7 @@ class Company {
   String picture;
   Address address;
   double rating;
-  Category category;
+  int category;
   bool isPartner;
   String description;
   String phone;
@@ -34,6 +34,7 @@ class Company {
   Map<String, dynamic> toJson() => _$CompanyToJson(this);
 }
 
-enum Category { ALL, DOCTOR, ACCOUNTANT, OTHER }
-
-enum CompanyVisibilityFilter { favorites, all }
+enum CompanyVisibilityFilter {
+  all,
+  favorites,
+}

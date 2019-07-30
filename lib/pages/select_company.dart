@@ -1,13 +1,13 @@
 import 'package:appoint/actions/companies_action.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/company.dart';
+import 'package:appoint/pages/category_select.dart';
 import 'package:appoint/view_models/select_company_vm.dart';
 import 'package:appoint/widgets/company_list.dart';
 import 'package:appoint/widgets/company_tile.dart';
-import 'package:appoint/widgets/dropdown/select.dart';
 import 'package:appoint/widgets/navBar.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:direct_select_flutter/direct_select_container.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
 
@@ -28,7 +28,7 @@ class SelectCompanyState extends State<SelectCompany>
             UpdateCompanyVisibilityFilterAction(
                 CompanyVisibilityFilter.values[_controller.index]));
         _controller.index = store
-            .state 
+            .state
             .selectCompanyViewModel
             .companyVisibilityFilter
             .index; //initial value comes from the redux store
@@ -37,28 +37,41 @@ class SelectCompanyState extends State<SelectCompany>
       },
       converter: (store) => _ViewModel.fromState(store),
       builder: (context, vm) => Scaffold(
-            appBar: _buildNavBar(vm),
-            body: SafeArea(
-              bottom: false,
-              child: DirectSelectContainer(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Column(
-                    children: <Widget>[
-                      _buildDropdown(vm),
-                      Expanded(
-                        child: CompanyList(
-                          filterWithVisibility: true,
-                          itemBuilder: (context, index, Company cpy) =>
-                              _buildCompanyTile(cpy),
-                        ),
-                      ),
-                    ],
+        appBar: _buildNavBar(vm),
+        body: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    child: CupertinoTextField(
+                      textInputAction: TextInputAction.search,
+                      clearButtonMode: OverlayVisibilityMode.editing,
+                      maxLines: 1,
+                      placeholder: "Suchen",
+                      prefix: Icon(Icons.search),
+                      prefixMode: OverlayVisibilityMode.notEditing,
+                      autocorrect: false,
+                    ),
                   ),
                 ),
-              ),
+                _buildDropdown(vm),
+                _buildRangeAndMapButton(vm),
+                Expanded(
+                  child: CompanyList(
+                    filterWithVisibility: true,
+                    itemBuilder: (context, index, Company cpy) =>
+                        _buildCompanyTile(cpy),
+                  ),
+                ),
+              ],
             ),
           ),
+        ),
+      ),
     );
   }
 
@@ -87,17 +100,85 @@ class SelectCompanyState extends State<SelectCompany>
     );
   }
 
-  _buildDropdown(_ViewModel vm) {
-    return SelectWidget<Category>(
-      dataset: Category.values,
-      itemBuilder: (context, value) {
-        return Text(value.toString().split(".").last); //GET ONLY ENUM VALUE
-      },
-      selectedIndex: vm.selectCompanyViewModel.categoryFilter.index,
-      onSelectionChanged: (value, index, context) {
-        vm.updateCategoryFilter(value);
-      },
+  Row _buildRangeAndMapButton(_ViewModel vm) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Slider(
+              activeColor: Color(0xff09c199),
+              value: vm.selectCompanyViewModel.rangeFilter,
+              min: 1.0,
+              max: 50.0,
+              onChanged: (double newValue) => vm.updateRangeFilter(newValue),
+            ),
+            Text("${vm.selectCompanyViewModel.rangeFilter.toInt()} km"),
+          ],
+        ),
+        FlatButton(
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text("Karte"),
+              Padding(
+                padding: const EdgeInsets.only(left: 2.0),
+                child: Icon(
+                  Icons.map,
+                  color: Theme.of(context).iconTheme.color,
+                ),
+              ),
+            ],
+          ),
+          onPressed: () {
+            print("Change mode to map");
+          },
+        ),
+      ],
     );
+  }
+
+  _buildDropdown(_ViewModel vm) {
+    return Container(
+        child: FlatButton(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            vm.selectCompanyViewModel.categories
+                .firstWhere(
+                    (c) => c.id == vm.selectCompanyViewModel.categoryFilter)
+                .value,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w300),
+          ),
+          Icon(
+            CupertinoIcons.right_chevron,
+            color: Theme.of(context).accentColor,
+          ),
+        ],
+      ),
+      onPressed: () => Navigator.pushNamed(
+        context,
+        CategorySelectPage.routeNamed,
+        arguments: vm.selectCompanyViewModel.categoryFilter,
+      ).then((categoryId) {
+        vm.updateCategoryFilter(categoryId);
+      }),
+    ));
+
+    /*
+    return SelectWidget<Category>(
+      dataset: vm.selectCompanyViewModel.categories,
+      itemBuilder: (context, category) {
+        return Text(category.value);
+      },
+      selectedIndex: vm.selectCompanyViewModel.categories
+          .indexWhere((c) => c.id == vm.selectCompanyViewModel.categoryFilter),
+      onSelectionChanged: (value, index, context) {
+        vm.updateCategoryFilter(value.id);
+      },
+    );*/
   }
 
   NavBar _buildNavBar(_ViewModel vm) {
@@ -128,8 +209,8 @@ class SelectCompanyState extends State<SelectCompany>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              Text("Favoriten"),
-              Icon(Icons.favorite),
+              Text("Alle"),
+              Icon(Icons.list),
             ],
           ),
         ),
@@ -137,8 +218,8 @@ class SelectCompanyState extends State<SelectCompany>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              Text("Alle"),
-              Icon(Icons.list),
+              Text("Favoriten"),
+              Icon(Icons.favorite),
             ],
           ),
         ),
@@ -150,25 +231,29 @@ class SelectCompanyState extends State<SelectCompany>
 class _ViewModel {
   final SelectCompanyViewModel selectCompanyViewModel;
   final Function(CompanyVisibilityFilter filter) updateFilter;
-  final Function(Category category) updateCategoryFilter;
+  final Function(int categoryId) updateCategoryFilter;
+  final Function(double value) updateRangeFilter;
 
   _ViewModel({
     this.updateFilter,
     this.selectCompanyViewModel,
     this.updateCategoryFilter,
+    this.updateRangeFilter,
   });
 
   static _ViewModel fromState(Store<AppState> store) {
     return _ViewModel(
       updateFilter: (CompanyVisibilityFilter filter) => store.dispatch(
-            UpdateCompanyVisibilityFilterAction(filter),
-          ),
+        UpdateCompanyVisibilityFilterAction(filter),
+      ),
       selectCompanyViewModel: store.state.selectCompanyViewModel,
-      updateCategoryFilter: (Category category) => store.dispatch(
-            UpdateCategoryFilterAction(
-              (category),
-            ),
-          ),
+      updateCategoryFilter: (int categoryId) => store.dispatch(
+        UpdateCategoryFilterAction(
+          (categoryId),
+        ),
+      ),
+      updateRangeFilter: (double value) =>
+          store.dispatch(UpdateRangeFilterAction(value)),
     );
   }
 }

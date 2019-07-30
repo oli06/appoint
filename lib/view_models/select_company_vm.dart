@@ -1,11 +1,13 @@
+import 'package:appoint/models/category.dart';
 import 'package:appoint/models/company.dart';
 
 class SelectCompanyViewModel {
   final List<Company> companies;
   final bool isLoading;
   final CompanyVisibilityFilter companyVisibilityFilter;
-  final Category categoryFilter;
+  final int categoryFilter;
   final double rangeFilter;
+  final List<Category> categories;
 
   const SelectCompanyViewModel({
     this.companies,
@@ -13,5 +15,6 @@ class SelectCompanyViewModel {
     this.companyVisibilityFilter,
     this.categoryFilter,
     this.rangeFilter,
+    this.categories,
   });
 }

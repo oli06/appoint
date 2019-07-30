@@ -18,43 +18,50 @@ class Dialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return material.Dialog(
+    return Container(
+        width: 500,
+        child: material.Dialog(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              IconButton(
-                icon: Icon(CupertinoIcons.clear, size: 32,),
-                padding: EdgeInsets.zero,
-                onPressed: () => Navigator.pop(context),
-              ),
-              Text(
-                title,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
-              )
-            ],
-          ),
-          Divider(
-            height: 1,
-          ),
-          Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                children: <Widget>[
-                  Text(
-                    information,
-                    style: TextStyle(
-                        fontSize: informationTextSize != null
-                            ? informationTextSize
-                            : 14),
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                IconButton(
+                  icon: Icon(
+                    CupertinoIcons.clear,
+                    size: 32,
                   ),
-                  userActionWidget
-                ],
-              )),
-        ],
+                  padding: EdgeInsets.zero,
+                  onPressed: () => Navigator.pop(context),
+                ),
+                Text(
+                  title,
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                )
+              ],
+            ),
+            Divider(
+              height: 1,
+            ),
+            Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: <Widget>[
+                    Text(
+                      information,
+                      style: TextStyle(
+                          fontSize: informationTextSize != null
+                              ? informationTextSize
+                              : 14),
+                    ),
+                    if (userActionWidget != null) userActionWidget,
+                  ],
+                )),
+          ],
+        ),
       ),
     );
   }

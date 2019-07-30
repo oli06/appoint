@@ -1,6 +1,7 @@
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/assets/company_icons_icons.dart';
 import 'package:appoint/models/app_state.dart';
+import 'package:appoint/models/category.dart';
 import 'package:appoint/models/company.dart';
 import 'package:appoint/utils/ios_url_scheme.dart';
 import 'package:appoint/utils/parse.dart';
@@ -56,9 +57,14 @@ class CompanyDetails extends StatelessWidget {
                   Expanded(
                     child: Align(
                       alignment: Alignment.centerRight,
-                      child: Text(
-                        company.category.toString().split('.').last,
-                        style: TextStyle(fontSize: 16),
+                      child: StoreConnector<AppState, Category>(
+                        converter: (store) => store
+                            .state.selectCompanyViewModel.categories
+                            .firstWhere((c) => c.id == company.category),
+                        builder: (context, category) => Text(
+                          category.value,
+                          style: TextStyle(fontSize: 16),
+                        ),
                       ),
                     ),
                   ),
@@ -123,7 +129,6 @@ class CompanyDetails extends StatelessWidget {
             padding: EdgeInsets.zero,
             child: Row(
               children: <Widget>[
-                Icon(Icons.add),
                 Text("Termin vereinbaren"),
               ],
             ),
@@ -131,31 +136,30 @@ class CompanyDetails extends StatelessWidget {
           ),
           StoreConnector<AppState, _ViewModel>(
             converter: (store) => _ViewModel.fromState(store),
-            builder: (context, vm) => vm.userFavoriteIds.contains(company.id) ? CupertinoButton(
-              padding: EdgeInsets.zero,
-              child: Row(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(right: 2.0),
-                    child: Icon(CompanyIcons.heart),
-                  ),
-                  Text("Aus Favoriten entfernen"),
-                ],
-              ),
-              onPressed: () => vm.removeFromFavorites(company.id),
-            ) : CupertinoButton(
-              padding: EdgeInsets.zero,
-              child: Row(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(right: 2.0),
-                    child: Icon(CompanyIcons.heart_empty),
-                  ),
-                  Text("Zu Favoriten hinzufügen"),
-                ],
-              ),
-              onPressed: () => vm.addToFavorites(company.id),
-            ),
+            builder: (context, vm) =>
+                vm.userFavoriteIds.contains(company.id)
+                    ? CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        child: Row(
+                          children: <Widget>[
+                            Padding(
+                              padding: const EdgeInsets.only(right: 2.0),
+                              child: Icon(CompanyIcons.heart),
+                            ),
+                            Text("Aus Favoriten entfernen"),
+                          ],
+                        ),
+                        onPressed: () => vm.removeFromFavorites(company.id),
+                      )
+                    : CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        child: Row(
+                          children: <Widget>[
+                            Text("Zu Favoriten hinzufügen"),
+                          ],
+                        ),
+                        onPressed: () => vm.addToFavorites(company.id),
+                      ),
           ),
         ],
       ),
@@ -176,12 +180,14 @@ class _ViewModel {
 
   static _ViewModel fromState(Store<AppState> store) {
     return _ViewModel(
-      userFavoriteIds: store.state.userViewModel.user.companyFavorites,
+      userFavoriteIds:
+          store.state.userViewModel.user.favorites,
       removeFromFavorites: (companyId) => store.dispatch(
           RemoveFromUserFavoritesAction(
               [companyId], store.state.userViewModel.user.id)),
-      addToFavorites: (companyId) => store.dispatch(AddToUserFavoritesAction(
-          companyId, store.state.userViewModel.user.id)),
+      addToFavorites: (companyId) => store.dispatch(
+          AddToUserFavoritesAction(
+              companyId, store.state.userViewModel.user.id)),
     );
   }
 }
