@@ -33,8 +33,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
     return StoreConnector<AppState, _ViewModel>(
       converter: _ViewModel.fromStore,
       onInit: (store) {
-        store.dispatch(
-            LoadPeriodsAction(widget.companyId, DateTime.now().month));
+        store.dispatch(LoadPeriodsAction(widget.companyId, DateTime.now()));
         //initial selection is today --> load conflicts for today
         store.dispatch(LoadPeriodTilesAction(context, DateTime.now()));
       },
@@ -139,8 +138,14 @@ class _SelectPeriodState extends State<SelectPeriod> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  CupertinoActivityIndicator(),
-                  Text("freie Termine werden geladen"),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: CupertinoActivityIndicator(),
+                  ),
+                  Text(
+                    "freie Termine werden geladen",
+                    style: TextStyle(fontSize: 18),
+                  ),
                 ],
               ),
             ),
@@ -297,7 +302,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
 class _ViewModel {
   final Function(DateTime selectedDay) updateSelectedDay;
   final SelectedPeriodViewModel selectPeriodViewModel;
-  final Function(int companyId, int month) loadPeriods;
+  final Function(int companyId, DateTime month) loadPeriods;
   final Function(Map<DateTime, List> periods) updateVisiblePeriods;
   final Function(DateTime visibleFirstDay, DateTime visibleLastDay)
       updateVisibilityFilter;
@@ -327,7 +332,7 @@ class _ViewModel {
   static _ViewModel fromStore(Store<AppState> store) {
     return _ViewModel(
       selectPeriodViewModel: store.state.selectPeriodViewModel,
-      loadPeriods: (int companyId, int month) {
+      loadPeriods: (int companyId, DateTime month) {
         store.dispatch(LoadPeriodsAction(companyId, month));
       },
       loadPeriodTiles: (context, day) =>

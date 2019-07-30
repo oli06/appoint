@@ -88,7 +88,6 @@ Middleware<AppState> _createLoadAppointments(Api api) {
 
 Middleware<AppState> _loadedUserConfigurationAction() {
   return (Store<AppState> store, action, NextDispatcher next) async {
-
     final sharedPreferences = await SharedPreferences.getInstance();
     sharedPreferences.setString(kUserIdKey, action.user.id);
     sharedPreferences.setString(kTokenKey, action.token);
@@ -133,21 +132,10 @@ Middleware<AppState> _createLoadPeriods(Api api) {
   return (Store<AppState> store, action, next) {
     store.dispatch(UpdateIsLoadingAction(true));
 
-    /*api.getPeriods(action.companyId).then((periodMap) {
-      if (periodMap == null) {
-        store.dispatch(UpdateIsLoadingAction(false));
-      } else {
-        store.dispatch(SetLoadedPeriodsAction(periodMap));
-        store.dispatch(UpdateVisiblePeriodsAction(getVisibleDaysPeriodsList(
-            store.state.selectPeriodViewModel.periods,
-            store.state.selectPeriodViewModel.visibleFirstDay,
-            store.state.selectPeriodViewModel.visibleLastDay)));
-        store.dispatch(UpdateIsLoadingAction(false));
-      }
-    });
-
-*/
-    api.getPeriodsForMonth(action.companyId).then((periodMap) {
+    api
+        .getPeriodsForMonth(
+            action.companyId, action.month, store.state.userViewModel.token)
+        .then((periodMap) {
       store.dispatch(SetLoadedPeriodsAction(periodMap));
       store.dispatch(UpdateVisiblePeriodsAction(getVisibleDaysPeriodsList(
           store.state.selectPeriodViewModel.periods,
@@ -199,7 +187,7 @@ Middleware<AppState> _createLoadSharedPreferences() {
     final keys = sharedPreferences.getKeys();
     Map<dynamic, dynamic> settings = {};
     keys.forEach((k) {
-    print("setting loaded: $k");
+      print("setting loaded: $k");
       settings[k] = sharedPreferences.get(k);
     });
 
@@ -211,7 +199,7 @@ Middleware<AppState> _createLoadSharedPreferences() {
 
 Middleware<AppState> _createLoadPeriodTiles(Calendar calendar) {
   return (Store<AppState> store, action, next) async {
-    if (!store.state.settingsViewModel.settings[kSettingsCalendarIntegration]) {
+    if (store.state.settingsViewModel.settings[kSettingsCalendarIntegration] == null || !store.state.settingsViewModel.settings[kSettingsCalendarIntegration]) {
       List<ExpandablePeriodTile> _periods = [];
       if (store.state.selectPeriodViewModel
               .visiblePeriods[store.state.selectPeriodViewModel.selectedDay] !=
@@ -235,6 +223,7 @@ Middleware<AppState> _createLoadPeriodTiles(Calendar calendar) {
 
       return;
     } else {
+      print("else");
       store.dispatch(UpdateIsLoadingAction(true));
 
       calendar
@@ -242,6 +231,7 @@ Middleware<AppState> _createLoadPeriodTiles(Calendar calendar) {
               store.state.settingsViewModel.settings[kSettingsCalendarId],
               action.day)
           .then((result) {
+
         List<ExpandablePeriodTile> _periods = [];
 
         if (store.state.selectPeriodViewModel.visiblePeriods[

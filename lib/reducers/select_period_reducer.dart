@@ -103,13 +103,13 @@ SelectedPeriodViewModel _updateTimeFilter(
 
 SelectedPeriodViewModel _setLoadedPeriods(
     SelectedPeriodViewModel vm, SetLoadedPeriodsAction action) {
-  Map<DateTime, List<Period>> days = {};
+  /*Map<DateTime, List<Period>> days = {};
   action.periods.forEach((period) {
     final date = Parse.dateTimeToDateOnly(period.start);
     days.containsKey(date) ? days[date].add(period) : days[date] = [period];
-  });
+  });*/
 
-  vm.periods.addAll(days);
+  vm.periods.addAll(action.days);
   return SelectedPeriodViewModel(
     periods: vm.periods,
     visiblePeriods: vm.visiblePeriods,

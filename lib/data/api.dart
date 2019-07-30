@@ -3,9 +3,12 @@ import 'dart:io';
 import 'package:appoint/models/appoint.dart';
 import 'package:appoint/models/category.dart';
 import 'package:appoint/models/company.dart';
+import 'package:appoint/models/day.dart';
+import 'package:appoint/models/dayresponse.dart';
 import 'package:appoint/models/period.dart';
 import 'package:appoint/models/user.dart';
 import 'package:appoint/models/useraccount.dart';
+import 'package:appoint/utils/parse.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
@@ -59,18 +62,36 @@ class Api {
     return false;
   }
 
-  Future<List<Period>> getPeriodsForMonth(int companyId) async {
-    final response = await http.get("$url/companies/$companyId/periods");
+  Future<Map<DateTime, List<Period>>> getPeriodsForMonth(
+      int companyId, DateTime month, String token) async {
+    final response = await http.get(
+      "$url/companies/$companyId/periods/${Parse.dateRequestFormat.format(month)}",
+      headers: {HttpHeaders.authorizationHeader: "bearer $token"},
+    );
 
+    Map<DateTime, List<Period>> map = {};
     if (response.statusCode == 200) {
-      List<dynamic> list = json.decode(response.body);
-      return list.map((entry) => Period.fromJson(entry)).toList();
+      final List<dynamic> list = json.decode(response.body);
+
+      list.forEach((day) {
+        DayResponse dayObj = DayResponse.fromJson(day);
+        /* final Day<Period> dayObj = new Day<Period>(
+            date: DateTime.parse(day['date']),
+            events:
+                day['periods'].map((model) => Period.fromJson(model)).toList()); */
+
+        map[dayObj.date] = dayObj.periods;
+      });
+
+      //var abc = list.map((entry) => {});
+
+      return map;
     }
 
-    return [];
+    return {};
   }
 
-  Future<List<Period>> getPeriods(int companyId) async {
+  Future<List<Period>> getPeriods(int companyId, DateTime month) async {
     Future<Socket> future = Socket.connect('localhost', 5252);
     future.then((client) {
       print('connected to server!');
@@ -107,12 +128,8 @@ class Api {
       "username": username,
       "password": password
     };
-    final jsonString = json.encode(body);
-    List<int> bodyBytes = utf8.encode(jsonString);
     final url = baseUrl + "token";
-    final response = await http.post(url, body: body);
-
-    return response;
+    return await http.post(url, body: body);
   }
 
   Future<bool> removeUserFavorites(

@@ -1,4 +1,3 @@
-import 'package:appoint/actions/companies_action.dart';
 import 'package:appoint/actions/settings_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/data/api.dart';
@@ -9,14 +8,11 @@ import 'package:appoint/models/user.dart';
 import 'package:appoint/pages/login.dart';
 import 'package:appoint/pages/routes.dart';
 import 'package:appoint/reducers/app_state_reducer.dart';
-import 'package:appoint/utils/auth.dart';
 import 'package:appoint/utils/constants.dart';
-import 'package:appoint/utils/local_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:redux/redux.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:redux_remote_devtools/redux_remote_devtools.dart';
 import 'package:redux_dev_tools/redux_dev_tools.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

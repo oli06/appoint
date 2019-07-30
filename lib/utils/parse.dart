@@ -8,6 +8,8 @@ class Parse {
 
   static final DateFormat hoursWithMinutes = DateFormat("HH:mm");
 
+    static final DateFormat dateRequestFormat = DateFormat("yyyy-MM-dd");
+
   static TimeOfDay convertTimeString(String value) {
     if (value != null && value.length == 5) {
       List<String> data = value.split('-');

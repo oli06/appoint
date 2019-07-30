@@ -27,7 +27,7 @@ class SelectedPeriodViewModel {
     this.visiblePeriods,
     this.isLoading,
     this.timeFilter,
-    this.filteredPeriodTiles,
+    this.filteredPeriodTiles = const [],
     this.visibleFirstDay,
     this.visibleLastDay,
     this.selectedDay,

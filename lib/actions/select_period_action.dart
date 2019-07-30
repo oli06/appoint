@@ -3,9 +3,9 @@ import 'package:appoint/widgets/expandable_period_tile.dart';
 import 'package:flutter/material.dart';
 
 class SetLoadedPeriodsAction {
-  final List<Period> periods;
+  final Map<DateTime, List<Period>> days;
 
-  SetLoadedPeriodsAction(this.periods);
+  SetLoadedPeriodsAction(this.days);
 }
 
 class UpdateIsLoadingAction {
@@ -16,7 +16,7 @@ class UpdateIsLoadingAction {
 
 class LoadPeriodsAction {
   final int companyId;
-  final int month;
+  final DateTime month;
   LoadPeriodsAction(this.companyId, this.month);
 }
 
