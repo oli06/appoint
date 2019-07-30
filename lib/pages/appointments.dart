@@ -6,6 +6,7 @@ import 'package:appoint/models/category.dart';
 import 'package:appoint/models/day.dart';
 import 'package:appoint/pages/add_appoint.dart';
 import 'package:appoint/pages/appointment_details.dart';
+import 'package:appoint/pages/notifications.dart';
 import 'package:appoint/pages/profile.dart';
 import 'package:appoint/selectors/selectors.dart';
 import 'package:appoint/utils/ios_url_scheme.dart';
@@ -120,7 +121,8 @@ class _AppointmentPageState extends State<AppointmentPage> {
     );
   }
 
-  Padding _buildUpcomingAppointment(Appoint upcomingAppointment, _ViewModel vm) {
+  Padding _buildUpcomingAppointment(
+      Appoint upcomingAppointment, _ViewModel vm) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 0, 8, 8),
       child: GestureDetector(
@@ -164,7 +166,14 @@ class _AppointmentPageState extends State<AppointmentPage> {
                               style: TextStyle(fontSize: 15),
                             ),
                           ),
-                          Text(vm.categories.firstWhere((c) => c.id == upcomingAppointment.company.category, orElse: () => null)?.value ?? "leer"),
+                          Text(vm.categories
+                                  .firstWhere(
+                                      (c) =>
+                                          c.id ==
+                                          upcomingAppointment.company.category,
+                                      orElse: () => null)
+                                  ?.value ??
+                              "leer"),
                         ],
                       ),
                       Row(
@@ -276,7 +285,6 @@ class _AppointmentPageState extends State<AppointmentPage> {
       trailing: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: <Widget>[
-          //TODO: v2.0 Feature
           Badge(
             badgeColor: Color(0xff09c199),
             animationType: BadgeAnimationType.scale,
@@ -284,19 +292,10 @@ class _AppointmentPageState extends State<AppointmentPage> {
             badgeContent: Text("3"),
             child: IconButton(
               icon: Icon(Icons.message),
-              onPressed: () {
-                //Benachrichtigungspage anzeigen
-              },
+              onPressed: () => showCupertinoModalPopup(
+                  context: context, builder: (context) => NotificationsPage()),
             ),
           ),
-          /*IconButton(
-            icon: Icon(CupertinoIcons.profile_circled),
-            color: Theme.of(context).primaryColor,
-            onPressed: () => showCupertinoModalPopup(
-              context: context,
-              builder: (context) => ProfilePage(),
-            ),
-          ),*/
         ],
       ),
     );
