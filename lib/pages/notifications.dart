@@ -1,12 +1,8 @@
-import 'package:appoint/models/app_state.dart';
 import 'package:appoint/pages/chat.dart';
 import 'package:appoint/widgets/navBar.dart';
-import 'package:badges/badges.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:redux/redux.dart';
 
 class NotificationsPage extends StatelessWidget {
   static final routeNamed = "notifications";

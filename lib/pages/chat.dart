@@ -53,17 +53,17 @@ class _ChatPageState extends State<ChatPage> {
           type: MessageType.message,
           value:
               "Danke für die Bestätigung des Termins. Falls Sie in der Zwischenzeit weitere Fragen haben, können Sie sich jederzeit bei uns melden"),
-              MessageObject(
-          isYours: true,
-          type: MessageType.message,
-          value:
-              "Bis dann, ciao!"),
+      MessageObject(
+          isYours: true, type: MessageType.message, value: "Bis dann, ciao!"),
     ];
 
     return Scaffold(
       appBar: _buildNavBar(context, company.name),
-      body: SafeArea(
-        child: _buildBody(messages),
+      body: Container(
+        color: Colors.grey[200],
+        child: SafeArea(
+          child: _buildBody(messages),
+        ),
       ),
     );
   }
@@ -92,7 +92,6 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildTextInput() {
     return Container(
-      color: Colors.grey[100],
       height: 50,
       child: Column(
         children: <Widget>[
@@ -134,7 +133,7 @@ class _ChatPageState extends State<ChatPage> {
             message.isYours ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: <Widget>[
           Container(
-            width: 280,
+            constraints: BoxConstraints(maxWidth: 280),
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 color: message.isYours
