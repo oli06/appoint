@@ -20,6 +20,10 @@ String url = baseUrl + accessPoint;
 //String url = 'http://localhost:8000';
 
 class Api {
+  String token;
+
+  Api({this.token});
+
   Future<List<Company>> getCompanies(String token) async {
     final response = await http.get('$url/companies',
         headers: {HttpHeaders.authorizationHeader: "bearer $token"});
@@ -62,7 +66,30 @@ class Api {
     return false;
   }
 
-  Future<Map<DateTime, List<Period>>> getPeriodsForMonth(
+  Future<Map<DateTime, List<Period>>> getPeriods(
+      int companyId, DateTime first, DateTime last) async {
+    final response = await http.get(
+      "$url/companies/$companyId/periods?start=${Parse.dateRequestFormat.format(first)}&end=${Parse.dateRequestFormat.format(last)}",
+      headers: {HttpHeaders.authorizationHeader: "bearer $token"},
+    );
+
+    Map<DateTime, List<Period>> map = {};
+    if (response.statusCode == 200) {
+      final List<dynamic> list = json.decode(response.body);
+
+      list.forEach((day) {
+        DayResponse dayObj = DayResponse.fromJson(day);
+
+        map[dayObj.date] = dayObj.periods;
+      });
+
+      return map;
+    }
+
+    return {};
+  }
+
+/*   Future<Map<DateTime, List<Period>>> getPeriodsForMonth(
       int companyId, DateTime month, String token) async {
     final response = await http.get(
       "$url/companies/$companyId/periods/${Parse.dateRequestFormat.format(month)}",
@@ -89,30 +116,7 @@ class Api {
     }
 
     return {};
-  }
-
-  Future<List<Period>> getPeriods(int companyId, DateTime month) async {
-    Future<Socket> future = Socket.connect('localhost', 5252);
-    future.then((client) {
-      print('connected to server!');
-      client.handleError((data) {
-        print(data);
-      });
-      client.listen((data) {
-        print(new String.fromCharCodes(data));
-        return data;
-      }, onDone: () {
-        print("Done");
-      }, onError: (error, stackTrace) {
-        print(error);
-        print(stackTrace.toString());
-      });
-
-      client.writeln('getPeriods');
-    });
-    //print('Hello world: ${dart_test.calculate()}!');
-    return null;
-  }
+  } */
 
   Future<http.Response> register(UserAccount user) async {
     final jsonString = user.toJson();

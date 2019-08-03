@@ -27,9 +27,6 @@ dependencies:
   flutter_redux:
   json_annotation:
   intl:
-  flutter_cupertino_date_picker:
-    git:
-      url: 'git://github.com/oli06/flutter-cupertino-date-picker.git'
   location:
   badges:
   flutter_slidable:
@@ -38,11 +35,19 @@ dependencies:
   code_input:
   url_launcher:
   table_calendar:
+    git:
+      url: 'git://github.com/oli06/table_calendar.git'
   device_calendar:
     git:
       url: 'git://github.com/oli06/flutter_plugins.git'
       path: 'device_calendar'
   shared_preferences:
+  flutter_cupertino_date_picker:
+    git:
+      url: 'git://github.com/oli06/flutter-cupertino-date-picker.git'
+      #9e0a55076646c999948fc1ec8d8108ac5b65ddf9
+
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2

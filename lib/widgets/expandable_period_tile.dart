@@ -12,8 +12,8 @@ class ExpandablePeriodTile extends StatefulWidget {
 
   ExpandablePeriodTile({
     Key key,
-    @required this.trailing,
-    @required this.children,
+    this.trailing,
+    this.children,
     @required this.period,
     @required this.onTap,
   }) : super(key: key);
@@ -44,7 +44,7 @@ class _ExpandablePeriodTileState extends State<ExpandablePeriodTile>
     super.dispose();
   }
 
-  void _handleTap() {
+  handleTap() {
     setState(() {
       _isExpanded = !_isExpanded;
       if (_isExpanded) {
@@ -62,15 +62,17 @@ class _ExpandablePeriodTileState extends State<ExpandablePeriodTile>
   }
 
   Widget _buildChildren(BuildContext context, Widget child) {
+    //conflict exists
+
     return Container(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           PeriodTile(
             period: widget.period,
-            onTap: widget.onTap,
+            onTap: handleTap,
             trailing: widget.trailing,
-            trailingOnTap: _handleTap,
+            //trailingOnTap: _handleTap,
           ),
           ClipRect(
             child: Align(
@@ -86,12 +88,15 @@ class _ExpandablePeriodTileState extends State<ExpandablePeriodTile>
   @override
   Widget build(BuildContext context) {
     final bool closed = !_isExpanded && _controller.isDismissed;
+    //no conflict
     if (widget.trailing == null) {
       return PeriodTile(
         period: widget.period,
         onTap: widget.onTap,
       );
     }
+
+    //else
     return AnimatedBuilder(
       animation: _controller.view,
       builder: _buildChildren,

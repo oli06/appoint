@@ -8,13 +8,11 @@ class PeriodTile extends StatelessWidget {
   final Period period;
   final Function onTap;
   final Widget trailing;
-  final Function trailingOnTap;
 
   PeriodTile({
     this.period,
     this.onTap,
     this.trailing,
-    this.trailingOnTap,
   });
 
   @override
@@ -39,13 +37,9 @@ class PeriodTile extends StatelessWidget {
               ),
               if (trailing != null)
                 Expanded(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                  onTap: trailingOnTap,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: trailing,
-                    ),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: trailing,
                   ),
                 ),
             ],

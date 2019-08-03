@@ -5,8 +5,11 @@ import 'package:appoint/models/day.dart';
 import 'package:appoint/models/period.dart';
 import 'package:appoint/utils/distance.dart';
 import 'package:appoint/utils/parse.dart';
+import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:appoint/widgets/expandable_period_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:redux/redux.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 List<Company> companiesSelector(AppState state) =>
     state.selectCompanyViewModel.companies;
@@ -29,13 +32,14 @@ List<Company> companiesVisibilityFilterSelector(List<Company> companies,
 
 List<Company> companiesRangeFilter(
     List<Company> companies, double kmRange, double userLat, double userLon) {
-      if(kmRange == null) {
-        //no filter for add_appoint company list
-        return companies;
-      }
+  if (kmRange == null) {
+    //no filter for add_appoint company list
+    return companies;
+  }
+
   return companies.where((c) {
     //FIXME: when company latlong cant be null in database: remove
-    if(c.address.latitude == null || c.address.longitude == null) {
+    if (c.address.latitude == null || c.address.longitude == null) {
       return true;
     }
     return DistanceUtil.calculateDistanceBetweenCoordinates(
@@ -66,6 +70,60 @@ List<Period> filteredPeriodsSelector(List<Period> periods, List<bool> filter) {
   }).toList();
 }
 
+bool arePeriodsAvailable(SelectedPeriodViewModel vm, DateTime onDate) {
+  final value = vm.periods[onDate];
+  if (value == null || value.length == 0) {
+    return false;
+  }
+
+  return true;
+}
+
+Map<DateTime, List<Period>> getPeriodsBetween(
+    SelectedPeriodViewModel vm, DateTime first, DateTime last) {
+  final oneDay = const Duration(days: 1);
+  print("getPeriodsBetween, with first month: ${first.month}");
+
+  final map = Map.fromEntries(vm.periods.entries.where((day) =>
+      day.key.isAfter(first.subtract(oneDay)) &&
+      day.key.isBefore(last.add(oneDay))));
+
+  return map;
+}
+
+Map<DateTime, List> getVisibleDaysPeriodsList(SelectedPeriodViewModel vm) {
+  Map<DateTime, List> filteredPeriods =
+      getPeriodsBetween(vm, vm.visibleFirstDay, vm.visibleLastDay);
+
+  final TimeOfDay timeFilter = vm.timeFilter;
+  if (timeFilter != null) {
+    //apply time filter
+    filteredPeriods = Map.fromEntries(filteredPeriods.entries.map((entry) {
+      return MapEntry(
+          entry.key,
+          entry.value
+              .where((period) => period.start.hour == timeFilter.hour)
+              .toList());
+    }));
+  }
+
+  return filteredPeriods;
+}
+
+Map<DateTime, List> filterDaysPeriodsList(
+    Map<DateTime, List> periods, TimeOfDay tod) {
+  if (tod == null) {
+    return periods;
+  }
+
+  Map<DateTime, List> map2 = Map.fromEntries(periods.entries.map((entry) {
+    return MapEntry(entry.key,
+        entry.value.where((period) => period.start.hour == tod.hour).toList());
+  }));
+
+  return Map.from(map2)..removeWhere((entry, v) => v.isEmpty);
+}
+
 List<Day<Appoint>> groupAppointmentsByDate(List<Appoint> appointments) {
   List<Day<Appoint>> days = [];
 
@@ -85,43 +143,18 @@ List<Day<Appoint>> groupAppointmentsByDate(List<Appoint> appointments) {
   return days;
 }
 
-Map<DateTime, List> getVisibleDaysPeriodsList(
-    Map<DateTime, List> allPeriods, DateTime first, DateTime last) {
-  if (first == null || last == null) {
-    final Map<DateTime, List> map = {};
-    map.addAll(allPeriods);
-    return map;
-  }
-
-  return Map.fromEntries(allPeriods.entries.where((day) =>
-      day.key.isAfter(first.subtract(const Duration(days: 1))) &&
-      day.key.isBefore(last.add(const Duration(days: 1)))));
-}
-
-Map<DateTime, List> filterDaysPeriodsList(
-    Map<DateTime, List> periods, TimeOfDay tod) {
-  if (tod == null) {
-    return periods;
-  }
-
-  Map<DateTime, List> map2 = Map.fromEntries(periods.entries.map((entry) {
-    return MapEntry(entry.key,
-        entry.value.where((period) => period.start.hour == tod.hour).toList());
-  }));
-
-  return Map.from(map2)..removeWhere((entry, v) => v.isEmpty);
-}
-
-List<ExpandablePeriodTile> filterPeriodTiles(
+/* List<ExpandablePeriodTile> filterPeriodTiles(
     List<ExpandablePeriodTile> periodTile, TimeOfDay tod) {
   if (tod == null) {
     return periodTile;
   }
 
-  return periodTile.where((periodTile) => periodTile.period.start.hour == tod.hour).toList();
-}
+  return periodTile
+      .where((periodTile) => periodTile.period.start.hour == tod.hour)
+      .toList();
+} */
 
-List<Day<Period>> groupPeriodsByDate(List<Period> periods) {
+/* List<Day<Period>> groupPeriodsByDate(List<Period> periods) {
   List<Day<Period>> days = [];
 
   periods
@@ -136,4 +169,4 @@ List<Day<Period>> groupPeriodsByDate(List<Period> periods) {
       .toList();
 
   return days;
-}
+} */

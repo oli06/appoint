@@ -8,7 +8,15 @@ class Parse {
 
   static final DateFormat hoursWithMinutes = DateFormat("HH:mm");
 
-    static final DateFormat dateRequestFormat = DateFormat("yyyy-MM-dd");
+  static final DateFormat dateRequestFormat = DateFormat("yyyy-MM-dd");
+
+  /// The last day of a given month
+  static DateTime lastDayOfMonth(DateTime month) {
+    var beginningNextMonth = (month.month < 12)
+        ? new DateTime(month.year, month.month + 1, 1)
+        : new DateTime(month.year + 1, 1, 1);
+    return beginningNextMonth.subtract(new Duration(days: 1));
+  }
 
   static TimeOfDay convertTimeString(String value) {
     if (value != null && value.length == 5) {

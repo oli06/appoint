@@ -22,17 +22,20 @@ class AppointCalendar extends StatefulWidget {
 }
 
 class _AppointCalendarState extends State<AppointCalendar> {
+
   @override
   Widget build(BuildContext context) {
     return TableCalendar(
+      enableDay: (date) {
+        return date.weekday != DateTime.sunday;
+      },
       endDay: DateTime(2099, 12, 31),
       initialCalendarFormat: CalendarFormat.month,
-      startDay: DateTime.now().subtract(Duration(days: 21)),
+      startDay: DateTime.now().subtract(Duration(days: 1)),
       startingDayOfWeek: StartingDayOfWeek.monday,
       availableGestures: AvailableGestures.horizontalSwipe,
       availableCalendarFormats: const {
         CalendarFormat.month: "1 Monat",
-        CalendarFormat.twoWeeks: "2 Wochen",
       },
       calendarStyle: CalendarStyle(
         selectedColor: Theme.of(context).accentColor,
@@ -68,7 +71,10 @@ class _AppointCalendarState extends State<AppointCalendar> {
                 borderRadius: BorderRadius.circular(5),
                 color: Theme.of(context).primaryColor),
             child: Center(
-              child: Text(day.day.toString(), style: const TextStyle(fontSize: 18),),
+              child: Text(
+                day.day.toString(),
+                style: const TextStyle(fontSize: 18),
+              ),
             ),
           ),
         );

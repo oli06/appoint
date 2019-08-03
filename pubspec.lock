@@ -202,7 +202,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: b95e13580e68292ee29d931cad44f7f108a804ec
+      resolved-ref: "9e0a55076646c999948fc1ec8d8108ac5b65ddf9"
       url: "git://github.com/oli06/flutter-cupertino-date-picker.git"
     source: git
     version: "1.0.4"
@@ -527,10 +527,12 @@ packages:
   table_calendar:
     dependency: "direct main"
     description:
-      name: table_calendar
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.0"
+      path: "."
+      ref: HEAD
+      resolved-ref: "59f29e24f6a0cb96f5f1eadcbd387094ea59a118"
+      url: "git://github.com/oli06/table_calendar.git"
+    source: git
+    version: "1.2.5"
   term_glyph:
     dependency: transitive
     description:

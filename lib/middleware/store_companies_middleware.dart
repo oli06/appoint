@@ -8,22 +8,15 @@ import 'package:appoint/data/api.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/category.dart';
 import 'package:appoint/selectors/selectors.dart';
-import 'package:appoint/utils/calendar.dart';
 import 'package:appoint/utils/constants.dart';
-import 'package:appoint/utils/parse.dart';
-import 'package:appoint/widgets/expandable_period_tile.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:redux/redux.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 List<Middleware<AppState>> createStoreCompaniesMiddleware() {
   final Api api = Api();
-  final Calendar calendar = Calendar();
 
   final loadCompanies = _createLoadCompanies(api);
-  final loadPeriods = _createLoadPeriods(api);
   final loadAppointments = _createLoadAppointments(api);
   final verifyUser = _createUserVerifcation(api);
   final loadUserLocation = _createLoadUserLocation();
@@ -31,16 +24,14 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
   final removeUserFavorites = _createRemoveFromUserFavorites(api);
   final addUserFavorite = _createAddToUserFavorites(api);
   final loadSharedPreferences = _createLoadSharedPreferences();
-  final loadPeriodTiles = _createLoadPeriodTiles(calendar);
   final loadCategories = _createLoadCategories(api);
 
   final authenticate = _authenticate(api);
   final loginProcessDone = _loadedUserConfigurationAction();
-  //final login = _login(api);
+  final loadPeriods = _createLoadPeriods(api);
 
   return [
     TypedMiddleware<AppState, LoadCompaniesAction>(loadCompanies),
-    TypedMiddleware<AppState, LoadPeriodsAction>(loadPeriods),
     TypedMiddleware<AppState, LoadAppointmentsAction>(loadAppointments),
     TypedMiddleware<AppState, VerifyUserAction>(verifyUser),
     TypedMiddleware<AppState, LoadUserLocationAction>(loadUserLocation),
@@ -50,11 +41,10 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
     TypedMiddleware<AppState, AddToUserFavoritesAction>(addUserFavorite),
     TypedMiddleware<AppState, LoadSharedPreferencesAction>(
         loadSharedPreferences),
-    TypedMiddleware<AppState, LoadPeriodTilesAction>(loadPeriodTiles),
     TypedMiddleware<AppState, LoadCategoriesAction>(loadCategories),
     TypedMiddleware<AppState, AuthenticateAction>(authenticate),
     TypedMiddleware<AppState, LoadedUserConfigurationAction>(loginProcessDone),
-    //TypedMiddleware<AppState, UserLoginAction>(login),
+    TypedMiddleware<AppState, LoadPeriodsAction>(loadPeriods),
   ];
 }
 
@@ -100,6 +90,60 @@ Middleware<AppState> _loadedUserConfigurationAction() {
   };
 }
 
+///fetches periods which aren't already in cache
+Middleware<AppState> _createLoadPeriods(Api api) {
+  return (Store<AppState> store, action, NextDispatcher next) async {
+    store.dispatch(UpdateIsLoadingAction(true));
+
+    final oneDay = const Duration(days: 1);
+    bool allAvailable = false;
+
+    //dates from the action might have hours and minutes set. But ArePeriodsAvailable checks only if year, month, and day are available
+    final startDate =
+        DateTime(action.first.year, action.first.month, action.first.day);
+    DateTime dateCounterLeft = startDate;
+
+    final endDate =
+        DateTime(action.last.year, action.last.month, action.last.day);
+    DateTime dateCounterRight = endDate;
+    while (arePeriodsAvailable(
+        store.state.selectPeriodViewModel, dateCounterLeft)) {
+      if (dateCounterLeft == endDate) {
+        allAvailable = true;
+        break;
+      }
+
+      dateCounterLeft = dateCounterLeft.add(oneDay);
+    }
+
+    if (!allAvailable) {
+      while (arePeriodsAvailable(
+          store.state.selectPeriodViewModel, dateCounterRight)) {
+        if (dateCounterRight == startDate) {
+          break;
+        }
+        dateCounterRight = dateCounterRight.subtract(oneDay);
+      }
+
+      print(
+          "load Periods between: ${dateCounterLeft.toString()} - ${dateCounterRight.toString()}");
+
+      api
+          .getPeriods(action.companyId, dateCounterLeft, dateCounterRight)
+          .then((result) {
+        store.dispatch(LoadedPeriodsAction(result));
+        print(
+            "loaded Periods for: ${dateCounterLeft.toString()} - ${dateCounterRight.toString()}");
+
+        store.dispatch(UpdateIsLoadingAction(false));
+      });
+    } else {
+      store.dispatch(UpdateIsLoadingAction(false));
+      print("load periods; all available");
+    }
+  };
+}
+
 Middleware<AppState> _authenticate(Api api) {
   return (Store<AppState> store, action, NextDispatcher next) async {
     final SharedPreferences sharedPreferences =
@@ -114,6 +158,8 @@ Middleware<AppState> _authenticate(Api api) {
       final token = sharedPreferences.getString(kTokenKey);
       final userId = sharedPreferences.getString(kUserIdKey);
 
+      api.token = token;
+
       api.getUser(userId, token).then((user) {
         if (user != null) {
           store.dispatch(LoadedUserConfigurationAction(user, token));
@@ -123,26 +169,6 @@ Middleware<AppState> _authenticate(Api api) {
     } else {
       print("user isnot authenticated");
     }
-
-    next(action);
-  };
-}
-
-Middleware<AppState> _createLoadPeriods(Api api) {
-  return (Store<AppState> store, action, next) {
-    store.dispatch(UpdateIsLoadingAction(true));
-
-    api
-        .getPeriodsForMonth(
-            action.companyId, action.month, store.state.userViewModel.token)
-        .then((periodMap) {
-      store.dispatch(SetLoadedPeriodsAction(periodMap));
-      store.dispatch(UpdateVisiblePeriodsAction(getVisibleDaysPeriodsList(
-          store.state.selectPeriodViewModel.periods,
-          store.state.selectPeriodViewModel.visibleFirstDay,
-          store.state.selectPeriodViewModel.visibleLastDay)));
-      store.dispatch(UpdateIsLoadingAction(false));
-    });
 
     next(action);
   };
@@ -193,103 +219,6 @@ Middleware<AppState> _createLoadSharedPreferences() {
 
     store.dispatch(LoadedSharedPreferencesAction(settings));
 
-    next(action);
-  };
-}
-
-Middleware<AppState> _createLoadPeriodTiles(Calendar calendar) {
-  return (Store<AppState> store, action, next) async {
-    if (store.state.settingsViewModel.settings[kSettingsCalendarIntegration] == null || !store.state.settingsViewModel.settings[kSettingsCalendarIntegration]) {
-      List<ExpandablePeriodTile> _periods = [];
-      if (store.state.selectPeriodViewModel
-              .visiblePeriods[store.state.selectPeriodViewModel.selectedDay] !=
-          null) {
-        store.state.selectPeriodViewModel
-            .visiblePeriods[store.state.selectPeriodViewModel.selectedDay]
-            .forEach((period) {
-          _periods.add(ExpandablePeriodTile(
-            period: period,
-            onTap: () {
-              store.dispatch(ResetSelectPeriodViewModelAction());
-              Navigator.pop(action.context, period);
-            },
-            trailing: null,
-            children: null,
-          ));
-        });
-      }
-      store.dispatch(LoadedPeriodTilesAction(_periods));
-      store.dispatch(UpdateFilteredPeriodTilesAction(_periods));
-
-      return;
-    } else {
-      print("else");
-      store.dispatch(UpdateIsLoadingAction(true));
-
-      calendar
-          .retrieveCalendarEvents(
-              store.state.settingsViewModel.settings[kSettingsCalendarId],
-              action.day)
-          .then((result) {
-
-        List<ExpandablePeriodTile> _periods = [];
-
-        if (store.state.selectPeriodViewModel.visiblePeriods[
-                store.state.selectPeriodViewModel.selectedDay] !=
-            null) {
-          store.state.selectPeriodViewModel
-              .visiblePeriods[store.state.selectPeriodViewModel.selectedDay]
-              .forEach((period) {
-            final eventConflicts = result.data.where((event) {
-              if (event.start.isBefore(period.start) &&
-                  !event.end.isBefore(period.start)) {
-                return true;
-              }
-              if (!event.start.isBefore(period.start) &&
-                  event.start.isBefore(period.start.add(period.duration))) {
-                return true;
-              }
-              return false;
-            }).toList();
-            print("event conflicts are: ${eventConflicts.length}");
-            _periods.add(ExpandablePeriodTile(
-              period: period,
-              onTap: () {
-                store.dispatch(ResetSelectPeriodViewModelAction());
-                Navigator.pop(action.context, period);
-              },
-              trailing: eventConflicts.length != 0 ? Icon(Icons.warning) : null,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        "Konflikte mit folgenden Terminen:",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      ...eventConflicts
-                          .map((event) => Text(
-                              "${event.title}, ${Parse.hoursWithMinutes.format(event.start)} - ${Parse.hoursWithMinutes.format(event.end)}"))
-                          .toList(),
-                    ],
-                  ),
-                ),
-              ],
-            ));
-          });
-          print(
-              "returning calculated data now, with leght: ${_periods.length}");
-          store.dispatch(LoadedPeriodTilesAction(_periods));
-          store.dispatch(UpdateFilteredPeriodTilesAction(_periods));
-        } else {
-          print("periods are nulll");
-        }
-
-        store.dispatch(UpdateIsLoadingAction(false));
-      });
-    }
     next(action);
   };
 }

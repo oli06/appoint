@@ -44,21 +44,8 @@ class SelectCompanyState extends State<SelectCompany>
             padding: EdgeInsets.symmetric(horizontal: 8),
             child: Column(
               children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    child: CupertinoTextField(
-                      textInputAction: TextInputAction.search,
-                      clearButtonMode: OverlayVisibilityMode.editing,
-                      maxLines: 1,
-                      placeholder: "Suchen",
-                      prefix: Icon(Icons.search),
-                      prefixMode: OverlayVisibilityMode.notEditing,
-                      autocorrect: false,
-                    ),
-                  ),
-                ),
-                _buildDropdown(vm),
+                _buildSearchField(),
+                _buildCategorySelect(vm),
                 _buildRangeAndMapButton(vm),
                 Expanded(
                   child: CompanyList(
@@ -70,6 +57,23 @@ class SelectCompanyState extends State<SelectCompany>
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchField() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Container(
+        child: CupertinoTextField(
+          textInputAction: TextInputAction.search,
+          clearButtonMode: OverlayVisibilityMode.editing,
+          maxLines: 1,
+          placeholder: "Suchen",
+          prefix: Icon(Icons.search),
+          prefixMode: OverlayVisibilityMode.notEditing,
+          autocorrect: false,
         ),
       ),
     );
@@ -139,18 +143,24 @@ class SelectCompanyState extends State<SelectCompany>
     );
   }
 
-  _buildDropdown(_ViewModel vm) {
+  _buildCategorySelect(_ViewModel vm) {
     return Container(
         child: FlatButton(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Expanded(
+            child: Text(
+              "Kategorie",
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w300),
+            ),
+          ),
           Text(
             vm.selectCompanyViewModel.categories
                 .firstWhere(
                     (c) => c.id == vm.selectCompanyViewModel.categoryFilter)
                 .value,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w300),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w300),
           ),
           Icon(
             CupertinoIcons.right_chevron,

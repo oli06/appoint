@@ -141,14 +141,16 @@ class AddAppointState extends State<AddAppoint>
                         height: 10,
                       ),
                       _firstCard(),
-                      /*SizedBox(
-                        height: 20,
-                      ),*/
-                      //_secondCard(),
-                      SizedBox(
-                        height: 20,
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        child: Text("...oder nächsten freien Termin finden"),
+                        onPressed: _company == null
+                            ? null
+                            : () {
+                                print("select next available period");
+                              },
                       ),
-                      _thirdCard(),
+                      _buildInformationCard(),
                     ],
                   ),
                 ),
@@ -406,7 +408,7 @@ class AddAppointState extends State<AddAppoint>
     );
   }
 
-  Widget _thirdCard() {
+  Widget _buildInformationCard() {
     return Card(
       elevation: 2,
       child: Padding(
