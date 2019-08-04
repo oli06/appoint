@@ -213,7 +213,8 @@ class _SelectPeriodState extends State<SelectPeriod> {
                             "${event.title}, ${Parse.hoursWithMinutes.format(event.start)} - ${Parse.hoursWithMinutes.format(event.end)}"))
                         .toList(),
                     CupertinoButton(
-                      child: Text("Trotzdem wählen"),
+                      padding: EdgeInsets.zero,
+                      child: Text("Zeitraum trotzdem wählen"),
                       onPressed: () {
                         vm.resetViewModel();
                         Navigator.pop(context, period);

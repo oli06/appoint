@@ -1,4 +1,3 @@
-import 'package:appoint/pages/profile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -28,17 +27,15 @@ class NavBar extends StatelessWidget implements PreferredSizeWidget {
               children: <Widget>[
                 leadingWidget,
                 _headerText(),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Container(
-                      padding: EdgeInsets.only(right: 10.0),
-                      child: trailing != null
-                          ? trailing
-                          : _trailingWidget(context),
+                if (trailing != null)
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Container(
+                          padding: EdgeInsets.only(right: 10.0),
+                          child: trailing),
                     ),
                   ),
-                ),
               ],
             ),
             if (tabBar == null) ...[
@@ -95,19 +92,6 @@ class NavBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
         ],
       ),
-    );
-  }
-
-  Widget _trailingWidget(context) {
-    return IconButton(
-      icon: Icon(CupertinoIcons.profile_circled),
-      color: Theme.of(context).primaryColor,
-      onPressed: () {
-        showCupertinoModalPopup(
-          context: context,
-          builder: (context) => ProfilePage(),
-        );
-      },
     );
   }
 }

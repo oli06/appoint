@@ -9,6 +9,7 @@ import 'package:appoint/pages/login.dart';
 import 'package:appoint/pages/routes.dart';
 import 'package:appoint/reducers/app_state_reducer.dart';
 import 'package:appoint/utils/constants.dart';
+import 'package:appoint/utils/lifecycle_event_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:redux/redux.dart';
@@ -83,11 +84,15 @@ class MyApp extends StatelessWidget {
       child: StoreConnector<AppState, _ViewModel>(
         converter: (store) => _ViewModel.fromState(store),
         onInit: (store) {
+          //save settings on kill
+          WidgetsBinding.instance
+              .addObserver(LifecycleEventHandler(suspendingCallBack: () async {
+            print("suspending");
+          }));
           store.dispatch(AuthenticateAction());
           store.dispatch(LoadSharedPreferencesAction());
         },
         builder: (context, vm) => MaterialApp(
-          //initialRoute: "login",
           routes: routes,
           home: defaultRoute,
           theme: theme,

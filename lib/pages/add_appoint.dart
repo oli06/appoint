@@ -13,6 +13,7 @@ import 'package:appoint/pages/select_period.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:appoint/view_models/settings_vm.dart';
 import 'package:appoint/widgets/company_tile.dart';
+import 'package:appoint/widgets/dialog.dart' as appoint;
 import 'package:appoint/widgets/icon_circle_gradient.dart';
 import 'package:appoint/widgets/navBar.dart';
 import 'package:appoint/pages/select_company.dart';
@@ -207,25 +208,29 @@ class AddAppointState extends State<AddAppoint>
                           _company)
                       .then((res) {
                     if (res) {
-                      //TODO: show indicator that an event was created inside calendar
-                      /* showCupertinoDialog(
-                        context: context,
-                        builder: (context) => prefix0.Dialog(
-                          title: "Termin erstellt",
-                          information:
-                              "Termin wurde in den Kalender übertragen",
-                          informationTextSize: 24,
-                        ),
-                      ); 
-                      Future.delayed(Duration(milliseconds: 200), () {
-                        //first: pop dialog, then pop add_appoint page
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                      }); */
+                      showCupertinoDialog(
+                          context: context,
+                          builder: (context) {
+                            Future.delayed(Duration(seconds: 2), () {
+                              Navigator.pop(context);
+                            });
+
+                            return appoint.Dialog(
+                              title: "Termin erstellt",
+                              information:
+                                  "Termin wurde erfolgreich erstellt und in den Kalender übertragen",
+                              informationTextSize: 18,
+                            );
+                          });
+                    } else {
+                      print("else 2");
+                      Navigator.pop(context);
                     }
                   });
+                } else {
+                  print("else 1");
+                  Navigator.pop(context);
                 }
-                Navigator.pop(context);
               }
             : null,
       ),

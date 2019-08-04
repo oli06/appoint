@@ -1,5 +1,6 @@
 import 'package:appoint/home.dart';
 import 'package:appoint/pages/appointment_details.dart';
+import 'package:appoint/pages/calendar_select.dart';
 import 'package:appoint/pages/category_select.dart';
 import 'package:appoint/pages/company_details.dart';
 import 'package:appoint/pages/favorites.dart';
@@ -17,5 +18,6 @@ final routes = {
   FavoritesPage.routeName: (context) => FavoritesPage(),
   SettingsPage.routeName: (context) => SettingsPage(),
   CategorySelectPage.routeNamed: (context) => CategorySelectPage(),
+  CalendarSelectPage.routeNamed: (context) => CalendarSelectPage(),
   'app': (context) => HomePage(),
 };

@@ -58,16 +58,13 @@ class _CategorySelectPageState extends State<CategorySelectPage> {
   NavBar _buildNavBar() {
     return NavBar(
       "Unternehmen auswählen",
-      height: 99,
+      height: 59,
       leadingWidget: IconButton(
           icon: Icon(
             Icons.arrow_back_ios,
           ),
           onPressed: () => Navigator.pop(context, id)),
       secondHeader: "nach Kategorie filtern",
-      trailing: Container(
-        height: 0,
-      ),
     );
   }
 }

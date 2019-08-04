@@ -221,10 +221,6 @@ class AppointmentDetails extends StatelessWidget {
       leadingWidget: CupertinoNavigationBarBackButton(
         previousPageTitle: "Termine",
       ),
-      trailing: Container(
-        height: 0,
-        width: 0,
-      ),
     );
   }
 }

@@ -125,7 +125,7 @@ class ProfilePage extends StatelessWidget {
             padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
             child: Text(
               "Durch die Verifizierung erhältst du die Möglichkeit, Termine mit noch mehr Unternehmen zu vereinbaren. Gleichzeitig bietet die Verifizeriung eine höhere Vertrauenswürdigkeit gegenüber den Unternehmen.",
-              style: TextStyle(color: Colors.grey, fontSize: 14),
+              style: const TextStyle(color: Colors.grey, fontSize: 14),
             ),
           ),
         ],
@@ -242,18 +242,11 @@ class ProfilePage extends StatelessWidget {
   NavBar _buildNavBar(BuildContext context) {
     return NavBar(
       "Profil",
-      height: 57,
+      height: 40,
       leadingWidget: Container(
         padding: EdgeInsets.only(left: 10.0),
         child: Icon(CupertinoIcons.profile_circled),
       ),
-
-      /*
-      leadingWidget: IconButton(
-        icon: Icon(Icons.close),
-        onPressed: () => Navigator.pop(context),
-      ),*/
-      trailing: Container(height: 0),
     );
   }
 }

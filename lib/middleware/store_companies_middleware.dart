@@ -210,16 +210,16 @@ Middleware<AppState> _createLoadSharedPreferences() {
     final SharedPreferences sharedPreferences =
         await SharedPreferences.getInstance();
 
-    final keys = sharedPreferences.getKeys();
-    Map<dynamic, dynamic> settings = {};
-    keys.forEach((k) {
-      print("setting loaded: $k");
-      settings[k] = sharedPreferences.get(k);
+    Map<String, dynamic> settings = {};
+    kSettingKeys.forEach((s) {
+      if (sharedPreferences.containsKey(s)) {
+        settings[s] = sharedPreferences.get(s);
+      } else {
+        print("setting $s not available");
+      }
     });
 
     store.dispatch(LoadedSharedPreferencesAction(settings));
-
-    next(action);
   };
 }
 

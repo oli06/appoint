@@ -1,11 +1,12 @@
 import 'package:appoint/actions/favorites_action.dart';
 import 'package:appoint/actions/settings_action.dart';
 import 'package:appoint/models/app_state.dart';
-import 'package:appoint/utils/calendar.dart';
+import 'package:appoint/pages/calendar_select.dart';
 import 'package:appoint/utils/constants.dart';
 import 'package:appoint/view_models/settings_vm.dart';
 import 'package:appoint/widgets/navBar.dart';
 import 'package:appoint/widgets/switch.dart';
+import 'package:device_calendar/device_calendar.dart' as prefix0;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -22,8 +23,7 @@ class SettingsPage extends StatelessWidget {
     return StoreConnector<AppState, _ViewModel>(
       converter: (store) => _ViewModel.fromStore(store),
       onInit: (store) {
-        store.dispatch(LoadFavoritesAction(
-            store.state.userViewModel.user.id));
+        store.dispatch(LoadFavoritesAction(store.state.userViewModel.user.id));
       },
       builder: (context, vm) => Scaffold(
         appBar: _buildNavBar(context),
@@ -89,7 +89,7 @@ class SettingsPage extends StatelessWidget {
               style: const TextStyle(fontSize: 14, color: Colors.grey),
             )
           : Text(
-              "Wenn Sie die Kalenderintegration aktivieren, werden auf Grundlage des Systemkalenders Terminkonflikte bei der Terminerstellung angezeigt",
+              "Wenn du die Kalenderintegration aktivierst, werden Terminüberschneidungen bei der Terminerstellung beachtet und angezeigt",
               style: const TextStyle(fontSize: 14, color: Colors.grey),
             )
     ];
@@ -112,7 +112,13 @@ class SettingsPage extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 8.0),
                   child: Text(
                     "In Kalender übernehmen",
-                    style: TextStyle(fontSize: 18),
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: vm.settingsViewModel
+                                    .settings[kSettingsCalendarIntegration] !=
+                                true
+                            ? Colors.grey
+                            : null),
                   ),
                 ),
               ),
@@ -121,8 +127,7 @@ class SettingsPage extends StatelessWidget {
                             .settings[kSettingsCalendarIntegration] !=
                         true
                     ? null
-                    : (value) =>
-                        vm.updateValueForKey(kSettingsSaveToCalendar, value),
+                    : (value) => saveToCalendarChanged(value, vm),
                 value: vm.settingsViewModel.settings[kSettingsSaveToCalendar] ??
                     false,
               )
@@ -132,81 +137,56 @@ class SettingsPage extends StatelessWidget {
       ),
       (vm.settingsViewModel.settings[kSettingsSaveToCalendar] ?? false) == true
           ? Text(
-              "Neu erstellte Termine werden automatisch in den Kalender \"${vm.settingsViewModel.settings[kSettingsCalendarName]}\" übernommen.",
+              "Neu erstellte Termine werden automatisch in den Kalender \"${vm.settingsViewModel.settings[kSettingsCalendarName]}\" übertragen.",
               style: const TextStyle(fontSize: 14, color: Colors.grey),
             )
           : Text(
-              "Aktivieren Sie diese Funktion, damit neu erstellte Termine automatisch in den System Kalender übernommen werdenb.",
+              "Aktiviere die Funktion, damit neu erstellte Termine automatisch in deinen Kalender übertragen werden.",
               style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
     ];
   }
 
+  void saveToCalendarChanged(bool value, _ViewModel vm) async {
+    final sharedPreferencesInstance = await SharedPreferences.getInstance();
+
+    vm.updateValueForKey(kSettingsSaveToCalendar, value);
+
+    sharedPreferencesInstance.setBool(kSettingsSaveToCalendar, value);
+  }
+
   void calendarIntegrationChanged(
       bool value, BuildContext context, _ViewModel vm) async {
-    vm.updateValueForKey(kSettingsCalendarIntegration, value);
-
     final sharedPreferencesInstance = await SharedPreferences.getInstance();
-    sharedPreferencesInstance.setBool(kSettingsCalendarIntegration, value);
 
     if (!value) {
-      vm.updateValueForKey(kSettingsCalendarId, null);
+      //disable calendar integration
+      vm.updateValueForKey(kSettingsCalendarIntegration, false);
+      sharedPreferencesInstance.setBool(kSettingsCalendarIntegration, false);
+
       return;
     }
 
-    final cal = Calendar();
-    cal.retrieveCalendars().then(
-      (calendars) {
-        if (calendars == null) {
-          return;
-        }
+    Navigator.pushNamed(context, CalendarSelectPage.routeNamed)
+        .then((calendar) {
+      final calendarInstance = calendar as prefix0.Calendar;
 
-        final writeAccessCalendars =
-            calendars.where((c) => !c.isReadOnly).toList();
+      if (calendar == null) {
+        print("no calendar selected");
+        return;
+      }
 
-        //If the user doesnt select another item, there would be no notice,
-        //that the initial value (index 0) is selected --> no entry in redux
-        vm.updateValueForKey(kSettingsCalendarId, writeAccessCalendars[0].id);
-        vm.updateValueForKey(kSettingsCalendarName, writeAccessCalendars[0].name);
+      //enable calendar integration
+      vm.updateValueForKey(kSettingsCalendarId, calendarInstance.id);
+      vm.updateValueForKey(kSettingsCalendarIntegration, true);
+      vm.updateValueForKey(kSettingsCalendarName, calendarInstance.name);
 
-        showModalBottomSheet(
-          context: context,
-          builder: (context) => Container(
-            height: 200.0,
-            child: Column(
-              children: <Widget>[
-                Expanded(
-                  child: CupertinoPicker(
-                    itemExtent: 32.0,
-                    onSelectedItemChanged: (int index) {
-                      vm.updateValueForKey(
-                          kSettingsCalendarId, writeAccessCalendars[index].id);
-                      vm.updateValueForKey(kSettingsCalendarName,
-                          writeAccessCalendars[index].name);
-                    },
-                    children: new List<Widget>.generate(
-                      writeAccessCalendars.length,
-                      (int index) {
-                        return new Center(
-                          child: new Text(writeAccessCalendars[index].name),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ).then(
-          (_) {
-            sharedPreferencesInstance.setString(kSettingsCalendarId,
-                vm.settingsViewModel.settings[kSettingsCalendarId]);
-            sharedPreferencesInstance.setString(kSettingsCalendarName,
-                vm.settingsViewModel.settings[kSettingsCalendarName]);
-          },
-        );
-      },
-    );
+      sharedPreferencesInstance.setBool(kSettingsCalendarIntegration, true);
+      sharedPreferencesInstance.setString(
+          kSettingsCalendarName, calendarInstance.name);
+      sharedPreferencesInstance.setString(
+          kSettingsCalendarId, calendarInstance.id);
+    });
   }
 
   NavBar _buildNavBar(BuildContext context) {
@@ -218,9 +198,6 @@ class SettingsPage extends StatelessWidget {
           onPressed: () {
             Navigator.pop(context);
           }),
-      trailing: Container(
-        height: 0,
-      ),
     );
   }
 }

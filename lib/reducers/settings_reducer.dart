@@ -3,13 +3,16 @@ import 'package:appoint/view_models/settings_vm.dart';
 import 'package:redux/redux.dart';
 
 final settingsReducer = combineReducers<SettingsViewModel>([
-  TypedReducer<SettingsViewModel, LoadedSharedPreferencesAction>(_loadedSharedPreferences),
-  TypedReducer<SettingsViewModel, UpdateSettingForKeyAction>(_updateIsLoading),
+  TypedReducer<SettingsViewModel, LoadedSharedPreferencesAction>(
+      _loadedSharedPreferences),
+  TypedReducer<SettingsViewModel, UpdateSettingForKeyAction>(
+      _updateSettingsValue),
 ]);
 
-SettingsViewModel _updateIsLoading(
+SettingsViewModel _updateSettingsValue(
     SettingsViewModel vm, UpdateSettingForKeyAction action) {
   vm.settings[action.key] = action.value;
+
   return SettingsViewModel(
     settings: vm.settings,
   );
@@ -21,4 +24,3 @@ SettingsViewModel _loadedSharedPreferences(
     settings: action.settings,
   );
 }
-

@@ -1,5 +1,5 @@
 class SettingsViewModel {
-  final Map<dynamic, dynamic> settings;
+  final Map<String, dynamic> settings;
     
   const SettingsViewModel({
     this.settings,

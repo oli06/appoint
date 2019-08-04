@@ -201,9 +201,6 @@ class SelectCompanyState extends State<SelectCompany>
           ),
           onPressed: () => Navigator.pop(context)),
       secondHeader: "Unternehmen auswählen",
-      trailing: Container(
-        height: 0,
-      ),
       tabBar: tabBar(vm),
     );
   }

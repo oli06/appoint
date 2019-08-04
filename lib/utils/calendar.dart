@@ -60,15 +60,20 @@ class Calendar {
         }
       }
 
+      final notes = description != null ? "Notizen: $description" : "";
+      final locationCoordinates =
+          company.address.latitude != null && company.address.longitude != null
+              ? "${company.address.latitude},${company.address.longitude}"
+              : "";
+
       final event = pubdev.Event(calendarId)
         ..title = title
         ..description =
-            "Unternehmen: ${company.name} \nTelefon: ${company.phone}\nNotizen: $description"
+            "Unternehmen: ${company.name} \nTelefon: ${company.phone}\n$notes"
         ..start = dateTime
         ..end = dateTime.add(duration)
         ..location = company.address.toStringWithComma()
-        ..locationCoordinates =
-            "${company.address.latitude},${company.address.longitude}";
+        ..locationCoordinates = locationCoordinates;
 
       final calendarResult =
           await _deviceCalendarPlugin.createOrUpdateEvent(event);

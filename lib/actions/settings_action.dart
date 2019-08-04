@@ -1,6 +1,5 @@
-
 class UpdateSettingForKeyAction {
-  final dynamic key;
+  final String key;
   final dynamic value;
 
   UpdateSettingForKeyAction(this.key, this.value);
@@ -9,7 +8,7 @@ class UpdateSettingForKeyAction {
 class LoadSharedPreferencesAction {}
 
 class LoadedSharedPreferencesAction {
-  final Map<dynamic, dynamic> settings;
+  final Map<String, dynamic> settings;
 
   LoadedSharedPreferencesAction(this.settings);
 }

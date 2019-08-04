@@ -8,3 +8,10 @@ final String kUserIdKey = 'userId';
 
 //currently this is the user email address
 final String kUserNameKey = "username";
+
+final List<String> kSettingKeys = [
+  kSettingsCalendarIntegration,
+  kSettingsCalendarId,
+  kSettingsCalendarName,
+  kSettingsSaveToCalendar,
+];
