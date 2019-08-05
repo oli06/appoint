@@ -28,12 +28,15 @@ class AppointmentPage extends StatefulWidget {
 }
 
 class _AppointmentPageState extends State<AppointmentPage> {
+  final _scrollController = ScrollController();
+  List<_ListHeader> listElements = [];
+
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
       converter: (store) => _ViewModel.fromState(store),
       onInit: (store) {
-        store.dispatch(LoadAppointmentsAction("abcdef"));
+        store.dispatch(LoadAppointmentsAction());
         if (store.state.userViewModel.currentLocation == null) {
           store.dispatch(LoadUserLocationAction());
         }
@@ -49,17 +52,15 @@ class _AppointmentPageState extends State<AppointmentPage> {
     );
   }
 
-  final _scrollController = ScrollController();
-  List<_ListHeader> listElements = [];
   Widget _buildAppointmentsList(_ViewModel vm) {
     final List<Day<Appoint>> days =
         groupAppointmentsByDate(vm.appointmentsViewModel.appointments);
 
-    //filter next Appointment
+    //filter upcoming Appointment
     final Appoint upcomingAppointment = days[0].events[0];
     days[0].events.removeAt(0);
     if (days[0].events.length == 0) {
-      days.remove(0);
+      days.removeAt(0);
     }
 
     days.forEach((d) => listElements.add(
@@ -119,7 +120,8 @@ class _AppointmentPageState extends State<AppointmentPage> {
     );
   }
 
-  Padding _buildUpcomingAppointment(Appoint upcomingAppointment, _ViewModel vm) {
+  Padding _buildUpcomingAppointment(
+      Appoint upcomingAppointment, _ViewModel vm) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 0, 8, 8),
       child: GestureDetector(
@@ -163,7 +165,14 @@ class _AppointmentPageState extends State<AppointmentPage> {
                               style: TextStyle(fontSize: 15),
                             ),
                           ),
-                          Text(vm.categories.firstWhere((c) => c.id == upcomingAppointment.company.category, orElse: () => null)?.value ?? "leer"),
+                          Text(vm.categories
+                                  .firstWhere(
+                                      (c) =>
+                                          c.id ==
+                                          upcomingAppointment.company.category,
+                                      orElse: () => null)
+                                  ?.value ??
+                              "leer"),
                         ],
                       ),
                       Row(
@@ -265,7 +274,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
   NavBar _buildNavBar() {
     return NavBar(
       "Termine",
-      height: 57,
+      height: 40,
       leadingWidget: Container(
         padding: EdgeInsets.only(left: 10.0),
         child: Icon(

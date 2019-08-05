@@ -17,7 +17,7 @@ class Period {
   Map<String, dynamic> toJson() =>
     {
       'start': start.toIso8601String(),
-      'duration': duration,
+      'duration': duration.inMinutes,
     };
 }
 

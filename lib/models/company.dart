@@ -31,7 +31,10 @@ class Company {
     return _$CompanyFromJson(json);
   }
 
-  Map<String, dynamic> toJson() => _$CompanyToJson(this);
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+  };
 }
 
 enum CompanyVisibilityFilter {

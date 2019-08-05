@@ -168,7 +168,7 @@ class Api {
     return null;
   }
 
-  Future<List<Appoint>> getAppointments(String userId) async {
+  Future<List<Appoint>> getAppointments() async {
     final response = await http.get('$url/users/$userId/appointments',
         headers: {HttpHeaders.authorizationHeader: "bearer $token"});
 
@@ -182,10 +182,11 @@ class Api {
 
   Future<bool> postAppointment(Appoint appoint) async {
     final body = appoint.toJson();
+    final encoded = json.encode(body);
     final response = await http.post(
       '$url/users/$userId/appointments',
-      headers: {HttpHeaders.authorizationHeader: "bearer $token"},
-      body: body,
+      headers: {HttpHeaders.authorizationHeader: "bearer $token", HttpHeaders.contentTypeHeader: "application/json"},
+      body: encoded,
     );
 
     if (response.statusCode == 200) {

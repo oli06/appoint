@@ -25,10 +25,6 @@ class SelectCompanyState extends State<SelectCompany>
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
       onInit: (store) {
-        Function update = () => store.dispatch(CompanySearchFilter.fromExisting(
-            store.state.selectCompanyViewModel.filters,
-            companyVisibilityFilter:
-                CompanyVisibilityFilter.values[_controller.index]));
         _controller.index = store
             .state
             .selectCompanyViewModel
@@ -36,7 +32,17 @@ class SelectCompanyState extends State<SelectCompany>
             .companyVisibilityFilter
             .index; //initial value comes from the redux store
         _controller.addListener(
-            update); //if there is a new selection of the tabView, it store.dispatch will be called
+          () {
+            //fix listener getting called twice: https://github.com/flutter/flutter/issues/13848
+            if (_controller.indexIsChanging) {
+              store.dispatch(CompanySearchAction(
+                  CompanySearchFilter.fromExisting(
+                      store.state.selectCompanyViewModel.filters,
+                      companyVisibilityFilter:
+                          CompanyVisibilityFilter.values[_controller.index])));
+            }
+          },
+        ); //if there is a new selection of the tabView, it store.dispatch will be called
       },
       converter: (store) => _ViewModel.fromState(store),
       builder: (context, vm) => Scaffold(

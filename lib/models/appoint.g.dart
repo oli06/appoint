@@ -26,7 +26,7 @@ Appoint _$AppointFromJson(Map json) {
 Map<String, dynamic> _$AppointToJson(Appoint instance) => <String, dynamic>{
       'id': instance.id,
       'title': instance.title,
-      'company': instance.company,
-      'period': instance.period,
+      'company': instance.company.toJson(),
+      'period': instance.period.toJson(),
       'description': instance.description
     };

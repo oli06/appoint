@@ -281,14 +281,12 @@ class _ViewModel {
   final Function(bool loginProcessIsActive) updateLoginProcessIsActive;
   final Function(String username) forgotPassword;
   final Function(User user, String token) loadedUserConfigurationAction;
-  final Function() loadCategories;
   final Function(String userId, String token) updateApiProperties;
 
   _ViewModel({
     this.userViewModel,
     this.updateLoginProcessIsActive,
     this.loadedUserConfigurationAction,
-    this.loadCategories,
     this.updateApiProperties,
     this.forgotPassword,
   });
@@ -300,7 +298,6 @@ class _ViewModel {
           store.dispatch(UpdateLoginProcessIsActiveAction(b)),
       loadedUserConfigurationAction: (user, token) =>
           store.dispatch(LoadedUserConfigurationAction(user, token)),
-      loadCategories: () => store.dispatch(LoadCategoriesAction()),
       updateApiProperties: (userId, token) =>
           store.dispatch(UpdateApiPropertiesAction(userId, token)),
     );

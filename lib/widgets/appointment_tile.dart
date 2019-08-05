@@ -20,7 +20,7 @@ class AppointmentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Slidable(
+    return /* Slidable(
       actionPane: SlidableDrawerActionPane(),
       secondaryActions: <Widget>[
         IconSlideAction(
@@ -58,7 +58,9 @@ class AppointmentTile extends StatelessWidget {
           ),
         )
       ],
-      child: GestureDetector(
+      child:  */
+      GestureDetector(
+        behavior: HitTestBehavior.translucent,
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -100,7 +102,12 @@ class AppointmentTile extends StatelessWidget {
                               ),
                             ),
                             StoreConnector<AppState, Category>(
-                              converter: (store) => store.state.selectCompanyViewModel.categories.firstWhere((c) => c.id == appoint.company.category),
+                              converter: (store) => store
+                                  .state.selectCompanyViewModel.categories
+                                  .firstWhere(
+                                      (c) => c.id == appoint.company.category,
+                                      orElse: () =>
+                                          Category(id: -2, value: "")),
                               builder: (context, category) =>
                                   Text(category.value),
                             ),
@@ -126,7 +133,7 @@ class AppointmentTile extends StatelessWidget {
             ),
           ),
         ),
-      ),
+      
     );
   }
 }

@@ -69,7 +69,7 @@ Middleware<AppState> _createLoadAppointments(Api api) {
   return (Store<AppState> store, action, NextDispatcher next) {
     store.dispatch(UpdateAppointmentsIsLoadingAction(true));
 
-    api.getAppointments(action.userId).then((appointments) {
+    api.getAppointments().then((appointments) {
       store.dispatch(LoadedAppointmentsAction(appointments));
       store.dispatch(UpdateAppointmentsIsLoadingAction(false));
     });
