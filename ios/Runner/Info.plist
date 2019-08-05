@@ -31,6 +31,8 @@
 	<true/>
 	<key>NSCalendarsUsageDescription</key>
 	<string>Der Zugriff auf den Kalender erlaubt die bessere Integration und automatische Übertragung von erstellten Terminen in den Kalender</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Wird für die Entfernungsberechnung zu Unternehmen benötigt</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Wird für die Entfernungsberechnung zu Unternehmen benötigt</string>
 	<key>UILaunchStoryboardName</key>

@@ -25,7 +25,7 @@ class AppointmentDetails extends StatelessWidget {
         new GlobalKey<ScaffoldState>();
     final Appoint appointment = ModalRoute.of(context).settings.arguments;
     return Scaffold(
-      appBar: _buildNavBar(),
+      appBar: _buildNavBar(context),
       key: _scaffoldKey,
       body: Padding(
         padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
@@ -214,13 +214,15 @@ class AppointmentDetails extends StatelessWidget {
     );
   }
 
-  Widget _buildNavBar() {
+  Widget _buildNavBar(BuildContext context) {
     return NavBar(
       "Details",
       height: 57,
-      leadingWidget: CupertinoNavigationBarBackButton(
-        previousPageTitle: "Termine",
-      ),
+      leadingWidget: IconButton(
+          icon: Icon(Icons.arrow_back_ios),
+          onPressed: () {
+            Navigator.pop(context);
+          }),
     );
   }
 }

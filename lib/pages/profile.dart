@@ -217,7 +217,7 @@ class ProfilePage extends StatelessWidget {
           ),
           Divider(height: 1),
           ListTile(
-            title: Text("bisherige Termine"),
+            title: Text("vergangene Termine"),
             trailing: Icon(Icons.arrow_forward_ios),
             onTap: () => Navigator.pushNamed(context, SettingsPage.routeName),
           ),
