@@ -1,3 +1,4 @@
+import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/appoint.dart';
 import 'package:appoint/models/company.dart';
@@ -6,16 +7,10 @@ import 'package:appoint/models/period.dart';
 import 'package:appoint/utils/distance.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
-import 'package:appoint/widgets/expandable_period_tile.dart';
 import 'package:flutter/material.dart';
-import 'package:redux/redux.dart';
-import 'package:table_calendar/table_calendar.dart';
 
 List<Company> companiesSelector(AppState state) =>
     state.selectCompanyViewModel.companies;
-
-CompanyVisibilityFilter activeCompanyFilterSelector(AppState state) =>
-    state.selectCompanyViewModel.companyVisibilityFilter;
 
 List<Company> companiesVisibilityFilterSelector(List<Company> companies,
     CompanyVisibilityFilter filter, List<int> userFavorites) {
@@ -89,6 +84,19 @@ Map<DateTime, List<Period>> getPeriodsBetween(
       day.key.isBefore(last.add(oneDay))));
 
   return map;
+}
+
+String getCompanySearchString(CompanySearchFilter filters) {
+  //e.g. "&visibility=1&range=21.5&category=2&name=Maier"
+
+  String term = "";
+
+  term += "?visibility=${filters.companyVisibilityFilter.index}";
+  term += "&range=${filters.rangeFilter}";
+  term += "&category=${filters.categoryFilter}";
+  term += "&name=${filters.nameFilter}";
+
+  return term;
 }
 
 Map<DateTime, List> getVisibleDaysPeriodsList(SelectedPeriodViewModel vm) {

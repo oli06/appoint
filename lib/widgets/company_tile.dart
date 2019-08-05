@@ -169,11 +169,10 @@ class _ViewModel {
     return _ViewModel(
       userLocation: store.state.userViewModel.currentLocation,
       userFavoriteIds: store.state.userViewModel.user.favorites,
-      removeFromFavorites: (companyId) => store.dispatch(
-          RemoveFromUserFavoritesAction(
-              [companyId], store.state.userViewModel.user.id)),
-      addToFavorites: (companyId) => store.dispatch(AddToUserFavoritesAction(
-          companyId, store.state.userViewModel.user.id)),
+      removeFromFavorites: (companyId) =>
+          store.dispatch(RemoveFromUserFavoritesAction([companyId])),
+      addToFavorites: (companyId) =>
+          store.dispatch(AddToUserFavoritesAction(companyId)),
     );
   }
 }

@@ -25,6 +25,7 @@ dependencies:
   http:
   redux:
   flutter_redux:
+  redux_epics:
   json_annotation:
   intl:
   location:

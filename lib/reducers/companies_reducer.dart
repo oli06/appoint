@@ -1,4 +1,5 @@
 import 'package:appoint/actions/companies_action.dart';
+import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/view_models/select_company_vm.dart';
 import 'package:redux/redux.dart';
 
@@ -7,35 +8,58 @@ final selectCompanyReducer = combineReducers<SelectCompanyViewModel>([
       _setLoadedCompanies),
   TypedReducer<SelectCompanyViewModel, UpdateCompanyIsLoadingAction>(
       _updateIsLoading),
-  TypedReducer<SelectCompanyViewModel, UpdateCompanyVisibilityFilterAction>(
-      _updateCompanyVisibilityFilter),
-  TypedReducer<SelectCompanyViewModel, UpdateCategoryFilterAction>(
-      _updateCategoryFilter),
-  TypedReducer<SelectCompanyViewModel, UpdateRangeFilterAction>(
-      _updateRangeFilter),
   TypedReducer<SelectCompanyViewModel, LoadedCategoriesAction>(
       _loadedCategories),
+  TypedReducer<SelectCompanyViewModel, CompanySearchResultAction>(
+      _searchResult),
+  TypedReducer<SelectCompanyViewModel, CompanySearchLoadingAction>(
+      _updateSearchStateLoading),
+  TypedReducer<SelectCompanyViewModel, CompanySearchAction>(
+      _updateCompanySearchFilters2),
 ]);
+
+SelectCompanyViewModel _updateCompanySearchFilters2(
+    SelectCompanyViewModel vm, CompanySearchAction action) {
+
+  return SelectCompanyViewModel(
+    isLoading: vm.isLoading,
+    companies: vm.companies,
+    filters: action.filters,
+    companySearchState: vm.companySearchState,
+    categories: vm.categories,
+  );
+}
+
+SelectCompanyViewModel _searchResult(
+    SelectCompanyViewModel vm, CompanySearchResultAction action) {
+  return SelectCompanyViewModel(
+    isLoading: vm.isLoading,
+    companies: vm.companies,
+    filters: vm.filters,
+    companySearchState:
+        CompanySearchState(searchResults: action.result, isLoading: false),
+    categories: vm.categories,
+  );
+}
 
 SelectCompanyViewModel _setLoadedCompanies(
     SelectCompanyViewModel vm, LoadedCompaniesAction action) {
   return SelectCompanyViewModel(
     isLoading: vm.isLoading,
     companies: action.companies,
-    companyVisibilityFilter: vm.companyVisibilityFilter,
-    categoryFilter: vm.categoryFilter,
-    rangeFilter: vm.rangeFilter,
     categories: vm.categories,
+    filters: vm.filters,
+    companySearchState: vm.companySearchState,
   );
 }
+
 SelectCompanyViewModel _loadedCategories(
     SelectCompanyViewModel vm, LoadedCategoriesAction action) {
   return SelectCompanyViewModel(
     isLoading: vm.isLoading,
     companies: vm.companies,
-    companyVisibilityFilter: vm.companyVisibilityFilter,
-    categoryFilter: vm.categoryFilter,
-    rangeFilter: vm.rangeFilter,
+    filters: vm.filters,
+    companySearchState: vm.companySearchState,
     categories: action.categories,
   );
 }
@@ -45,45 +69,19 @@ SelectCompanyViewModel _updateIsLoading(
   return SelectCompanyViewModel(
     isLoading: action.isLoading,
     companies: vm.companies,
-    companyVisibilityFilter: vm.companyVisibilityFilter,
-    categoryFilter: vm.categoryFilter,
-    rangeFilter: vm.rangeFilter,
     categories: vm.categories,
+    filters: vm.filters,
+    companySearchState: vm.companySearchState,
   );
 }
 
-SelectCompanyViewModel _updateCompanyVisibilityFilter(
-    SelectCompanyViewModel vm, UpdateCompanyVisibilityFilterAction action) {
+SelectCompanyViewModel _updateSearchStateLoading(
+    SelectCompanyViewModel vm, CompanySearchLoadingAction action) {
   return SelectCompanyViewModel(
     isLoading: vm.isLoading,
     companies: vm.companies,
-    companyVisibilityFilter: action.filter,
-    categoryFilter: vm.categoryFilter,
-    rangeFilter: vm.rangeFilter,
     categories: vm.categories,
-  );
-}
-
-SelectCompanyViewModel _updateCategoryFilter(
-    SelectCompanyViewModel vm, UpdateCategoryFilterAction action) {
-  return SelectCompanyViewModel(
-    isLoading: vm.isLoading,
-    companies: vm.companies,
-    companyVisibilityFilter: vm.companyVisibilityFilter,
-    categoryFilter: action.categoryId,
-    rangeFilter: vm.rangeFilter,
-    categories: vm.categories,
-  );
-}
-
-SelectCompanyViewModel _updateRangeFilter(
-    SelectCompanyViewModel vm, UpdateRangeFilterAction action) {
-  return SelectCompanyViewModel(
-    isLoading: vm.isLoading,
-    companies: vm.companies,
-    categoryFilter: vm.categoryFilter,
-    companyVisibilityFilter: vm.companyVisibilityFilter,
-    rangeFilter: action.range,
-    categories: vm.categories,
+    filters: vm.filters,
+    companySearchState: CompanySearchState.loading(),
   );
 }

@@ -8,8 +8,6 @@ final userReducer = combineReducers<UserViewModel>([
   TypedReducer<UserViewModel, LoadedUserLocationAction>(_loadedUserLocation),
   TypedReducer<UserViewModel, UpdateLoginProcessIsActiveAction>(
       _updateLoginProcessIsActive),
-  TypedReducer<UserViewModel, LoadedUsernameAction>(
-      _setLoadedUsername),
 ]);
 
 UserViewModel _setLoadedUser(UserViewModel vm, LoadedUserAction action) {
@@ -19,18 +17,6 @@ UserViewModel _setLoadedUser(UserViewModel vm, LoadedUserAction action) {
     currentLocation: vm.currentLocation,
     loginProcessIsActive: vm.loginProcessIsActive,
     token: action.token,
-    username: vm.username,
-  );
-}
-
-UserViewModel _setLoadedUsername(UserViewModel vm, LoadedUsernameAction action) {
-  return UserViewModel(
-    user: vm.user,
-    isLoading: vm.isLoading,
-    currentLocation: vm.currentLocation,
-    loginProcessIsActive: vm.loginProcessIsActive,
-    token: vm.token,
-    username: action.username,
   );
 }
 
@@ -41,7 +27,6 @@ UserViewModel _updateIsLoading(
     isLoading: action.isLoading,
     currentLocation: vm.currentLocation,
     token: vm.token,
-    username: vm.username,
     loginProcessIsActive: vm.loginProcessIsActive,
   );
 }
@@ -52,7 +37,6 @@ UserViewModel _updateLoginProcessIsActive(
     user: vm.user,
     isLoading: vm.isLoading,
     currentLocation: vm.currentLocation,
-    username: vm.username,
     token: vm.token,
     loginProcessIsActive: action.loginProcessIsActive,
   );
@@ -62,7 +46,6 @@ UserViewModel _loadedUserLocation(
     UserViewModel vm, LoadedUserLocationAction action) {
   return UserViewModel(
     user: vm.user,
-    username: vm.username,
     isLoading: vm.isLoading,
     loginProcessIsActive: vm.loginProcessIsActive,
     token: vm.token,

@@ -2,6 +2,7 @@ import 'package:appoint/actions/settings_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/data/api.dart';
 import 'package:appoint/home.dart';
+import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/middleware/store_companies_middleware.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/user.dart';
@@ -16,6 +17,7 @@ import 'package:redux/redux.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux_dev_tools/redux_dev_tools.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:redux_epics/redux_epics.dart';
 
 void main() async {
   debugPaintSizeEnabled = false;
@@ -24,33 +26,18 @@ void main() async {
   
   await remoteDevtools.connect(); */
   Widget defaultRoute = Login();
+  final Api api = new Api();
+  final sharedPreferences = await SharedPreferences.getInstance();
 
   final store = DevToolsStore<AppState>(
     appReducer,
     initialState: AppState.initState(),
-    // middleware: [remoteDevtools, ...createStoreCompaniesMiddleware()],
-    middleware: createStoreCompaniesMiddleware(),
+    middleware: [...createStoreCompaniesMiddleware(api, sharedPreferences)] +
+        [EpicMiddleware<AppState>(SearchEpic(api))],
   );
 
-  final sharedPreferences = await SharedPreferences.getInstance();
   if (sharedPreferences.containsKey(kTokenKey)) {
     defaultRoute = HomePage();
-    print("user is authenticated");
-    final token = sharedPreferences.getString(kTokenKey);
-    final userId = sharedPreferences.getString(kUserIdKey);
-
-    Api().getUser(userId, token).then((user) {
-      if (user != null) {
-        store.dispatch(LoadedUserConfigurationAction(user, token));
-      }
-      store.dispatch(UpdateLoginProcessIsActiveAction(false));
-    });
-  } else {
-    if (sharedPreferences.containsKey(kUserNameKey)) {
-      print("can load username");
-      store.dispatch(
-          LoadedUsernameAction(sharedPreferences.getString(kUserNameKey)));
-    }
   }
 
   // remoteDevtools.store = store;

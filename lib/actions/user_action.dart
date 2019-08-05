@@ -23,12 +23,6 @@ class LoadedUserConfigurationAction {
   LoadedUserConfigurationAction(this.user, this.token);
 }
 
-class LoadedUsernameAction {
-  final String username;
-
-  LoadedUsernameAction(this.username);
-}
-
 class LoadedUserAction {
   final String token;
   final User user;
@@ -36,11 +30,17 @@ class LoadedUserAction {
   LoadedUserAction(this.user, this.token);
 }
 
-class VerifyUserAction {
+class UpdateApiPropertiesAction {
   final String userId;
+  final String token;
+
+  UpdateApiPropertiesAction(this.userId, this.token);
+}
+
+class VerifyUserAction {
   final String verificationCode;
 
-  VerifyUserAction(this.userId, this.verificationCode);
+  VerifyUserAction(this.verificationCode);
 }
 
 class VerifyUserResultAction {
@@ -65,14 +65,12 @@ class LoadedUserLocationAction {
 
 class RemoveFromUserFavoritesAction {
   final List<int> companyIds;
-  final String userId;
 
-  RemoveFromUserFavoritesAction(this.companyIds, this.userId);
+  RemoveFromUserFavoritesAction(this.companyIds);
 }
 
 class AddToUserFavoritesAction {
   final int companyId;
-  final String userId;
 
-  AddToUserFavoritesAction(this.companyId, this.userId);
+  AddToUserFavoritesAction(this.companyId);
 }

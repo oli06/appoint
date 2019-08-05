@@ -136,30 +136,29 @@ class CompanyDetails extends StatelessWidget {
           ),
           StoreConnector<AppState, _ViewModel>(
             converter: (store) => _ViewModel.fromState(store),
-            builder: (context, vm) =>
-                vm.userFavoriteIds.contains(company.id)
-                    ? CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        child: Row(
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.only(right: 2.0),
-                              child: Icon(CompanyIcons.heart),
-                            ),
-                            Text("Aus Favoriten entfernen"),
-                          ],
+            builder: (context, vm) => vm.userFavoriteIds.contains(company.id)
+                ? CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    child: Row(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(right: 2.0),
+                          child: Icon(CompanyIcons.heart),
                         ),
-                        onPressed: () => vm.removeFromFavorites(company.id),
-                      )
-                    : CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        child: Row(
-                          children: <Widget>[
-                            Text("Zu Favoriten hinzufügen"),
-                          ],
-                        ),
-                        onPressed: () => vm.addToFavorites(company.id),
-                      ),
+                        Text("Aus Favoriten entfernen"),
+                      ],
+                    ),
+                    onPressed: () => vm.removeFromFavorites(company.id),
+                  )
+                : CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    child: Row(
+                      children: <Widget>[
+                        Text("Zu Favoriten hinzufügen"),
+                      ],
+                    ),
+                    onPressed: () => vm.addToFavorites(company.id),
+                  ),
           ),
         ],
       ),
@@ -180,14 +179,11 @@ class _ViewModel {
 
   static _ViewModel fromState(Store<AppState> store) {
     return _ViewModel(
-      userFavoriteIds:
-          store.state.userViewModel.user.favorites,
-      removeFromFavorites: (companyId) => store.dispatch(
-          RemoveFromUserFavoritesAction(
-              [companyId], store.state.userViewModel.user.id)),
-      addToFavorites: (companyId) => store.dispatch(
-          AddToUserFavoritesAction(
-              companyId, store.state.userViewModel.user.id)),
+      userFavoriteIds: store.state.userViewModel.user.favorites,
+      removeFromFavorites: (companyId) =>
+          store.dispatch(RemoveFromUserFavoritesAction([companyId])),
+      addToFavorites: (companyId) =>
+          store.dispatch(AddToUserFavoritesAction(companyId)),
     );
   }
 }

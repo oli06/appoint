@@ -1,4 +1,5 @@
 import 'package:appoint/actions/companies_action.dart';
+import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/company.dart';
 import 'package:appoint/view_models/select_company_vm.dart';
@@ -29,32 +30,44 @@ class _CompanyListState extends State<CompanyList> {
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
-        onInit: (Store<AppState> store) =>
-            store.dispatch(LoadCompaniesAction()),
+        onInit: (Store<AppState> store) => store.dispatch(
+            CompanySearchAction(store.state.selectCompanyViewModel.filters)),
         converter: _ViewModel.fromStore,
         builder: (context, vm) {
-          if (vm.selectCompanyViewModel.isLoading) {
-            return _buildLoading();
-          } else if (vm.selectCompanyViewModel.companies.length == 0) {
-            return _buildEmptyList();
-          } else
-            return _buildCompanyList(
-              companiesRangeFilter(
-                  companiesCategoryFilterSelector(
-                      companiesVisibilityFilterSelector(
-                        vm.selectCompanyViewModel.companies,
-                        widget.filterWithVisibility
-                            ? vm.selectCompanyViewModel.companyVisibilityFilter
-                            : CompanyVisibilityFilter.all,
-                        vm.companyFavorites,
-                      ),
-                      vm.selectCompanyViewModel.categoryFilter),
-                  widget.filterWithRange
-                      ? vm.selectCompanyViewModel.rangeFilter
-                      : null,
-                  vm.userLocation.latitude,
-                  vm.userLocation.longitude),
-            );
+          return Stack(
+            alignment: AlignmentDirectional.topCenter,
+            children: <Widget>[
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 200),
+                opacity: vm.selectCompanyViewModel.companySearchState.isLoading
+                    ? 1.0
+                    : 0.0,
+                child: _buildLoading(),
+              ),
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 200),
+                opacity:
+                    !vm.selectCompanyViewModel.companySearchState.isLoading &&
+                                vm.selectCompanyViewModel.companySearchState
+                                        ?.searchResults?.length ==
+                                    0 ??
+                            false
+                        ? 1.0
+                        : 0.0,
+                child: _buildEmptyList(),
+              ),
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 200),
+                opacity: vm.selectCompanyViewModel.companySearchState
+                            .searchResults !=
+                        null
+                    ? 1.0
+                    : 0.0,
+                child: _buildCompanyList(
+                    vm.selectCompanyViewModel.companySearchState.searchResults),
+              ),
+            ],
+          );
         });
   }
 
@@ -95,11 +108,9 @@ class _CompanyListState extends State<CompanyList> {
   }
 
   Widget _buildCompanyList(List<Company> companies) {
-    //TODO: FIXME: test, if hideKeyboard on scroll wirklich gescheit funktionert
-
-    if(companies.length == 0) {
+/*     if (companies.length == 0) {
       return _buildEmptyList();
-    }
+    } */
 
     return NotificationListener(
       onNotification: (t) {

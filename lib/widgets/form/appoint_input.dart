@@ -13,6 +13,7 @@ class AppointFormInput extends StatefulWidget {
   final bool obscureText;
   final FocusNode focusNode;
   final TextInputType keyboardType;
+  final TextEditingController controller;
   final Function(String value) validator;
   final String initialValue;
 
@@ -21,6 +22,7 @@ class AppointFormInput extends StatefulWidget {
 
   AppointFormInput({
     Key key,
+    this.controller,
     @required this.hintText,
     @required this.errorText,
     @required this.onFieldSubmitted,
@@ -42,7 +44,7 @@ class AppointFormInput extends StatefulWidget {
 }
 
 class _AppointFormInputState extends State<AppointFormInput> {
-  final TextEditingController _controller = TextEditingController();
+  TextEditingController _controller;
 
   @override
   void dispose() {
@@ -53,7 +55,8 @@ class _AppointFormInputState extends State<AppointFormInput> {
   @override
   void initState() {
     super.initState();
-    _controller.text = widget.initialValue ?? "";
+    _controller = widget.controller ??
+        TextEditingController(text: widget.initialValue ?? "");
   }
 
   @override
@@ -77,7 +80,9 @@ class _AppointFormInputState extends State<AppointFormInput> {
                 child: widget.customInputWidget != null
                     ? widget.customInputWidget
                     : TextFormField(
-                        onSaved: widget.onSaved != null ? (value) => widget.onSaved(value) : (_) {},
+                        onSaved: widget.onSaved != null
+                            ? (value) => widget.onSaved(value)
+                            : (_) {},
                         keyboardType: widget.keyboardType,
                         focusNode: widget.focusNode,
                         obscureText: widget.obscureText,

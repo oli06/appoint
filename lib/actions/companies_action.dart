@@ -1,3 +1,4 @@
+import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/models/category.dart';
 import 'package:appoint/models/company.dart';
 
@@ -15,24 +16,6 @@ class UpdateCompanyIsLoadingAction {
   UpdateCompanyIsLoadingAction(this.isLoading);
 }
 
-class UpdateCompanyVisibilityFilterAction {
-  final CompanyVisibilityFilter filter;
-
-  UpdateCompanyVisibilityFilterAction(this.filter);
-}
-
-class UpdateCategoryFilterAction {
-  final int categoryId;
-
-  UpdateCategoryFilterAction(this.categoryId);
-}
-
-class UpdateRangeFilterAction {
-  final double range;
-
-  UpdateRangeFilterAction(this.range);
-}
-
 class LoadCategoriesAction {}
 
 class LoadedCategoriesAction {
@@ -40,3 +23,19 @@ class LoadedCategoriesAction {
 
   LoadedCategoriesAction(this.categories);
 }
+
+class CompanySearchAction {
+  final CompanySearchFilter filters;
+
+  CompanySearchAction(this.filters);
+}
+
+class CompanySearchLoadingAction {}
+
+class CompanySearchResultAction {
+  final List<Company> result;
+
+  CompanySearchResultAction(this.result);
+}
+
+class CompanySearchErrorAction {}

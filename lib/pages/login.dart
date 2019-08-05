@@ -29,16 +29,27 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>();
 
-  String username;
+  String username = "";
   String password;
   String info = "";
 
+  final TextEditingController _usernameController = TextEditingController();
   final FocusNode _passwordFocus = FocusNode();
 
   @override
   void dispose() {
     _passwordFocus.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    SharedPreferences.getInstance().then((sharedPreferences) {
+      if (sharedPreferences.containsKey(kUserNameKey)) {
+        _usernameController.text = sharedPreferences.getString(kUserNameKey);
+      }
+    });
   }
 
   @override
@@ -156,13 +167,19 @@ class _LoginState extends State<Login> {
         if (response.statusCode == 200) {
           final jsonMap = json.decode(response.body);
           final token = jsonMap['access_token'];
-          api.getUser(jsonMap['userId'], token).then((user) async {
+
+          api.token = token;
+          api.userId = jsonMap['userId'];
+          vm.updateApiProperties(api.userId, api.token);
+
+          api.getUser().then((user) async {
             if (user != null) {
               vm.loadedUserConfigurationAction(user, token);
-              final sharedPreferences = await SharedPreferences.getInstance();
-              sharedPreferences.setString(kUserNameKey, user.email);
               print("navigate now to app");
               Navigator.pushReplacementNamed(context, "app");
+
+              final sharedPreferences = await SharedPreferences.getInstance();
+              sharedPreferences.setString(kUserNameKey, user.email);
             } else {
               print("failed receiving user");
             }
@@ -179,21 +196,18 @@ class _LoginState extends State<Login> {
   }
 
   Widget _buildUsernameInput(BuildContext context) {
-    return StoreConnector<AppState, String>(
-      converter: (store) => store.state.userViewModel.username,
-      builder: (context, value) => AppointFormInput(
-        focusNode: null,
-        initialValue: value != null ? value : "",
-        keyboardType: TextInputType.emailAddress,
-        onSaved: (value) => username = value,
-        onFieldSubmitted: (String value) {
-          print("username field submitted");
-          this.username = value;
-          FocusScope.of(context).requestFocus(_passwordFocus);
-        },
-        hintText: "Benutzername",
-        errorText: "Benutzername fehlt",
-      ),
+    return AppointFormInput(
+      focusNode: null,
+      controller: _usernameController,
+      keyboardType: TextInputType.emailAddress,
+      onSaved: (value) => username = value,
+      onFieldSubmitted: (String value) {
+        print("username field submitted");
+        this.username = value;
+        FocusScope.of(context).requestFocus(_passwordFocus);
+      },
+      hintText: "Benutzername",
+      errorText: "Benutzername fehlt",
     );
   }
 
@@ -268,12 +282,14 @@ class _ViewModel {
   final Function(String username) forgotPassword;
   final Function(User user, String token) loadedUserConfigurationAction;
   final Function() loadCategories;
+  final Function(String userId, String token) updateApiProperties;
 
   _ViewModel({
     this.userViewModel,
     this.updateLoginProcessIsActive,
     this.loadedUserConfigurationAction,
     this.loadCategories,
+    this.updateApiProperties,
     this.forgotPassword,
   });
 
@@ -285,6 +301,8 @@ class _ViewModel {
       loadedUserConfigurationAction: (user, token) =>
           store.dispatch(LoadedUserConfigurationAction(user, token)),
       loadCategories: () => store.dispatch(LoadCategoriesAction()),
+      updateApiProperties: (userId, token) =>
+          store.dispatch(UpdateApiPropertiesAction(userId, token)),
     );
   }
 }

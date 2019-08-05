@@ -1,3 +1,4 @@
+import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:appoint/view_models/add_appoint_vm.dart';
 import 'package:appoint/models/company.dart';
@@ -30,11 +31,9 @@ class AppState {
   factory AppState.initState() => AppState(
         selectCompanyViewModel: SelectCompanyViewModel(
           categories: [],
-          //index of 'all' (gets added in loadCategoriesAction)
-          categoryFilter: -1,
           isLoading: true,
-          companyVisibilityFilter: CompanyVisibilityFilter.all,
-          rangeFilter: 9.0,
+          companySearchState: CompanySearchState.initial(),
+          filters: CompanySearchFilter.initial(),
         ),
         selectPeriodViewModel: SelectedPeriodViewModel(
           //if you set isLoading to true, no periods will be fetched anymore

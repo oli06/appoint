@@ -1,6 +1,7 @@
 import 'package:appoint/actions/companies_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/assets/company_icons_icons.dart';
+import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/category.dart';
 import 'package:appoint/pages/company_details.dart';
@@ -59,12 +60,15 @@ class _CompanyPageState extends State<CompanyPage>
           children: <Widget>[
             Slider(
               activeColor: Color(0xff09c199),
-              value: vm.selectCompanyViewModel.rangeFilter,
+              value: vm.selectCompanyViewModel.filters.rangeFilter,
               min: 1.0,
               max: 50.0,
-              onChanged: (double newValue) => vm.updateRangeFilter(newValue),
+              onChanged: (double newValue) => vm.companySearchAction(
+                  CompanySearchFilter.fromExisting(
+                      vm.selectCompanyViewModel.filters,
+                      rangeFilter: newValue)),
             ),
-            Text("${vm.selectCompanyViewModel.rangeFilter.toInt()} km"),
+            Text("${vm.selectCompanyViewModel.filters.rangeFilter.toInt()} km"),
           ],
         ),
         Padding(
@@ -97,14 +101,16 @@ class _CompanyPageState extends State<CompanyPage>
     return Padding(
       padding: const EdgeInsets.only(left: 8.0, right: 8.0),
       child: SelectWidget<Category>(
-        dataset: vm.categories,
-        itemBuilder: (context, category) {
-          return Text(category.value);
-        },
-        selectedIndex: vm.categories.indexWhere((c) => c.id == vm.selectCompanyViewModel.categoryFilter),
-        onSelectionChanged: (value, index, context) =>
-            vm.updateCategoryFilter(value.id),
-      ),
+          dataset: vm.categories,
+          itemBuilder: (context, category) {
+            return Text(category.value);
+          },
+          selectedIndex: vm.categories.indexWhere(
+              (c) => c.id == vm.selectCompanyViewModel.filters.categoryFilter),
+          onSelectionChanged: (value, index, context) => vm.companySearchAction(
+              CompanySearchFilter.fromExisting(
+                  vm.selectCompanyViewModel.filters,
+                  categoryFilter: value.id))),
     );
   }
 
@@ -158,26 +164,21 @@ class _CompanyPageState extends State<CompanyPage>
 
 class _ViewModel {
   final SelectCompanyViewModel selectCompanyViewModel;
-  final Function(int index) updateCategoryFilter;
-  final Function(double value) updateRangeFilter;
   final List<Category> categories;
+  final Function(CompanySearchFilter filters) companySearchAction;
 
   _ViewModel({
     this.selectCompanyViewModel,
-    this.updateCategoryFilter,
-    this.updateRangeFilter,
+    this.companySearchAction,
     this.categories,
   });
 
   static _ViewModel fromState(Store<AppState> store) {
     return _ViewModel(
       selectCompanyViewModel: store.state.selectCompanyViewModel,
-      updateCategoryFilter: (int index) => store.dispatch(
-        UpdateCategoryFilterAction((index)),
-      ),
-      updateRangeFilter: (double value) =>
-          store.dispatch(UpdateRangeFilterAction(value)),
       categories: store.state.selectCompanyViewModel.categories,
+      companySearchAction: (filters) =>
+          store.dispatch(CompanySearchAction(filters)),
     );
   }
 }

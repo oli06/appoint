@@ -8,15 +8,11 @@ class UserViewModel {
   final String token;
   final LocationData currentLocation;
 
-  //used for login username field
-  final String username;
-
   const UserViewModel({
     this.user,
     this.isLoading,
     this.token,
     this.currentLocation,
-    this.username,
     this.loginProcessIsActive,
   });
 }

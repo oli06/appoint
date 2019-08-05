@@ -261,7 +261,7 @@ class _ViewModel {
     return _ViewModel(
       userViewModel: store.state.userViewModel,
       verifyUser: (String code) => store.dispatch(
-        VerifyUserAction(store.state.userViewModel.user.id, code),
+        VerifyUserAction(code),
       ),
     );
   }

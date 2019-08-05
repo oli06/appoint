@@ -1,4 +1,5 @@
 import 'package:appoint/actions/companies_action.dart';
+import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/company.dart';
 import 'package:appoint/pages/category_select.dart';
@@ -24,12 +25,14 @@ class SelectCompanyState extends State<SelectCompany>
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
       onInit: (store) {
-        Function update = () => store.dispatch(
-            UpdateCompanyVisibilityFilterAction(
+        Function update = () => store.dispatch(CompanySearchFilter.fromExisting(
+            store.state.selectCompanyViewModel.filters,
+            companyVisibilityFilter:
                 CompanyVisibilityFilter.values[_controller.index]));
         _controller.index = store
             .state
             .selectCompanyViewModel
+            .filters
             .companyVisibilityFilter
             .index; //initial value comes from the redux store
         _controller.addListener(
@@ -44,7 +47,7 @@ class SelectCompanyState extends State<SelectCompany>
             padding: EdgeInsets.symmetric(horizontal: 8),
             child: Column(
               children: <Widget>[
-                _buildSearchField(),
+                _buildSearchField(vm),
                 _buildCategorySelect(vm),
                 _buildRangeAndMapButton(vm),
                 Expanded(
@@ -62,13 +65,17 @@ class SelectCompanyState extends State<SelectCompany>
     );
   }
 
-  Widget _buildSearchField() {
+  Widget _buildSearchField(_ViewModel vm) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
         child: CupertinoTextField(
           textInputAction: TextInputAction.search,
           clearButtonMode: OverlayVisibilityMode.editing,
+          onChanged: (value) => vm.companySearchAction(
+              CompanySearchFilter.fromExisting(
+                  vm.selectCompanyViewModel.filters,
+                  nameFilter: value)),
           maxLines: 1,
           placeholder: "Suchen",
           prefix: Icon(Icons.search),
@@ -112,12 +119,15 @@ class SelectCompanyState extends State<SelectCompany>
           children: <Widget>[
             Slider(
               activeColor: Color(0xff09c199),
-              value: vm.selectCompanyViewModel.rangeFilter,
+              value: vm.selectCompanyViewModel.filters.rangeFilter,
               min: 1.0,
               max: 50.0,
-              onChanged: (double newValue) => vm.updateRangeFilter(newValue),
+              onChanged: (double newValue) => vm.companySearchAction(
+                  CompanySearchFilter.fromExisting(
+                      vm.selectCompanyViewModel.filters,
+                      rangeFilter: newValue)),
             ),
-            Text("${vm.selectCompanyViewModel.rangeFilter.toInt()} km"),
+            Text("${vm.selectCompanyViewModel.filters.rangeFilter.toInt()} km"),
           ],
         ),
         FlatButton(
@@ -157,8 +167,8 @@ class SelectCompanyState extends State<SelectCompany>
           ),
           Text(
             vm.selectCompanyViewModel.categories
-                .firstWhere(
-                    (c) => c.id == vm.selectCompanyViewModel.categoryFilter)
+                .firstWhere((c) =>
+                    c.id == vm.selectCompanyViewModel.filters.categoryFilter)
                 .value,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w300),
           ),
@@ -171,24 +181,13 @@ class SelectCompanyState extends State<SelectCompany>
       onPressed: () => Navigator.pushNamed(
         context,
         CategorySelectPage.routeNamed,
-        arguments: vm.selectCompanyViewModel.categoryFilter,
+        arguments: vm.selectCompanyViewModel.filters.categoryFilter,
       ).then((categoryId) {
-        vm.updateCategoryFilter(categoryId);
+        vm.companySearchAction(CompanySearchFilter.fromExisting(
+            vm.selectCompanyViewModel.filters,
+            categoryFilter: categoryId));
       }),
     ));
-
-    /*
-    return SelectWidget<Category>(
-      dataset: vm.selectCompanyViewModel.categories,
-      itemBuilder: (context, category) {
-        return Text(category.value);
-      },
-      selectedIndex: vm.selectCompanyViewModel.categories
-          .indexWhere((c) => c.id == vm.selectCompanyViewModel.categoryFilter),
-      onSelectionChanged: (value, index, context) {
-        vm.updateCategoryFilter(value.id);
-      },
-    );*/
   }
 
   NavBar _buildNavBar(_ViewModel vm) {
@@ -237,30 +236,18 @@ class SelectCompanyState extends State<SelectCompany>
 
 class _ViewModel {
   final SelectCompanyViewModel selectCompanyViewModel;
-  final Function(CompanyVisibilityFilter filter) updateFilter;
-  final Function(int categoryId) updateCategoryFilter;
-  final Function(double value) updateRangeFilter;
+  final void Function(CompanySearchFilter filters) companySearchAction;
 
   _ViewModel({
-    this.updateFilter,
     this.selectCompanyViewModel,
-    this.updateCategoryFilter,
-    this.updateRangeFilter,
+    this.companySearchAction,
   });
 
   static _ViewModel fromState(Store<AppState> store) {
     return _ViewModel(
-      updateFilter: (CompanyVisibilityFilter filter) => store.dispatch(
-        UpdateCompanyVisibilityFilterAction(filter),
-      ),
       selectCompanyViewModel: store.state.selectCompanyViewModel,
-      updateCategoryFilter: (int categoryId) => store.dispatch(
-        UpdateCategoryFilterAction(
-          (categoryId),
-        ),
-      ),
-      updateRangeFilter: (double value) =>
-          store.dispatch(UpdateRangeFilterAction(value)),
+      companySearchAction: (CompanySearchFilter filters) =>
+          store.dispatch(CompanySearchAction(filters)),
     );
   }
 }

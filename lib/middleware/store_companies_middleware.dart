@@ -5,17 +5,18 @@ import 'package:appoint/actions/select_period_action.dart';
 import 'package:appoint/actions/settings_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/data/api.dart';
+import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/category.dart';
+import 'package:appoint/models/company.dart';
 import 'package:appoint/selectors/selectors.dart';
 import 'package:appoint/utils/constants.dart';
 import 'package:redux/redux.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-List<Middleware<AppState>> createStoreCompaniesMiddleware() {
-  final Api api = Api();
-
+List<Middleware<AppState>> createStoreCompaniesMiddleware(
+    Api api, SharedPreferences sharedPreferences) {
   final loadCompanies = _createLoadCompanies(api);
   final loadAppointments = _createLoadAppointments(api);
   final verifyUser = _createUserVerifcation(api);
@@ -26,9 +27,11 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
   final loadSharedPreferences = _createLoadSharedPreferences();
   final loadCategories = _createLoadCategories(api);
 
-  final authenticate = _authenticate(api);
-  final loginProcessDone = _loadedUserConfigurationAction();
+  final authenticate = _authenticate(api, sharedPreferences);
+  final loginProcessDone = _loadedUserConfigurationAction(sharedPreferences);
   final loadPeriods = _createLoadPeriods(api);
+
+  final updateApi = _updateApiPropertiesAction(api);
 
   return [
     TypedMiddleware<AppState, LoadCompaniesAction>(loadCompanies),
@@ -45,6 +48,7 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware() {
     TypedMiddleware<AppState, AuthenticateAction>(authenticate),
     TypedMiddleware<AppState, LoadedUserConfigurationAction>(loginProcessDone),
     TypedMiddleware<AppState, LoadPeriodsAction>(loadPeriods),
+    TypedMiddleware<AppState, UpdateApiPropertiesAction>(updateApi),
   ];
 }
 
@@ -65,9 +69,7 @@ Middleware<AppState> _createLoadAppointments(Api api) {
   return (Store<AppState> store, action, NextDispatcher next) {
     store.dispatch(UpdateAppointmentsIsLoadingAction(true));
 
-    api
-        .getAppointments(action.userId, store.state.userViewModel.token)
-        .then((appointments) {
+    api.getAppointments(action.userId).then((appointments) {
       store.dispatch(LoadedAppointmentsAction(appointments));
       store.dispatch(UpdateAppointmentsIsLoadingAction(false));
     });
@@ -76,9 +78,11 @@ Middleware<AppState> _createLoadAppointments(Api api) {
   };
 }
 
-Middleware<AppState> _loadedUserConfigurationAction() {
-  return (Store<AppState> store, action, NextDispatcher next) async {
-    final sharedPreferences = await SharedPreferences.getInstance();
+Middleware<AppState> _loadedUserConfigurationAction(
+    SharedPreferences sharedPreferences) {
+  return (Store<AppState> store, action, NextDispatcher next) {
+    print("loaded shared preferences");
+
     sharedPreferences.setString(kUserIdKey, action.user.id);
     sharedPreferences.setString(kTokenKey, action.token);
 
@@ -86,7 +90,14 @@ Middleware<AppState> _loadedUserConfigurationAction() {
     store.dispatch(LoadCategoriesAction());
     store.dispatch(UpdateLoginProcessIsActiveAction(false));
 
-    next(action);
+    //next(action);
+  };
+}
+
+Middleware<AppState> _updateApiPropertiesAction(Api api) {
+  return (Store<AppState> store, action, NextDispatcher next) {
+    api.token = action.token;
+    api.userId = action.userId;
   };
 }
 
@@ -144,11 +155,9 @@ Middleware<AppState> _createLoadPeriods(Api api) {
   };
 }
 
-Middleware<AppState> _authenticate(Api api) {
-  return (Store<AppState> store, action, NextDispatcher next) async {
-    final SharedPreferences sharedPreferences =
-        await SharedPreferences.getInstance();
-
+Middleware<AppState> _authenticate(
+    Api api, SharedPreferences sharedPreferences) {
+  return (Store<AppState> store, action, NextDispatcher next) {
     print("authentication soon");
 
     if (sharedPreferences.containsKey(kTokenKey)) {
@@ -159,8 +168,9 @@ Middleware<AppState> _authenticate(Api api) {
       final userId = sharedPreferences.getString(kUserIdKey);
 
       api.token = token;
+      api.userId = userId;
 
-      api.getUser(userId, token).then((user) {
+      api.getUser().then((user) {
         if (user != null) {
           store.dispatch(LoadedUserConfigurationAction(user, token));
         }
@@ -178,10 +188,7 @@ Middleware<AppState> _createUserVerifcation(Api api) {
   return (Store<AppState> store, action, next) {
     store.dispatch(UpdateUserLoadingAction(true));
 
-    api
-        .postUserVerificationCode(action.userId, action.verificationCode,
-            store.state.userViewModel.token)
-        .then((result) {
+    api.postUserVerificationCode(action.verificationCode).then((result) {
       store.dispatch(VerifyUserResultAction(result));
       store.dispatch(UpdateUserLoadingAction(false));
     });
@@ -195,7 +202,7 @@ Middleware<AppState> _createLoadCategories(Api api) {
     //TODO: check, if categories should use a own viewmodel
     store.dispatch(UpdateCompanyIsLoadingAction(true));
 
-    api.getCategories(store.state.userViewModel.token).then((result) {
+    api.getCategories().then((result) {
       result.insert(0, Category(id: -1, value: "Alle"));
       store.dispatch(LoadedCategoriesAction(result));
       store.dispatch(UpdateCompanyIsLoadingAction(false));
@@ -238,7 +245,9 @@ Middleware<AppState> _createLoadUserFavorites(Api api) {
   return (Store<AppState> store, action, next) {
     store.dispatch(UpdateIsLoadingFavoritesAction(true));
     api
-        .getUserFavorites(action.userId, store.state.userViewModel.token)
+        .getCompanies(getCompanySearchString(CompanySearchFilter(
+            companyVisibilityFilter: CompanyVisibilityFilter.favorites,
+            rangeFilter: double.infinity)))
         .then((result) {
       store.dispatch(LoadedFavoritesAction(result));
       store.dispatch(UpdateIsLoadingFavoritesAction(false));
@@ -250,10 +259,7 @@ Middleware<AppState> _createLoadUserFavorites(Api api) {
 
 Middleware<AppState> _createRemoveFromUserFavorites(Api api) {
   return (Store<AppState> store, action, next) {
-    api
-        .removeUserFavorites(
-            action.userId, action.companyIds, store.state.userViewModel.token)
-        .then((res) {
+    api.removeUserFavorites(action.companyIds).then((res) {
       //TODO: use user.favorites stream to reload them
     });
 
@@ -263,10 +269,7 @@ Middleware<AppState> _createRemoveFromUserFavorites(Api api) {
 
 Middleware<AppState> _createAddToUserFavorites(Api api) {
   return (Store<AppState> store, action, next) {
-    api
-        .addUserFavorite(
-            action.userId, action.companyId, store.state.userViewModel.token)
-        .then((res) {
+    api.addUserFavorite(action.companyId).then((res) {
       //TODO: use user.favorites stream to reload them
     });
 

@@ -1,4 +1,3 @@
-import 'package:appoint/actions/companies_action.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/category.dart';
 import 'package:appoint/widgets/navBar.dart';
@@ -70,22 +69,15 @@ class _CategorySelectPageState extends State<CategorySelectPage> {
 }
 
 class _ViewModel {
-  final Function(int categoryId) updateCategoryFilter;
   final List<Category> categories;
 
   _ViewModel({
-    this.updateCategoryFilter,
     this.categories,
   });
 
   static _ViewModel fromState(Store<AppState> store) {
     return _ViewModel(
       categories: store.state.selectCompanyViewModel.categories,
-      updateCategoryFilter: (int categoryId) => store.dispatch(
-        UpdateCategoryFilterAction(
-          (categoryId),
-        ),
-      ),
     );
   }
 }

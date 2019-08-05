@@ -21,8 +21,7 @@ class FavoritesPage extends StatelessWidget {
     return StoreConnector<AppState, _ViewModel>(
       converter: (store) => _ViewModel.fromStore(store),
       onInit: (store) {
-        store.dispatch(
-            LoadFavoritesAction(store.state.userViewModel.user.id));
+        store.dispatch(LoadFavoritesAction(store.state.userViewModel.user.id));
       },
       builder: (context, vm) => Scaffold(
         appBar: _buildNavBar(context, vm),
@@ -81,7 +80,6 @@ class FavoritesPage extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: Container(
           child: Text(
-            
             "Unternehmen, die Sie als Favorit markiert haben, oder bei denen Sie bereits einen Termin hatten werden hier angezeigt.",
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 18),
@@ -214,9 +212,8 @@ class _ViewModel {
           store.dispatch(RemoveSelectedFavoriteAction(company)),
       resetFavoriteViewModel: () =>
           store.dispatch(ResetFavoriteViewModelAction()),
-      removeFromFavorites: (List<int> companyIds) => store.dispatch(
-          RemoveFromUserFavoritesAction(
-              companyIds, store.state.userViewModel.user.id)),
+      removeFromFavorites: (List<int> companyIds) =>
+          store.dispatch(RemoveFromUserFavoritesAction(companyIds)),
     );
   }
 }

@@ -13,20 +13,25 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
 
-// String url = 'https://ca6b821c.ngrok.io';
 String baseUrl = "https://appointservice.azurewebsites.net/";
 String accessPoint = "api/";
 String url = baseUrl + accessPoint;
-//String url = 'http://localhost:8000';
 
 class Api {
   String token;
+  String userId;
 
-  Api({this.token});
+  Api({
+    this.token,
+    this.userId = "",
+  });
 
-  Future<List<Company>> getCompanies(String token) async {
-    final response = await http.get('$url/companies',
-        headers: {HttpHeaders.authorizationHeader: "bearer $token"});
+  Future<List<Company>> getCompanies(String searchTerm) async {
+    String uri = '$url/companies$searchTerm';
+
+    print("getCompanies uri: $uri");
+    final response = await http
+        .get(uri, headers: {HttpHeaders.authorizationHeader: "bearer $token"});
 
     if (response.statusCode == 200) {
       List<dynamic> list = json.decode(response.body);
@@ -36,7 +41,7 @@ class Api {
     return [];
   }
 
-  Future<List<Category>> getCategories(String token) async {
+  Future<List<Category>> getCategories() async {
     final response = await http.get('$url/categories',
         headers: {HttpHeaders.authorizationHeader: "bearer $token"});
 
@@ -48,8 +53,7 @@ class Api {
     return [];
   }
 
-  Future<bool> postUserVerificationCode(
-      String userId, String code, String token) async {
+  Future<bool> postUserVerificationCode(String code) async {
     final response = await http.post(
       '$url/users/$userId/verify',
       headers: {
@@ -89,35 +93,6 @@ class Api {
     return {};
   }
 
-/*   Future<Map<DateTime, List<Period>>> getPeriodsForMonth(
-      int companyId, DateTime month, String token) async {
-    final response = await http.get(
-      "$url/companies/$companyId/periods/${Parse.dateRequestFormat.format(month)}",
-      headers: {HttpHeaders.authorizationHeader: "bearer $token"},
-    );
-
-    Map<DateTime, List<Period>> map = {};
-    if (response.statusCode == 200) {
-      final List<dynamic> list = json.decode(response.body);
-
-      list.forEach((day) {
-        DayResponse dayObj = DayResponse.fromJson(day);
-        /* final Day<Period> dayObj = new Day<Period>(
-            date: DateTime.parse(day['date']),
-            events:
-                day['periods'].map((model) => Period.fromJson(model)).toList()); */
-
-        map[dayObj.date] = dayObj.periods;
-      });
-
-      //var abc = list.map((entry) => {});
-
-      return map;
-    }
-
-    return {};
-  } */
-
   Future<http.Response> register(UserAccount user) async {
     final jsonString = user.toJson();
     final response = await http.post('$url/users/register', body: jsonString);
@@ -136,8 +111,7 @@ class Api {
     return await http.post(url, body: body);
   }
 
-  Future<bool> removeUserFavorites(
-      String userId, List<int> companyIds, String token) async {
+  Future<bool> removeUserFavorites(List<int> companyIds) async {
     //theres is no multi http-delete, which is why we use http.post and list the ids inside body
     final response = await http.post(
       '$url/users/$userId/favorites/delete',
@@ -155,8 +129,7 @@ class Api {
     return false;
   }
 
-  Future<bool> addUserFavorite(
-      String userId, int companyId, String token) async {
+  Future<bool> addUserFavorite(int companyId) async {
     final response = await http.post('$url/users/$userId/favorites',
         headers: {
           "Content-Type": "application/json",
@@ -171,7 +144,7 @@ class Api {
     return false;
   }
 
-  Future<List<Company>> getUserFavorites(String userId, String token) async {
+  Future<List<Company>> getUserFavorites() async {
     final response = await http.get('$url/users/$userId/favorites',
         headers: {HttpHeaders.authorizationHeader: "bearer $token"});
 
@@ -183,7 +156,7 @@ class Api {
     return [];
   }
 
-  Future<User> getUser(String userId, String token) async {
+  Future<User> getUser() async {
     final response = await http.get('$url/users/$userId',
         headers: {HttpHeaders.authorizationHeader: "bearer $token"});
 
@@ -195,7 +168,7 @@ class Api {
     return null;
   }
 
-  Future<List<Appoint>> getAppointments(String userId, String token) async {
+  Future<List<Appoint>> getAppointments(String userId) async {
     final response = await http.get('$url/users/$userId/appointments',
         headers: {HttpHeaders.authorizationHeader: "bearer $token"});
 
@@ -205,5 +178,20 @@ class Api {
     }
 
     return [];
+  }
+
+  Future<bool> postAppointment(Appoint appoint) async {
+    final body = appoint.toJson();
+    final response = await http.post(
+      '$url/users/$userId/appointments',
+      headers: {HttpHeaders.authorizationHeader: "bearer $token"},
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    }
+
+    return false;
   }
 }
