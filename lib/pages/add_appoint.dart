@@ -1,11 +1,9 @@
 import 'dart:async';
 
-import 'package:appoint/actions/add_appoint_action.dart';
 import 'package:appoint/actions/appointments_action.dart';
 import 'package:appoint/data/api.dart';
 import 'package:appoint/utils/calendar.dart';
 import 'package:appoint/utils/constants.dart';
-import 'package:appoint/view_models/add_appoint_vm.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/appoint.dart';
 import 'package:appoint/models/company.dart';
@@ -49,9 +47,12 @@ class AddAppointState extends State<AddAppoint>
   bool get isEditing => widget.isEditing;
 
   bool hideKeyboardEnabled = true;
+  bool _isLoading = false;
 
   @override
   void initState() {
+    super.initState();
+
     if (isEditing) {
       _company = widget.appoint.company;
       _title = widget.appoint.title;
@@ -64,7 +65,6 @@ class AddAppointState extends State<AddAppoint>
     _titleController.addListener(onTitleChange);
     _descriptionController.addListener(onDescriptionChange);
     WidgetsBinding.instance.addObserver(this);
-    super.initState();
   }
 
   TextEditingController _titleController = TextEditingController();
@@ -125,36 +125,65 @@ class AddAppointState extends State<AddAppoint>
       builder: (context, vm) {
         return Scaffold(
           appBar: buildNavBar(vm),
-          body: Padding(
-            padding: const EdgeInsets.only(left: 8.0, right: 8),
-            child: NotificationListener(
-              onNotification: (t) {
-                if (t is UserScrollNotification) {
-                  if (hideKeyboardEnabled) {
-                    FocusScope.of(context).requestFocus(FocusNode());
+          body: GestureDetector(
+            onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8.0, right: 8),
+              child: NotificationListener(
+                onNotification: (t) {
+                  if (t is UserScrollNotification) {
+                    if (hideKeyboardEnabled) {
+                      FocusScope.of(context).requestFocus(FocusNode());
+                    }
                   }
-                }
-              },
-              child: CupertinoScrollbar(
-                child: Form(
-                  key: _appointFormKey,
-                  child: ListView(
-                    children: <Widget>[
-                      SizedBox(
-                        height: 10,
-                      ),
-                      _firstCard(),
-                      CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        child: Text("...oder nächsten freien Termin finden"),
-                        onPressed: _company == null
-                            ? null
-                            : () {
-                                print("select next available period");
-                              },
-                      ),
-                      _buildInformationCard(),
-                    ],
+                },
+                child: CupertinoScrollbar(
+                  child: Form(
+                    key: _appointFormKey,
+                    child: Stack(
+                      alignment: AlignmentDirectional.center,
+                      children: <Widget>[
+                        ListView(
+                          children: <Widget>[
+                            SizedBox(
+                              height: 10,
+                            ),
+                            _firstCard(),
+                            CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              child:
+                                  Text("...oder nächsten freien Termin finden"),
+                              onPressed: _company == null
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        _isLoading = true;
+                                      });
+                                      Api(
+                                        token: vm.userViewModel.token,
+                                        userId: vm.userViewModel.user.id,
+                                      )
+                                          .getNextPeriod(_company.id)
+                                          .then((period) {
+                                        if (period != null) {
+                                          _period = period;
+                                        } else {
+                                          print("failed to get next period");
+                                        }
+
+                                        setState(() {
+                                          _isLoading = false;
+                                        });
+                                      });
+                                    },
+                            ),
+                            _buildInformationCard(),
+                          ],
+                        ),
+                        if (_isLoading) CupertinoActivityIndicator(),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -173,7 +202,6 @@ class AddAppointState extends State<AddAppoint>
         icon: Icon(Icons.close),
         color: Theme.of(context).primaryColor,
         onPressed: () {
-          vm.cancelEditOrAdd();
           Navigator.pop(context);
         },
       ),
@@ -187,26 +215,42 @@ class AddAppointState extends State<AddAppoint>
         ),
         onPressed: _isValid()
             ? () {
+                setState(() {
+                  _isLoading = true;
+                });
+
+                final appoint = Appoint(
+                  id: isEditing ? widget.appoint.id : null,
+                  title: _title,
+                  company: _company,
+                  period: _period,
+                  description: _description ?? "",
+                );
+
+                final api = Api(
+                  token: vm.userViewModel.token,
+                  userId: vm.userViewModel.user.id,
+                );
+
                 if (!isEditing) {
                   //save new
-                  final appoint = Appoint(
-                    id: null,
-                    title: _title,
-                    company: _company,
-                    period: _period,
-                    description: _description ?? "",
-                  );
-
-                  Api(token: vm.userViewModel.token, userId: vm.userViewModel.user.id,)
-                      .postAppointment(appoint)
-                      .then((success) {
+                  api.postAppointment(appoint).then((success) {
                     if (success) {
+                      vm.createOrUpdateAppoint(Appoint(
+                        id: isEditing ? widget.appoint.id : null,
+                        title: _title,
+                        company: _company,
+                        period: _period,
+                        description: _description,
+                      ));
+
                       if (vm.settingsViewModel
                                   .settings[kSettingsCalendarIntegration] ==
                               true &&
                           vm.settingsViewModel
                                   .settings[kSettingsSaveToCalendar] ==
                               true) {
+                        //calendar integration
                         Calendar()
                             .createNativeCalendarEvent(
                                 vm.settingsViewModel
@@ -217,88 +261,90 @@ class AddAppointState extends State<AddAppoint>
                                 _description,
                                 _company)
                             .then((res) {
-                          if (res) {
-                            showCupertinoDialog(
-                                context: context,
-                                builder: (context) {
-                                  Future.delayed(Duration(seconds: 2), () {
-                                    Navigator.pop(context);
-                                  });
+                          setState(() {
+                            _isLoading = false;
+                          });
 
-                                  return appointNs.Dialog(
-                                    title: "Termin erstellt",
-                                    information:
-                                        "Termin wurde erfolgreich erstellt und in den Kalender übertragen",
-                                    informationTextSize: 18,
-                                  );
-                                });
+                          if (res) {
+                            //added to calendar
+                            _showCreationSucceedDialog("Termin erstellt",
+                                "Termin wurde erfolgreich erstellt und in den Kalender übertragen");
                           } else {
-                            print("else 2");
+                            print("failed to add appoint to local calendar");
+                            //TODO: info message to user
                             Navigator.pop(context);
                           }
                         });
                       } else {
-                        print("else 1");
-                        Navigator.pop(context);
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        //no calendar integration. Still show success popup
+                        _showCreationSucceedDialog(
+                          "Termin erstellt",
+                          "Termin wurde erfolgreich erstellt und in den Kalender übertragen",
+                        );
                       }
                     } else {
+                      setState(() {
+                        _isLoading = false;
+                      });
+
                       print("failed");
                     }
                   });
                 } else {
-                  print("edititing TODO PUT");
-                }
+                  //edited an existing appoint
+                  api.updateAppointment(appoint).then((succeed) {
+                    if (succeed) {
+                      setState(() {
+                        _isLoading = false;
+                      });
+                      
+                      vm.createOrUpdateAppoint(Appoint(
+                        id: isEditing ? widget.appoint.id : null,
+                        title: _title,
+                        company: _company,
+                        period: _period,
+                        description: _description,
+                      ));
 
-                vm.saveAppoint(Appoint(
-                  id: isEditing ? widget.appoint.id : null,
-                  title: _title,
-                  company: _company,
-                  period: _period,
-                  description: _description,
-                ));
-/* 
-                if (vm.settingsViewModel
-                            .settings[kSettingsCalendarIntegration] ==
-                        true &&
-                    vm.settingsViewModel.settings[kSettingsSaveToCalendar] ==
-                        true) {
-                  Calendar()
-                      .createNativeCalendarEvent(
-                          vm.settingsViewModel.settings[kSettingsCalendarId],
-                          _period.start,
-                          _title,
-                          _period.duration,
-                          _description,
-                          _company)
-                      .then((res) {
-                    if (res) {
-                      showCupertinoDialog(
-                          context: context,
-                          builder: (context) {
-                            Future.delayed(Duration(seconds: 2), () {
-                              Navigator.pop(context);
-                            });
-
-                            return appoint.Dialog(
-                              title: "Termin erstellt",
-                              information:
-                                  "Termin wurde erfolgreich erstellt und in den Kalender übertragen",
-                              informationTextSize: 18,
-                            );
-                          });
+                      _showCreationSucceedDialog("Termin aktualisiert",
+                          "Termin wurde erfolgreich aktualisiert");
                     } else {
-                      print("else 2");
-                      Navigator.pop(context);
+                      //TODO: info message to user
+                      setState(() {
+                        _isLoading = false;
+                      });
+
+                      print("failed to update appoint (API)");
                     }
                   });
-                } else {
-                  print("else 1");
-                  Navigator.pop(context);
-                } */
+                }
               }
             : null,
       ),
     );
+  }
+
+  _showCreationSucceedDialog(String title, String information) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return appointNs.Dialog(
+            canClose: false,
+            title: title,
+            information: information,
+            informationTextSize: 18,
+          );
+        });
+
+    Future.delayed(Duration(seconds: 2), () {
+      //first, pop dialog, then pop add_appoint
+      Navigator.of(context).pop();
+
+      Navigator.pop(context);
+    });
   }
 
   Widget _firstCard() {
@@ -319,7 +365,7 @@ class AddAppointState extends State<AddAppoint>
       scrollInProgress: () => scrollInProgress,
       focusNode: _titleFocus,
       child: Card(
-        elevation: 2,
+        elevation: 1,
         child: Column(
           children: <Widget>[
             _buildTitleTextField(companyTap),
@@ -383,8 +429,11 @@ class AddAppointState extends State<AddAppoint>
           children: [
             Text("Zeitraum auswählen..."),
             Icon(
-              CupertinoIcons.getIconData(0xf3d0),
-              color: Colors.grey[350],
+              Icons.arrow_forward_ios,
+              size: 18,
+              color: _company == null
+                  ? Colors.grey[350]
+                  : Theme.of(context).accentColor,
             ),
           ],
         ),
@@ -412,10 +461,8 @@ class AddAppointState extends State<AddAppoint>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("Unternehmen auswählen..."),
-            Icon(
-              CupertinoIcons.getIconData(0xf3d0),
-              color: Colors.black,
-            ),
+            Icon(Icons.arrow_forward_ios,
+                size: 18, color: Theme.of(context).accentColor),
           ],
         ),
         onPressed: companyTap,
@@ -429,10 +476,7 @@ class AddAppointState extends State<AddAppoint>
         Expanded(
           child: Container(
             height: 50,
-            padding: EdgeInsets.only(
-              left: 15,
-              right: 15,
-            ),
+            padding: EdgeInsets.only(left: 15),
             child: Align(
               child: TextFormField(
                 controller: _titleController,
@@ -479,9 +523,9 @@ class AddAppointState extends State<AddAppoint>
 
   Widget _buildInformationCard() {
     return Card(
-      elevation: 2,
+      elevation: 1,
       child: Padding(
-        padding: const EdgeInsets.only(left: 8, right: 8),
+        padding: const EdgeInsets.all(8),
         child: Align(
           alignment: Alignment.centerLeft,
           child: EnsureVisibleWhenFocused(
@@ -491,17 +535,18 @@ class AddAppointState extends State<AddAppoint>
             child: TextFormField(
               focusNode: _descriptionFocus,
               controller: _descriptionController,
-              minLines: 6,
+              minLines: 1,
               maxLines: 6,
               maxLength: 256,
               decoration: InputDecoration(
-                  hintText: "Information zum Termin:",
+                  hintText: "Informationen",
                   suffixIcon: _descriptionController.text.isNotEmpty
                       ? IconButton(
+                          padding: EdgeInsets.zero,
                           icon: Icon(
-                            CupertinoIcons.clear_circled_solid,
-                            size: 16,
-                            color: Colors.grey[350],
+                            CupertinoIcons.clear,
+                            size: 32,
+                            color: Colors.grey,
                           ),
                           onPressed: () => _descriptionController.text = "",
                         )
@@ -532,25 +577,19 @@ class AddAppointState extends State<AddAppoint>
 
 class _ViewModel {
   final UserViewModel userViewModel;
-  final AddAppointViewModel addAppointViewModel;
-  final Function(Appoint appoint) saveAppoint;
-  final Function cancelEditOrAdd;
+  final Function(Appoint appoint) createOrUpdateAppoint;
   final SettingsViewModel settingsViewModel;
 
   _ViewModel({
-    @required this.addAppointViewModel,
-    this.saveAppoint,
-    this.cancelEditOrAdd,
+    this.createOrUpdateAppoint,
     this.settingsViewModel,
     this.userViewModel,
   });
 
   static _ViewModel fromStore(Store<AppState> store) {
     return _ViewModel(
-      addAppointViewModel: store.state.addAppointViewModel,
-      saveAppoint: (Appoint appoint) =>
-          store.dispatch(AddAppointmentAction(appoint)),
-      cancelEditOrAdd: () => store.dispatch(CancelEditOrAddAppointAction()),
+      createOrUpdateAppoint: (Appoint appoint) =>
+          store.dispatch(CreateOrUpdateAppointAction(appoint)),
       settingsViewModel: store.state.settingsViewModel,
       userViewModel: store.state.userViewModel,
     );

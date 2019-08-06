@@ -31,7 +31,7 @@ class _CompanyListState extends State<CompanyList> {
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
         onInit: (Store<AppState> store) => store.dispatch(
-            CompanySearchAction(store.state.selectCompanyViewModel.filters)),
+            CompanyFilterSearchAction(store.state.selectCompanyViewModel.filters)),
         converter: _ViewModel.fromStore,
         builder: (context, vm) {
           return Stack(
@@ -98,8 +98,8 @@ class _CompanyListState extends State<CompanyList> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Text(
-            "Keine Unternehmen gefunden. Versuchen Sie es mit anderen Sucheinstellungen",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w200),
+            "Keine Unternehmen gefunden. Versuche es mit anderen Sucheinstellungen",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w200),
             textAlign: TextAlign.center,
           ),
         ],

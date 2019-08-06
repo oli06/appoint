@@ -14,17 +14,29 @@ final selectCompanyReducer = combineReducers<SelectCompanyViewModel>([
       _searchResult),
   TypedReducer<SelectCompanyViewModel, CompanySearchLoadingAction>(
       _updateSearchStateLoading),
-  TypedReducer<SelectCompanyViewModel, CompanySearchAction>(
-      _updateCompanySearchFilters2),
+  TypedReducer<SelectCompanyViewModel, CompanyFilterSearchAction>(
+      _updateCompanySearchFilters),
+  TypedReducer<SelectCompanyViewModel, ResetCompanyNameSearchFilterAction>(
+      _resetCompanyNameSearchFilter),
 ]);
 
-SelectCompanyViewModel _updateCompanySearchFilters2(
-    SelectCompanyViewModel vm, CompanySearchAction action) {
-
+SelectCompanyViewModel _updateCompanySearchFilters(
+    SelectCompanyViewModel vm, CompanyFilterSearchAction action) {
   return SelectCompanyViewModel(
     isLoading: vm.isLoading,
     companies: vm.companies,
     filters: action.filters,
+    companySearchState: vm.companySearchState,
+    categories: vm.categories,
+  );
+}
+
+SelectCompanyViewModel _resetCompanyNameSearchFilter(
+    SelectCompanyViewModel vm, ResetCompanyNameSearchFilterAction action) {
+  return SelectCompanyViewModel(
+    isLoading: vm.isLoading,
+    companies: vm.companies,
+    filters: CompanySearchFilter.fromExisting(vm.filters, nameFilter: ""),
     companySearchState: vm.companySearchState,
     categories: vm.categories,
   );

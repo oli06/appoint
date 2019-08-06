@@ -33,7 +33,7 @@ class AppointmentDetails extends StatelessWidget {
           child: ListView(
             children: <Widget>[
               Card(
-                elevation: 2,
+                elevation: 1,
                 child: Container(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,7 +60,7 @@ class AppointmentDetails extends StatelessWidget {
                 height: 10,
               ),
               Card(
-                elevation: 2,
+                elevation: 1,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
@@ -75,7 +75,7 @@ class AppointmentDetails extends StatelessWidget {
                             alignment: Alignment.topLeft,
                             child: Text(
                               appointment.description,
-                              style: TextStyle(fontSize: 16),
+                              style: TextStyle(fontSize: 15),
                             ),
                           ),
                         )

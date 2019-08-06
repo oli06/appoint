@@ -6,18 +6,45 @@ import 'package:appoint/selectors/selectors.dart';
 import 'package:redux_epics/redux_epics.dart';
 import 'package:rxdart/rxdart.dart';
 
-class SearchEpic implements EpicClass<AppState> {
+class CompanyNameSearchEpic implements EpicClass<AppState> {
   final Api api;
 
-  SearchEpic(this.api);
+  CompanyNameSearchEpic(this.api);
 
   @override
   Stream<dynamic> call(Stream<dynamic> actions, EpicStore<AppState> store) {
     return Observable(actions)
         // Narrow down to SearchAction actions
-        .ofType(TypeToken<CompanySearchAction>())
+        .ofType(TypeToken<CompanyNameSearchAction>())
         // Don't start searching until the user pauses for 250ms
-        .debounceTime(const Duration(milliseconds: 200))
+        .debounceTime(const Duration(milliseconds: 250))
+        // Cancel the previous search and start a new one with switchMap
+        .switchMap((action) => _search(action.filters));
+  }
+
+  Stream<dynamic> _search(CompanySearchFilter filters) async* {
+    yield CompanySearchLoadingAction();
+
+    try {
+      yield CompanySearchResultAction(
+          await api.getCompanies(getCompanySearchString(filters)));
+    } catch (e) {
+      yield CompanySearchErrorAction();
+    }
+  }
+}
+
+///Difference between CompanyNameSearchEpic and CompanyFilterSearchEpic is the missing debounce time, when searching for other attributes than name
+class CompanyFilterSearchEpic implements EpicClass<AppState> {
+  final Api api;
+
+  CompanyFilterSearchEpic(this.api);
+
+  @override
+  Stream<dynamic> call(Stream<dynamic> actions, EpicStore<AppState> store) {
+    return Observable(actions)
+        // Narrow down to SearchAction actions
+        .ofType(TypeToken<CompanyFilterSearchAction>())
         // Cancel the previous search and start a new one with switchMap
         .switchMap((action) => _search(action.filters));
   }

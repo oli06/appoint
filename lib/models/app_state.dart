@@ -1,19 +1,15 @@
 import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/utils/parse.dart';
-import 'package:appoint/view_models/add_appoint_vm.dart';
-import 'package:appoint/models/company.dart';
 import 'package:appoint/view_models/appointments_vm.dart';
 import 'package:appoint/view_models/favorites_vm.dart';
 import 'package:appoint/view_models/select_company_vm.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:appoint/view_models/settings_vm.dart';
 import 'package:appoint/view_models/user_vm.dart';
-import 'package:table_calendar/table_calendar.dart';
 
 class AppState {
   final SelectCompanyViewModel selectCompanyViewModel;
   final SelectedPeriodViewModel selectPeriodViewModel;
-  final AddAppointViewModel addAppointViewModel;
   final AppointmentsViewModel appointmentsViewModel;
   final UserViewModel userViewModel;
   final FavoritesViewModel favoritesViewModel;
@@ -21,7 +17,6 @@ class AppState {
   AppState({
     this.selectCompanyViewModel = const SelectCompanyViewModel(),
     this.selectPeriodViewModel = const SelectedPeriodViewModel(),
-    this.addAppointViewModel = const AddAppointViewModel(),
     this.appointmentsViewModel = const AppointmentsViewModel(),
     this.userViewModel = const UserViewModel(),
     this.favoritesViewModel = const FavoritesViewModel(),

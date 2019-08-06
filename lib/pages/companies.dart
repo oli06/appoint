@@ -178,7 +178,7 @@ class _ViewModel {
       selectCompanyViewModel: store.state.selectCompanyViewModel,
       categories: store.state.selectCompanyViewModel.categories,
       companySearchAction: (filters) =>
-          store.dispatch(CompanySearchAction(filters)),
+          store.dispatch(CompanyFilterSearchAction(filters)),
     );
   }
 }

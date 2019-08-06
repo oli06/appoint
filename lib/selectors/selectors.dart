@@ -150,31 +150,3 @@ List<Day<Appoint>> groupAppointmentsByDate(List<Appoint> appointments) {
 
   return days;
 }
-
-/* List<ExpandablePeriodTile> filterPeriodTiles(
-    List<ExpandablePeriodTile> periodTile, TimeOfDay tod) {
-  if (tod == null) {
-    return periodTile;
-  }
-
-  return periodTile
-      .where((periodTile) => periodTile.period.start.hour == tod.hour)
-      .toList();
-} */
-
-/* List<Day<Period>> groupPeriodsByDate(List<Period> periods) {
-  List<Day<Period>> days = [];
-
-  periods
-      .map((p) => days
-          .firstWhere((day) => Parse.sameDay(day.date, p.start), orElse: () {
-            final newDay = Day<Period>(date: p.start, events: []);
-            days.add(newDay);
-            return newDay;
-          })
-          .events
-          .add(p))
-      .toList();
-
-  return days;
-} */

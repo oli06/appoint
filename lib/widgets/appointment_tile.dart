@@ -59,81 +59,82 @@ class AppointmentTile extends StatelessWidget {
         )
       ],
       child:  */
-      GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            height: 60,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(right: 4.0, top: 4),
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: IconCircleGradient.periodIndicator(
-                        appoint.period.duration.inMinutes / 60),
+        GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          height: 60,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(right: 4.0, top: 4),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: IconCircleGradient.periodIndicator(
+                      appoint.period.duration.inMinutes / 60),
+                ),
+              ),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        appoint.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: Color(0xff333f52)),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          Expanded(
+                            child: Text(
+                              "${Parse.hoursWithMinutes.format(appoint.period.start.toUtc())} - ${Parse.hoursWithMinutes.format(appoint.period.getPeriodEnd().toUtc())}",
+                              style: TextStyle(fontSize: 15),
+                            ),
+                          ),
+                          StoreConnector<AppState, Category>(
+                            converter: (store) => store
+                                .state.selectCompanyViewModel.categories
+                                .firstWhere(
+                                    (c) => c.id == appoint.company.category,
+                                    orElse: () => Category(id: -2, value: "")),
+                            builder: (context, category) =>
+                                Text(category.value),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(appoint.company.name),
+                          Text(appoint.company.address.toCityString()),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          appoint.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              color: Color(0xff333f52)),
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
-                          children: <Widget>[
-                            Expanded(
-                              child: Text(
-                                "${Parse.hoursWithMinutes.format(appoint.period.start.toUtc())} - ${Parse.hoursWithMinutes.format(appoint.period.getPeriodEnd().toUtc())}",
-                                style: TextStyle(fontSize: 15),
-                              ),
-                            ),
-                            StoreConnector<AppState, Category>(
-                              converter: (store) => store
-                                  .state.selectCompanyViewModel.categories
-                                  .firstWhere(
-                                      (c) => c.id == appoint.company.category,
-                                      orElse: () =>
-                                          Category(id: -2, value: "")),
-                              builder: (context, category) =>
-                                  Text(category.value),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text(appoint.company.name),
-                            Text(appoint.company.address.toCityString()),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Icon(
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 4.0),
+                child: Icon(
                   Icons.arrow_forward_ios,
-                  color: Theme.of(context).primaryColor,
+                  color: Colors.grey,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-      
+      ),
     );
   }
 }

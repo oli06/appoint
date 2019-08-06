@@ -35,7 +35,7 @@ class SelectCompanyState extends State<SelectCompany>
           () {
             //fix listener getting called twice: https://github.com/flutter/flutter/issues/13848
             if (_controller.indexIsChanging) {
-              store.dispatch(CompanySearchAction(
+              store.dispatch(CompanyFilterSearchAction(
                   CompanySearchFilter.fromExisting(
                       store.state.selectCompanyViewModel.filters,
                       companyVisibilityFilter:
@@ -47,23 +47,28 @@ class SelectCompanyState extends State<SelectCompany>
       converter: (store) => _ViewModel.fromState(store),
       builder: (context, vm) => Scaffold(
         appBar: _buildNavBar(vm),
-        body: SafeArea(
-          bottom: false,
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Column(
-              children: <Widget>[
-                _buildSearchField(vm),
-                _buildCategorySelect(vm),
-                _buildRangeAndMapButton(vm),
-                Expanded(
-                  child: CompanyList(
-                    filterWithVisibility: true,
-                    itemBuilder: (context, index, Company cpy) =>
-                        _buildCompanyTile(cpy),
+        body: GestureDetector(
+          //gesture detector to hide keyboard if user clicks somewhere on the screen
+          onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+          behavior: HitTestBehavior.opaque,
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                children: <Widget>[
+                  _buildSearchField(vm),
+                  _buildCategorySelect(vm),
+                  _buildRangeAndMapButton(vm),
+                  Expanded(
+                    child: CompanyList(
+                      filterWithVisibility: true,
+                      itemBuilder: (context, index, Company cpy) =>
+                          _buildCompanyTile(cpy, vm),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -78,7 +83,7 @@ class SelectCompanyState extends State<SelectCompany>
         child: CupertinoTextField(
           textInputAction: TextInputAction.search,
           clearButtonMode: OverlayVisibilityMode.editing,
-          onChanged: (value) => vm.companySearchAction(
+          onChanged: (value) => vm.companyNameSearchAction(
               CompanySearchFilter.fromExisting(
                   vm.selectCompanyViewModel.filters,
                   nameFilter: value)),
@@ -106,9 +111,10 @@ class SelectCompanyState extends State<SelectCompany>
     super.dispose();
   }
 
-  CompanyTile _buildCompanyTile(Company cpy) {
+  CompanyTile _buildCompanyTile(Company cpy, _ViewModel vm) {
     Function onTap = () {
       Navigator.pop(context, cpy);
+      vm.resetNameFilter();
     };
     return CompanyTile(
       isStatic: true,
@@ -128,7 +134,7 @@ class SelectCompanyState extends State<SelectCompany>
               value: vm.selectCompanyViewModel.filters.rangeFilter,
               min: 1.0,
               max: 50.0,
-              onChanged: (double newValue) => vm.companySearchAction(
+              onChanged: (double newValue) => vm.companyFilterSearchAction(
                   CompanySearchFilter.fromExisting(
                       vm.selectCompanyViewModel.filters,
                       rangeFilter: newValue)),
@@ -173,9 +179,13 @@ class SelectCompanyState extends State<SelectCompany>
           ),
           Text(
             vm.selectCompanyViewModel.categories
-                .firstWhere((c) =>
-                    c.id == vm.selectCompanyViewModel.filters.categoryFilter)
-                .value,
+                    .firstWhere(
+                        (c) =>
+                            c.id ==
+                            vm.selectCompanyViewModel.filters.categoryFilter,
+                        orElse: null)
+                    ?.value ??
+                "",
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w300),
           ),
           Icon(
@@ -189,7 +199,7 @@ class SelectCompanyState extends State<SelectCompany>
         CategorySelectPage.routeNamed,
         arguments: vm.selectCompanyViewModel.filters.categoryFilter,
       ).then((categoryId) {
-        vm.companySearchAction(CompanySearchFilter.fromExisting(
+        vm.companyFilterSearchAction(CompanySearchFilter.fromExisting(
             vm.selectCompanyViewModel.filters,
             categoryFilter: categoryId));
       }),
@@ -242,18 +252,26 @@ class SelectCompanyState extends State<SelectCompany>
 
 class _ViewModel {
   final SelectCompanyViewModel selectCompanyViewModel;
-  final void Function(CompanySearchFilter filters) companySearchAction;
+  final void Function(CompanySearchFilter filters) companyFilterSearchAction;
+  final void Function(CompanySearchFilter filters) companyNameSearchAction;
+  final void Function() resetNameFilter;
 
   _ViewModel({
     this.selectCompanyViewModel,
-    this.companySearchAction,
+    this.companyNameSearchAction,
+    this.companyFilterSearchAction,
+    this.resetNameFilter,
   });
 
   static _ViewModel fromState(Store<AppState> store) {
     return _ViewModel(
       selectCompanyViewModel: store.state.selectCompanyViewModel,
-      companySearchAction: (CompanySearchFilter filters) =>
-          store.dispatch(CompanySearchAction(filters)),
+      companyFilterSearchAction: (CompanySearchFilter filters) =>
+          store.dispatch(CompanyFilterSearchAction(filters)),
+      resetNameFilter: () =>
+          store.dispatch(ResetCompanyNameSearchFilterAction()),
+      companyNameSearchAction: (CompanySearchFilter filters) =>
+          store.dispatch(CompanyNameSearchAction(filters)),
     );
   }
 }

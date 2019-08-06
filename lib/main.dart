@@ -33,7 +33,10 @@ void main() async {
     appReducer,
     initialState: AppState.initState(),
     middleware: [...createStoreCompaniesMiddleware(api, sharedPreferences)] +
-        [EpicMiddleware<AppState>(SearchEpic(api))],
+        [
+          EpicMiddleware<AppState>(CompanyNameSearchEpic(api)),
+          EpicMiddleware<AppState>(CompanyFilterSearchEpic(api))
+        ],
   );
 
   if (sharedPreferences.containsKey(kTokenKey)) {

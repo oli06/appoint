@@ -24,13 +24,21 @@ class LoadedCategoriesAction {
   LoadedCategoriesAction(this.categories);
 }
 
-class CompanySearchAction {
+class CompanyFilterSearchAction {
   final CompanySearchFilter filters;
 
-  CompanySearchAction(this.filters);
+  CompanyFilterSearchAction(this.filters);
+}
+
+class CompanyNameSearchAction {
+  final CompanySearchFilter filters;
+
+  CompanyNameSearchAction(this.filters);
 }
 
 class CompanySearchLoadingAction {}
+
+class ResetCompanyNameSearchFilterAction {}
 
 class CompanySearchResultAction {
   final List<Company> result;

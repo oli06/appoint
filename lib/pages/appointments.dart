@@ -6,7 +6,6 @@ import 'package:appoint/models/category.dart';
 import 'package:appoint/models/day.dart';
 import 'package:appoint/pages/add_appoint.dart';
 import 'package:appoint/pages/appointment_details.dart';
-import 'package:appoint/pages/profile.dart';
 import 'package:appoint/selectors/selectors.dart';
 import 'package:appoint/utils/ios_url_scheme.dart';
 import 'package:appoint/utils/parse.dart';
@@ -36,7 +35,11 @@ class _AppointmentPageState extends State<AppointmentPage> {
     return StoreConnector<AppState, _ViewModel>(
       converter: (store) => _ViewModel.fromState(store),
       onInit: (store) {
-        store.dispatch(LoadAppointmentsAction());
+        print("called oninit");
+        if (store.state.appointmentsViewModel.appointments == null) {
+          print("load appointments");
+          store.dispatch(LoadAppointmentsAction());
+        }
         if (store.state.userViewModel.currentLocation == null) {
           store.dispatch(LoadUserLocationAction());
         }
@@ -130,14 +133,6 @@ class _AppointmentPageState extends State<AppointmentPage> {
         child: Container(
           padding: EdgeInsets.all(4.0),
           height: 68,
-          decoration: BoxDecoration(
-            shape: BoxShape.rectangle,
-            borderRadius: BorderRadius.circular(5),
-            gradient: LinearGradient(colors: [
-              Color(0xff6dd7c7).withOpacity(0.8),
-              Color(0xff188e9b).withOpacity(0.8)
-            ], begin: Alignment.topLeft, end: Alignment.bottomRight),
-          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[

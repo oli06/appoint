@@ -6,6 +6,7 @@ import 'package:appoint/pages/settings.dart';
 import 'package:appoint/utils/constants.dart';
 import 'package:appoint/view_models/user_vm.dart';
 import 'package:appoint/widgets/dialog.dart' as appoint;
+import 'package:appoint/widgets/expansion_widget.dart';
 import 'package:code_input/code_input.dart' as pubdev;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +34,7 @@ class ProfilePage extends StatelessWidget {
                 ),
                 _buildVerifyWidget(context, vm),
                 SizedBox(
-                  height: 20,
+                  height: 10,
                 ),
                 _buildListView(context),
                 Container(
@@ -57,7 +58,7 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildUserInformationCard(_ViewModel vm) {
     return Card(
-      elevation: 2,
+      elevation: 1,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -87,45 +88,41 @@ class ProfilePage extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4.0, right: 4.0),
       child: Column(
         children: <Widget>[
-          GestureDetector(
-            onTap: vm.userViewModel.user.isVerified
-                ? null
-                : () {
-                    _showVerifyScreen(context, vm);
-                  },
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5.0),
-                gradient: LinearGradient(colors: [
-                  Color(0xff6dd7c7).withOpacity(0.7),
-                  Color(0xff188e9b).withOpacity(0.7)
-                ], begin: Alignment.topLeft, end: Alignment.bottomRight),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Text(
-                      vm.userViewModel.user.isVerified
-                          ? "Erfolgreich verifiziert"
-                          : "Jetzt verifizieren",
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    Icon(
-                      CupertinoIcons.getIconData(0xf3d0),
-                      color: Colors.black,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
           Padding(
-            padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
-            child: Text(
-              "Durch die Verifizierung erhältst du die Möglichkeit, Termine mit noch mehr Unternehmen zu vereinbaren. Gleichzeitig bietet die Verifizeriung eine höhere Vertrauenswürdigkeit gegenüber den Unternehmen.",
-              style: const TextStyle(color: Colors.grey, fontSize: 14),
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Flexible(
+                  child: ExpansionWidget(
+                    title: "Konto verifizieren",
+                    children: <Widget>[
+                      Text(
+                        "Durch die Verifizierung erhältst du die Möglichkeit, Termine mit noch mehr Unternehmen zu vereinbaren. Gleichzeitig bietet die Verifizeriung eine höhere Vertrauenswürdigkeit gegenüber den Unternehmen.",
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: CupertinoButton(
+                            //TODO: NYI verify
+                            padding: EdgeInsets.zero,
+                            child: Text(
+                              "Jetzt verifizieren",
+                              style: TextStyle(
+                                  color:
+                                      null /* Theme.of(context).accentColor */),
+                            ),
+                            onPressed:
+                                null /*  () {
+                            _showVerifyScreen(context, vm);
+                          }, */
+                            ),
+                      ),
+                    ],
+                    trailing: Icons.keyboard_arrow_up,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -138,7 +135,7 @@ class ProfilePage extends StatelessWidget {
       context: context,
       builder: (context) => appoint.Dialog(
         title: "Abmelden",
-        information: "Möchten Du dich wirklich abmelden?",
+        information: "Möchtest Du dich wirklich abmelden?",
         informationTextSize: 17,
         userActionWidget: Padding(
             padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -146,7 +143,10 @@ class ProfilePage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                 CupertinoButton(
-                  child: Text("Abbrechen"),
+                  child: Text(
+                    "Abbrechen",
+                    style: TextStyle(color: Theme.of(context).accentColor),
+                  ),
                   onPressed: () => Navigator.pop(context),
                 ),
                 CupertinoButton(

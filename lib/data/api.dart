@@ -93,6 +93,20 @@ class Api {
     return {};
   }
 
+  Future<Period> getNextPeriod(int companyId) async {
+    final response = await http.get(
+      "$url/companies/$companyId/periods?start=${Parse.dateRequestFormat.format(DateTime.now())}&count=1",
+      headers: {HttpHeaders.authorizationHeader: "bearer $token"},
+    );
+
+    if (response.statusCode == 200) {
+      final dynamic dyn = json.decode(response.body);
+      return Period.fromJson(dyn);
+    }
+
+    return null;
+  }
+
   Future<http.Response> register(UserAccount user) async {
     final jsonString = user.toJson();
     final response = await http.post('$url/users/register', body: jsonString);
@@ -185,7 +199,29 @@ class Api {
     final encoded = json.encode(body);
     final response = await http.post(
       '$url/users/$userId/appointments',
-      headers: {HttpHeaders.authorizationHeader: "bearer $token", HttpHeaders.contentTypeHeader: "application/json"},
+      headers: {
+        HttpHeaders.authorizationHeader: "bearer $token",
+        HttpHeaders.contentTypeHeader: "application/json"
+      },
+      body: encoded,
+    );
+
+    if (response.statusCode == 200) {
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<bool> updateAppointment(Appoint appoint) async {
+    final body = appoint.toJson();
+    final encoded = json.encode(body);
+    final response = await http.put(
+      '$url/users/$userId/appointments',
+      headers: {
+        HttpHeaders.authorizationHeader: "bearer $token",
+        HttpHeaders.contentTypeHeader: "application/json"
+      },
       body: encoded,
     );
 

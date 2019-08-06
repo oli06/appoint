@@ -7,7 +7,7 @@ final appointmentsReducer = combineReducers<AppointmentsViewModel>([
       _setLoadedAppointments),
   TypedReducer<AppointmentsViewModel, UpdateAppointmentsIsLoadingAction>(
       _updateIsLoading),
-  TypedReducer<AppointmentsViewModel, AddAppointmentAction>(_addAppointment),
+  TypedReducer<AppointmentsViewModel, CreateOrUpdateAppointAction>(_createOrUpdateAppoint),
 ]);
 
 AppointmentsViewModel _setLoadedAppointments(
@@ -26,8 +26,8 @@ AppointmentsViewModel _updateIsLoading(
   );
 }
 
-AppointmentsViewModel _addAppointment(
-    AppointmentsViewModel vm, AddAppointmentAction action) {
+AppointmentsViewModel _createOrUpdateAppoint(
+    AppointmentsViewModel vm, CreateOrUpdateAppointAction action) {
   if (action.appoint.id != null) {
     final index = vm.appointments
         .indexOf(vm.appointments.firstWhere((a) => a.id == action.appoint.id));

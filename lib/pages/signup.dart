@@ -141,10 +141,10 @@ class _SignUpState extends State<SignUp> {
             child: FormButton(
               text: "Registrierung abschließen",
               onPressed: () {
+                _formKey.currentState.save();
                 if (_formKey.currentState.validate() &&
                     _hasAgreed &&
                     _birthday != null) {
-                  _formKey.currentState.save();
                   Api()
                       .register(UserAccount(
                     password: _password,
