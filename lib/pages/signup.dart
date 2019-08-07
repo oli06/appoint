@@ -1,14 +1,10 @@
-import 'dart:convert';
-
 import 'package:appoint/data/api.dart';
 import 'package:appoint/models/useraccount.dart';
-import 'package:appoint/pages/login.dart';
 import 'package:appoint/pages/signup_success.dart';
 import 'package:appoint/utils/logger.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:appoint/widgets/form/appoint_input.dart';
 import 'package:appoint/widgets/form/form_button.dart';
-import 'package:appoint/widgets/form/text_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -28,13 +24,14 @@ class _SignUpState extends State<SignUp> {
   final _formKey = GlobalKey<FormState>();
 
   String info = "";
+  bool isLoading = false;
 
   String _firstName;
   String _lastName;
   String _phone;
   String _email;
   String _password;
-  bool _hasAgreed;
+  bool _hasAgreed = false;
   DateTime _birthday;
 
   final FocusNode _passwordFocus = FocusNode();
@@ -49,14 +46,12 @@ class _SignUpState extends State<SignUp> {
   void initState() {
     super.initState();
 
-    _hasAgreed = false;
-
     _agbRecognizer.onTap = () {
-      print("agbs clicked");
+      logger.d("agbs clicked");
     };
 
     _usageRecognizer.onTap = () {
-      print("on usage tab");
+      logger.d("on usage tab");
     };
   }
 
@@ -75,63 +70,76 @@ class _SignUpState extends State<SignUp> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-            colors: [Color(0xff6dd7c7), Color(0xff188e9b)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight),
-      ),
       child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Column(
+        body: Stack(
+          alignment: AlignmentDirectional.center,
           children: <Widget>[
-            _buildWelcomeHeader(),
-            if (info.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Text(
-                  info,
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            Flexible(
-              flex: 27,
-              child: Center(
-                child: Container(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Form(
-                      key: _formKey,
-                      child: CupertinoScrollbar(
-                        child: ListView(
-                          children: <Widget>[
-                            _buildNameInput(),
-                            _buildMailInput(),
-                            _buildBirthdayInput(),
-                            _buildPhoneInput(),
-                            _buildPasswordInput(),
-                            _buildRepeatPasswordInput(),
-                            _buildAgreements(context),
-                            _buildRegisterButton(context),
-                            _buildBackToLoginButton(context),
-                          ],
+            SafeArea(
+              bottom: false,
+              child: Column(
+                children: <Widget>[
+                  CupertinoButton(
+                    child: Row(
+                      children: <Widget>[
+                        Icon(
+                          CupertinoIcons.back,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        Text(
+                          "Zurück zum Login",
+                          style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                              fontSize: 19),
+                        ),
+                      ],
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  SizedBox(height: 30),
+                  _buildWelcomeHeader(),
+                  SizedBox(height: 30),
+                  if (info?.isNotEmpty ?? false)
+                    Padding(
+                      padding:
+                          const EdgeInsets.only(left: 16.0, right: 16, top: 8),
+                      child: Text(
+                        info,
+                        style: TextStyle(color: Theme.of(context).errorColor),
+                      ),
+                    ),
+                  Expanded(
+                    child: Center(
+                      child: Container(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Form(
+                            key: _formKey,
+                            child: CupertinoScrollbar(
+                              child: ListView(
+                                children: <Widget>[
+                                  _buildNameInput(),
+                                  _buildMailInput(),
+                                  _buildBirthdayInput(),
+                                  _buildPhoneInput(),
+                                  _buildPasswordInput(),
+                                  _buildRepeatPasswordInput(),
+                                  _buildAgreements(context),
+                                  _buildRegisterButton(context),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
+            if (isLoading) CupertinoActivityIndicator(),
           ],
         ),
       ),
-    );
-  }
-
-  TextButton _buildBackToLoginButton(BuildContext context) {
-    return TextButton(
-      onTap: () => Navigator.pushReplacementNamed(context, Login.namedRoute),
-      text: "oder zum Login",
     );
   }
 
@@ -145,9 +153,13 @@ class _SignUpState extends State<SignUp> {
               text: "Registrierung abschließen",
               onPressed: () {
                 _formKey.currentState.save();
+
                 if (_formKey.currentState.validate() &&
                     _hasAgreed &&
                     _birthday != null) {
+                      setState(() {
+                        isLoading = true;
+                      });
                   final userAccount = UserAccount(
                     password: _password,
                     birthday: _birthday,
@@ -168,11 +180,20 @@ class _SignUpState extends State<SignUp> {
                         logger.e(
                             "user registration failed: ${result.error.error} ${result.error.errorDescription} (${result.statusCode})");
                         setState(() {
-                          info = result.error.errorDescription;
+                          info = result.error.error;
                         });
                       }
+
+                      setState(() {
+                        isLoading = false;
+                      });
                     },
                   );
+                } else if (!_hasAgreed) {
+                  setState(() {
+                    info =
+                        "Du musst zuerst unseren Geschäftsbedingungen zustimmen";
+                  });
                 }
               },
             ),
@@ -196,13 +217,16 @@ class _SignUpState extends State<SignUp> {
         Expanded(
           child: RichText(
             text: TextSpan(
-                style: TextStyle(fontSize: 15, color: Colors.black),
+                style: TextStyle(fontSize: 16, color: Colors.black),
                 children: <TextSpan>[
-                  TextSpan(text: "Ich stimem den "),
+                  TextSpan(text: "Hiermit stimme ich den "),
                   TextSpan(
                       text: "allgemeinen Geschäftsbedingungen",
                       recognizer: _agbRecognizer,
-                      style: TextStyle(color: Theme.of(context).primaryColor)),
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold,
+                      )),
                   TextSpan(text: " und "),
                   TextSpan(
                       text: "Nutzungsbedingungen",
@@ -210,7 +234,7 @@ class _SignUpState extends State<SignUp> {
                       style: TextStyle(
                           color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.bold)),
-                  TextSpan(text: " "),
+                  TextSpan(text: " zu"),
                 ]),
           ),
         ),
@@ -232,7 +256,7 @@ class _SignUpState extends State<SignUp> {
       //TODO: fix: currently workaround, um kein icon zu zeigen,
       //aber trotzdem
       //auf der selben reihe mit den anderen Textfeldern zu sein
-      leadingWidget: Container(width: 34),
+      leadingWidget: Container(width: 24),
       errorText: "Passwort fehlt",
       onFieldSubmitted: (value) {
         FocusScope.of(context).requestFocus(FocusNode());
@@ -253,13 +277,8 @@ class _SignUpState extends State<SignUp> {
         }
         return null;
       },
-      leadingWidget: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: Icon(
-            CupertinoIcons.getIconData(0xf4c8),
-          ),
-        ),
+      leadingWidget: Icon(
+        CupertinoIcons.getIconData(0xf4c8),
       ),
       errorText: "Passwort fehlt",
       onSaved: (value) => _password = value,
@@ -277,13 +296,8 @@ class _SignUpState extends State<SignUp> {
       focusNode: null,
       errorText: "",
       hintText: "",
-      leadingWidget: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: Icon(
-            CupertinoIcons.getIconData(0xf2d1),
-          ),
-        ),
+      leadingWidget: Icon(
+        CupertinoIcons.getIconData(0xf2d1),
       ),
       onFieldSubmitted: (value) {},
       showSuffixIcon: true,
@@ -358,12 +372,7 @@ class _SignUpState extends State<SignUp> {
       hintText: "Telefonnummer",
       focusNode: _phoneFocus,
       keyboardType: TextInputType.phone,
-      leadingWidget: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: Icon(CupertinoIcons.phone),
-        ),
-      ),
+      leadingWidget: Icon(CupertinoIcons.phone),
       errorText: "Telefonnummer fehlt",
       onSaved: (value) => _phone = value,
       onFieldSubmitted: (value) {
@@ -380,12 +389,7 @@ class _SignUpState extends State<SignUp> {
       focusNode: _mailAdressFocus,
       keyboardType: TextInputType.emailAddress,
       onSaved: (value) => _email = value,
-      leadingWidget: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: Icon(CupertinoIcons.mail),
-        ),
-      ),
+      leadingWidget: Icon(CupertinoIcons.mail),
       errorText: "e-Mail Adresse fehlt",
       onFieldSubmitted: (value) {
         _email = value;
@@ -410,12 +414,7 @@ class _SignUpState extends State<SignUp> {
               //_firstName = value;
             },
             showSuffixIcon: false,
-            leadingWidget: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(2.0),
-                child: Icon(CupertinoIcons.person),
-              ),
-            ),
+            leadingWidget: Icon(CupertinoIcons.person),
           ),
         ),
         Flexible(
@@ -436,35 +435,42 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-  Flexible _buildWelcomeHeader() {
-    return Flexible(
-      flex: 8,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Row(
-            children: <Widget>[],
+  Widget _buildWelcomeHeader() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          "Willkommen bei",
+          textAlign: TextAlign.left,
+          style: TextStyle(
+              color: Color(0xff333f52),
+              fontWeight: FontWeight.w600,
+              fontSize: 27),
+        ),
+        Text(
+          "Appoint",
+          style: TextStyle(
+            color: Theme.of(context).accentColor,
+            fontSize: 27,
+            fontWeight: FontWeight.w600,
           ),
-          Text(
-            "Willkommen bei Appoint",
-            style: TextStyle(
-                color: Color(0xff333f52),
-                fontWeight: FontWeight.bold,
-                fontSize: 22),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15, 5, 15, 5),
+        ),
+        Container(
+          constraints: BoxConstraints(maxWidth: 320, minWidth: 320),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
             child: Text(
-              "Registriere dich, um direkt loszulegen",
-              textAlign: TextAlign.center,
+              "Registrieren, um direkt loszulegen",
               style: TextStyle(
-                  color: Color(0xff333f52),
-                  fontWeight: FontWeight.w300,
-                  fontSize: 16),
+                color: Color(0xff333f52),
+                fontWeight: FontWeight.w400,
+                fontSize: 18,
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

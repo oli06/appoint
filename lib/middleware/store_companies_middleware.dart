@@ -73,6 +73,7 @@ Middleware<AppState> _loadedUserConfigurationAction(
     logger.d("loaded shared preferences");
 
     sharedPreferences.setString(kUserIdKey, action.user.id);
+    sharedPreferences.setString(kTokenKey, action.token);
 
     store.dispatch(LoadedUserAction(action.user, action.token));
     store.dispatch(LoadCategoriesAction());

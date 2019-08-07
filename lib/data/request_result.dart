@@ -28,6 +28,6 @@ class AppointWebserviceError {
   });
 
   AppointWebserviceError.fromJson(Map<String, dynamic> json)
-      : error = json['error'],
+      : error = json['error'] ?? json['message'],
         errorDescription = json['error_description'];
 }

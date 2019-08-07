@@ -55,31 +55,35 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-            colors: [Color(0xff6dd7c7), Color(0xff188e9b)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight),
-      ),
       child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Column(
-          children: <Widget>[
-            _buildWelcomeHeader(),
-            StoreConnector<AppState, _ViewModel>(
-              distinct: true,
-              converter: (store) => _ViewModel.fromState(store),
-              builder: (context, vm) => _buildLoginForm(context, vm),
-            ),
-          ],
+        body: StoreConnector<AppState, _ViewModel>(
+          distinct: true,
+          converter: (store) => _ViewModel.fromState(store),
+          builder: (context, vm) => Stack(
+            alignment: AlignmentDirectional.center,
+            children: [
+              SafeArea(
+                child: Column(
+                  children: <Widget>[
+                    SizedBox(height: 30),
+                    _buildWelcomeHeader(),
+                    SizedBox(height: 30),
+                    _buildLoginForm(context, vm),
+                  ],
+                ),
+              ),
+              if (vm.userViewModel.loginProcessIsActive)
+                //TODO: loading dialog on top
+                CupertinoActivityIndicator(),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Flexible _buildLoginForm(BuildContext context, _ViewModel vm) {
-    return Flexible(
-      flex: 27,
+    return Expanded(
       child: Center(
         child: Column(
           children: <Widget>[
@@ -87,38 +91,26 @@ class _LoginState extends State<Login> {
               width: 350,
               child: Column(
                 children: <Widget>[
-                  Stack(
-                    alignment: AlignmentDirectional.center,
-                    children: <Widget>[
-                      Card(
-                        color: vm.userViewModel.loginProcessIsActive
-                            ? Colors.grey[300]
-                            : null,
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5.0)),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Form(
-                            key: _formKey,
-                            child: Column(
-                              children: <Widget>[
-                                _buildUsernameInput(context),
-                                _buildPasswordInput(context, vm),
-                                if (info.isNotEmpty)
-                                  Text(
-                                    info,
-                                    style: TextStyle(color: Colors.red),
-                                  ),
-                                _buildLoginButton(context, vm),
-                              ],
-                            ),
-                          ),
+                  Container(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: <Widget>[
+                            _buildUsernameInput(context),
+                            _buildPasswordInput(context, vm),
+                            if (info.isNotEmpty)
+                              Text(
+                                info,
+                                style: TextStyle(
+                                    color: Theme.of(context).errorColor),
+                              ),
+                            _buildLoginButton(context, vm),
+                          ],
                         ),
                       ),
-                      if (vm.userViewModel.loginProcessIsActive)
-                        CupertinoActivityIndicator(),
-                    ],
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -181,10 +173,8 @@ class _LoginState extends State<Login> {
             if (response.success) {
               vm.loadedUserConfigurationAction(response.data, token);
               logger.i("navigate to /app");
-              Navigator.pushReplacementNamed(context, "app");
 
-              final sharedPreferences = await SharedPreferences.getInstance();
-              sharedPreferences.setString(kUserNameKey, response.data.email);
+              Navigator.pushReplacementNamed(context, "app");
             } else {
               logger.e(
                   "getUser failed: ${response.error} (${response.statusCode})");
@@ -198,7 +188,8 @@ class _LoginState extends State<Login> {
           logger.i("login failed for $username");
           setState(() {
             //info = "E-Mail und Passwort stimmen nicht überein";
-            info = "${response.error.errorDescription} (${response.statusCode})";
+            info =
+                "${response.error.errorDescription} (${response.statusCode})";
           });
         }
         vm.updateLoginProcessIsActive(false);
@@ -241,7 +232,7 @@ class _LoginState extends State<Login> {
 
   Widget _buildCreateAccount(BuildContext context) {
     return new TextButton(
-      onTap: () => Navigator.pushReplacementNamed(context, SignUp.routeName),
+      onTap: () => Navigator.pushNamed(context, SignUp.routeName),
       text: "Account erstellen",
     );
   }
@@ -256,32 +247,41 @@ class _LoginState extends State<Login> {
     );
   }
 
-  Flexible _buildWelcomeHeader() {
-    return Flexible(
-      flex: 8,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text(
-            "Willkommen bei Appoint",
-            style: TextStyle(
-                color: Color(0xff333f52),
-                fontWeight: FontWeight.bold,
-                fontSize: 22),
+  Widget _buildWelcomeHeader() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          "Willkommen bei",
+          style: TextStyle(
+              color: Color(0xff333f52),
+              fontWeight: FontWeight.w600,
+              fontSize: 27),
+        ),
+        Text(
+          "Appoint",
+          style: TextStyle(
+            color: Theme.of(context).accentColor,
+            fontSize: 27,
+            fontWeight: FontWeight.w600,
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15, 5, 15, 5),
+        ),
+        Container(
+          constraints: BoxConstraints(maxWidth: 320),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(0, 5, 0, 5),
             child: Text(
-              "–– Jederzeit und überall ––",
-              textAlign: TextAlign.center,
+              "Jederzeit und überall Termine mit Unternehmen vereinbaren und verwalten",
               style: TextStyle(
-                  color: Color(0xff333f52),
-                  fontWeight: FontWeight.w300,
-                  fontSize: 16),
+                color: Color(0xff333f52),
+                fontWeight: FontWeight.w400,
+                fontSize: 18,
+              ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
