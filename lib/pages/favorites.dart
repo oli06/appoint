@@ -19,6 +19,7 @@ class FavoritesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
+      distinct: true,
       converter: (store) => _ViewModel.fromStore(store),
       onInit: (store) {
         store.dispatch(LoadFavoritesAction(store.state.userViewModel.user.id));

@@ -23,12 +23,31 @@ class AppState {
     this.settingsViewModel = const SettingsViewModel(),
   });
 
+  @override
+  int get hashCode =>
+      selectCompanyViewModel.hashCode ^
+      selectPeriodViewModel.hashCode ^
+      appointmentsViewModel.hashCode ^
+      userViewModel.hashCode ^
+      favoritesViewModel.hashCode ^
+      settingsViewModel.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AppState &&
+          runtimeType == other.runtimeType &&
+          selectCompanyViewModel == other.selectCompanyViewModel &&
+          selectPeriodViewModel == other.selectPeriodViewModel &&
+          appointmentsViewModel == other.appointmentsViewModel &&
+          userViewModel == other.userViewModel &&
+          favoritesViewModel == other.favoritesViewModel &&
+          settingsViewModel == other.settingsViewModel;
+
   factory AppState.initState() => AppState(
         selectCompanyViewModel: SelectCompanyViewModel(
           categories: [],
-          //isLoading: true,
           companySearchState: CompanySearchState.initial(),
-          //filters: CompanySearchFilter.initial(),
         ),
         selectPeriodViewModel: SelectedPeriodViewModel(
           //if you set isLoading to true, no periods will be fetched anymore
@@ -48,5 +67,3 @@ class AppState {
         settingsViewModel: SettingsViewModel(settings: {}),
       );
 }
-
-enum AppTab { appointments, companies }

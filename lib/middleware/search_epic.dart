@@ -113,6 +113,19 @@ class CompanySearchState {
     this.searchResults,
   });
 
+  @override
+  int get hashCode =>
+      hasError.hashCode ^ isLoading.hashCode ^ searchResults.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CompanySearchState &&
+          runtimeType == other.runtimeType &&
+          hasError == other.hasError &&
+          isLoading == other.isLoading &&
+          searchResults == other.searchResults;
+
   factory CompanySearchState.initial() => CompanySearchState(searchResults: []);
 
   factory CompanySearchState.loading() =>
@@ -120,37 +133,3 @@ class CompanySearchState {
 
   factory CompanySearchState.error() => CompanySearchState(hasError: true);
 }
-
-/* class CompanySearchFilter {
-  final CompanyVisibilityFilter companyVisibilityFilter;
-  final int categoryFilter;
-  final double rangeFilter;
-  final String nameFilter;
-
-  CompanySearchFilter({
-    this.companyVisibilityFilter = CompanyVisibilityFilter.all,
-    this.categoryFilter = -1,
-    this.rangeFilter = 9.0,
-    this.nameFilter = "",
-  });
-
-  CompanySearchFilter.fromExisting(
-    CompanySearchFilter existingFilters, {
-    companyVisibilityFilter,
-    categoryFilter,
-    rangeFilter,
-    nameFilter,
-  })  : nameFilter = nameFilter ?? existingFilters.nameFilter,
-        categoryFilter = categoryFilter ?? existingFilters.categoryFilter,
-        companyVisibilityFilter =
-            companyVisibilityFilter ?? existingFilters.companyVisibilityFilter,
-        rangeFilter = rangeFilter ?? existingFilters.rangeFilter;
-
-  factory CompanySearchFilter.initial() => CompanySearchFilter(
-        //-1 is the index of category named 'all' (gets added in loadCategoriesAction)
-        categoryFilter: -1,
-        companyVisibilityFilter: CompanyVisibilityFilter.all,
-        rangeFilter: 9.0,
-        nameFilter: "",
-      );
-} */

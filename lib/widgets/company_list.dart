@@ -2,38 +2,31 @@ import 'package:appoint/actions/companies_action.dart';
 import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/company.dart';
-import 'package:appoint/view_models/select_company_vm.dart';
-import 'package:appoint/selectors/selectors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:location/location.dart';
 import 'package:redux/redux.dart';
 
-class CompanyList extends StatefulWidget {
+class CompanyList extends StatelessWidget {
   final Widget Function(BuildContext context, int index, Company cpy)
       itemBuilder;
   final bool filterWithRange;
   final bool filterWithVisibility;
 
-  CompanyList(
-      {@required this.itemBuilder,
-      this.filterWithRange = false,
-      this.filterWithVisibility = false});
+  CompanyList({
+    @required this.itemBuilder,
+    this.filterWithRange = false,
+    this.filterWithVisibility = false,
+  });
 
-  @override
-  _CompanyListState createState() => _CompanyListState();
-}
-
-class _CompanyListState extends State<CompanyList> {
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
+        distinct: true,
         onInit: (Store<AppState> store) => store.dispatch(
             CompanyFilterCategoryAction(
-                store.state.selectCompanyViewModel.categoryFilter)
-            /* CompanyFilterSearchAction(store.state.selectCompanyViewModel.filters) */),
+                store.state.selectCompanyViewModel.categoryFilter)),
         converter: _ViewModel.fromStore,
         builder: (context, vm) {
           return Stack(
@@ -41,32 +34,26 @@ class _CompanyListState extends State<CompanyList> {
             children: <Widget>[
               AnimatedOpacity(
                 duration: const Duration(milliseconds: 200),
-                opacity: vm.selectCompanyViewModel.companySearchState.isLoading
-                    ? 1.0
-                    : 0.0,
+                opacity: vm.companySearchState.isLoading ? 1.0 : 0.0,
                 child: _buildLoading(),
               ),
               AnimatedOpacity(
                 duration: const Duration(milliseconds: 200),
-                opacity:
-                    !vm.selectCompanyViewModel.companySearchState.isLoading &&
-                                vm.selectCompanyViewModel.companySearchState
-                                        ?.searchResults?.length ==
-                                    0 ??
-                            false
-                        ? 1.0
-                        : 0.0,
+                opacity: !vm.companySearchState.isLoading &&
+                            vm.companySearchState?.searchResults?.length == 0 ??
+                        false
+                    ? 1.0
+                    : 0.0,
                 child: _buildEmptyList(),
               ),
               AnimatedOpacity(
                 duration: const Duration(milliseconds: 200),
-                opacity: vm.selectCompanyViewModel.companySearchState
-                            .searchResults !=
-                        null
-                    ? 1.0
-                    : 0.0,
+                opacity:
+                    vm.companySearchState.searchResults != null ? 1.0 : 0.0,
                 child: _buildCompanyList(
-                    vm.selectCompanyViewModel.companySearchState.searchResults),
+                  vm.companySearchState.searchResults,
+                  context,
+                ),
               ),
             ],
           );
@@ -109,11 +96,7 @@ class _CompanyListState extends State<CompanyList> {
     );
   }
 
-  Widget _buildCompanyList(List<Company> companies) {
-/*     if (companies.length == 0) {
-      return _buildEmptyList();
-    } */
-
+  Widget _buildCompanyList(List<Company> companies, BuildContext context) {
     return NotificationListener(
       onNotification: (t) {
         if (t is UserScrollNotification) {
@@ -131,7 +114,7 @@ class _CompanyListState extends State<CompanyList> {
               child: Divider(height: 1),
             ),
             itemBuilder: (context, index) {
-              return widget.itemBuilder(context, index, companies[index]);
+              return itemBuilder(context, index, companies[index]);
             },
           ),
         ),
@@ -141,21 +124,25 @@ class _CompanyListState extends State<CompanyList> {
 }
 
 class _ViewModel {
-  final SelectCompanyViewModel selectCompanyViewModel;
-  final List<int> companyFavorites;
-  final LocationData userLocation;
+  final CompanySearchState companySearchState;
 
   _ViewModel({
-    @required this.selectCompanyViewModel,
-    this.companyFavorites,
-    this.userLocation,
+    this.companySearchState,
   });
 
   static _ViewModel fromStore(Store<AppState> store) {
     return _ViewModel(
-      selectCompanyViewModel: store.state.selectCompanyViewModel,
-      companyFavorites: store.state.userViewModel.user.favorites,
-      userLocation: store.state.userViewModel.currentLocation,
+      companySearchState: store.state.selectCompanyViewModel.companySearchState,
     );
   }
+
+  @override
+  int get hashCode => companySearchState.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _ViewModel &&
+          runtimeType == other.runtimeType &&
+          companySearchState == other.companySearchState;
 }

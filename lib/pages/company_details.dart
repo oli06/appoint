@@ -58,6 +58,7 @@ class CompanyDetails extends StatelessWidget {
                     child: Align(
                       alignment: Alignment.centerRight,
                       child: StoreConnector<AppState, Category>(
+                        distinct: true,
                         converter: (store) => store
                             .state.selectCompanyViewModel.categories
                             .firstWhere((c) => c.id == company.category),

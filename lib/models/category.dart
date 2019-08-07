@@ -12,6 +12,17 @@ class Category {
     this.value,
   });
 
+  @override
+  int get hashCode => value.hashCode ^ id.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Category &&
+          runtimeType == other.runtimeType &&
+          value == other.value &&
+          id == other.id;
+
   factory Category.fromJson(Map<String, dynamic> json) =>
       _$CategoryFromJson(json);
 

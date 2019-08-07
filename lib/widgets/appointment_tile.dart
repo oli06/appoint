@@ -102,6 +102,7 @@ class AppointmentTile extends StatelessWidget {
                             ),
                           ),
                           StoreConnector<AppState, Category>(
+                            distinct: true,
                             converter: (store) => store
                                 .state.selectCompanyViewModel.categories
                                 .firstWhere(

@@ -43,6 +43,7 @@ dependencies:
       url: 'git://github.com/oli06/flutter_plugins.git'
       path: 'device_calendar'
   shared_preferences:
+  logger:
   flutter_cupertino_date_picker:
     git:
       url: 'git://github.com/oli06/flutter-cupertino-date-picker.git'

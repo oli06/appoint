@@ -1,0 +1,4 @@
+enum CompanyVisibilityFilter {
+  all,
+  favorites,
+}

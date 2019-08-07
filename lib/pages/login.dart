@@ -67,6 +67,7 @@ class _LoginState extends State<Login> {
           children: <Widget>[
             _buildWelcomeHeader(),
             StoreConnector<AppState, _ViewModel>(
+              distinct: true,
               converter: (store) => _ViewModel.fromState(store),
               builder: (context, vm) => _buildLoginForm(context, vm),
             ),

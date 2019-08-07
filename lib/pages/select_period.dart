@@ -1,8 +1,10 @@
 import 'package:appoint/actions/select_period_action.dart';
+import 'package:appoint/containers/period_time_button.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/selectors/selectors.dart';
 import 'package:appoint/utils/calendar.dart';
 import 'package:appoint/utils/constants.dart';
+import 'package:appoint/utils/logger.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:appoint/view_models/settings_vm.dart';
@@ -13,61 +15,70 @@ import 'package:appoint/widgets/navBar.dart';
 import 'package:appoint/widgets/period_tile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cupertino_date_picker/flutter_cupertino_date_picker.dart';
 import 'package:flutter_redux/flutter_redux.dart';
+import 'package:logger/logger.dart';
 import 'package:redux/redux.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-class SelectPeriod extends StatefulWidget {
+class SelectPeriod extends StatelessWidget {
   final int companyId;
   final Calendar calendar = Calendar();
+  final Logger logger = getLogger("SelectPeriod");
 
-  SelectPeriod({@required this.companyId});
+  SelectPeriod({
+    @required this.companyId,
+  });
 
-  @override
-  _SelectPeriodState createState() => _SelectPeriodState();
-}
-
-class _SelectPeriodState extends State<SelectPeriod> {
   @override
   Widget build(BuildContext context) {
-    return StoreConnector<AppState, _ViewModel>(
-      converter: _ViewModel.fromStore,
-      onInit: (store) {
-        store.dispatch(LoadPeriodsAction(
-            widget.companyId,
-            DateTime(DateTime.now().year, DateTime.now().month,
-                DateTime.now().day + 1),
-            Parse.lastDayOfMonth(DateTime.now())));
-      },
-      builder: (context, vm) {
-        return Scaffold(
-          appBar: _buildNavBar(vm),
-          body: SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Column(
-                children: <Widget>[
-                  _buildSelectTimeRow(vm, context),
-                  _buildDivider(),
-                  _buildCalendar(context, vm),
-                  _buildDivider(),
-                  arePeriodsAvailable(vm.selectPeriodViewModel,
-                          vm.selectPeriodViewModel.selectedDay)
-                      ? _buildPeriodList(vm)
-                      : Center(
-                          child: Text(
-                            "Keine freien Termine gefunden",
-                            style: TextStyle(fontSize: 18),
-                          ),
-                        ),
-                ],
-              ),
+    logger.i("build");
+
+    return Scaffold(
+      appBar: _buildNavBar(context),
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: <Widget>[
+            PeriodTimeButton(),
+            _buildDivider(),
+            StoreConnector<AppState, _ViewModel>(
+              distinct: true,
+              converter: (store) => _ViewModel.fromStore(store),
+              onInit: (store) {
+                logger.d("onInit");
+
+                store.dispatch(LoadPeriodsAction(
+                    companyId,
+                    DateTime(DateTime.now().year, DateTime.now().month,
+                        DateTime.now().day + 1),
+                    Parse.lastDayOfMonth(DateTime.now())));
+              },
+              builder: (context, vm) {
+                logger.d("build store connector ViewModel1");
+
+                return _buildCalendar(context, vm);
+              },
             ),
-          ),
-        );
-      },
+            _buildDivider(),
+            StoreConnector<AppState, _ViewModel>(
+              distinct: true,
+              converter: (store) => _ViewModel.fromStore(store),
+              builder: (context, vm) {
+                logger.i("build store connector ViewModel2");
+                return arePeriodsAvailable(vm.selectPeriodViewModel,
+                        vm.selectPeriodViewModel.selectedDay)
+                    ? _buildPeriodList(vm, context)
+                    : Center(
+                        child: Text(
+                          "Keine freien Termine gefunden",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -78,7 +89,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
     );
   }
 
-  Padding _buildSelectTimeRow(_ViewModel vm, BuildContext context) {
+  /* Padding _buildSelectTimeRow(_ViewModel vm, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 4.0, left: 8.0, right: 8.0),
       child: Row(
@@ -112,15 +123,15 @@ class _SelectPeriodState extends State<SelectPeriod> {
         ],
       ),
     );
-  }
+  } */
 
-  String _buildTimeOfDayButtonText(_ViewModel vm) {
+/*   String _buildTimeOfDayButtonText(_ViewModel vm) {
     if (vm.selectPeriodViewModel.timeFilter == null) {
       return "nach Uhrzeit filtern";
     } else {
       return "${vm.selectPeriodViewModel.timeFilter.format(context)} | ändern";
     }
-  }
+  } */
 
   Widget _buildCalendar(BuildContext context, _ViewModel vm) {
     return Stack(
@@ -139,7 +150,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
             print("called visible days changed");
             vm.updateVisibilityFilter(first, last);
 
-            vm.loadPeriods(widget.companyId, first, last);
+            vm.loadPeriods(companyId, first, last);
           },
         ),
         if (vm.selectPeriodViewModel.isLoading) CupertinoActivityIndicator(),
@@ -147,7 +158,8 @@ class _SelectPeriodState extends State<SelectPeriod> {
     );
   }
 
-  Future<List<Widget>> _buildPeriodTiles(_ViewModel vm) async {
+  Future<List<Widget>> _buildPeriodTiles(
+      _ViewModel vm, BuildContext context) async {
     if (vm.settingsViewModel.settings[kSettingsCalendarIntegration] == null ||
         !vm.settingsViewModel.settings[kSettingsCalendarIntegration]) {
       print("no calendar integration");
@@ -169,7 +181,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
 
       return _periods;
     } else {
-      final result = await widget.calendar.retrieveCalendarEvents(
+      final result = await calendar.retrieveCalendarEvents(
           vm.settingsViewModel.settings[kSettingsCalendarId],
           vm.selectPeriodViewModel.selectedDay);
       List<Widget> _periods = [];
@@ -233,12 +245,12 @@ class _SelectPeriodState extends State<SelectPeriod> {
     }
   }
 
-  Widget _buildPeriodList(_ViewModel vm) {
+  Widget _buildPeriodList(_ViewModel vm, BuildContext context) {
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: FutureBuilder(
-          future: _buildPeriodTiles(vm),
+          future: _buildPeriodTiles(vm, context),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.done &&
                 !snapshot.hasError) {
@@ -267,7 +279,7 @@ class _SelectPeriodState extends State<SelectPeriod> {
     );
   }
 
-  void _selectTimeFilter(_ViewModel vm) {
+/*   void _selectTimeFilter(_ViewModel vm) {
     final DateTime maxDate = DateTime(2099, 12, 31, 23, 59, 59);
     DateTime minDate = DateTime.now();
     DateTime initialDate = DateTime(
@@ -311,20 +323,28 @@ class _SelectPeriodState extends State<SelectPeriod> {
         vm.updateTimeFilter(value);
       });
     }
-  }
+  } */
 
-  NavBar _buildNavBar(_ViewModel vm) {
+  NavBar _buildNavBar(BuildContext context) {
     return NavBar(
       "Neuer Termin",
       height: 59,
-      leadingWidget: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-          ),
-          onPressed: () {
-            vm.resetViewModel();
-            Navigator.pop(context);
-          }),
+      leadingWidget: StoreConnector<AppState, VoidCallback>(
+        converter: (store) =>
+            () => store.dispatch(ResetSelectPeriodViewModelAction()),
+        builder: (context, callback) {
+          logger.d("build store connector navBar");
+
+          return IconButton(
+              icon: Icon(
+                Icons.arrow_back_ios,
+              ),
+              onPressed: () {
+                callback();
+                Navigator.pop(context);
+              });
+        },
+      ),
       secondHeader: "Zeitraum wählen",
       trailing: IconButton(
         color: Theme.of(context).primaryColor,
@@ -355,13 +375,11 @@ class _ViewModel {
   final SettingsViewModel settingsViewModel;
   final Function(DateTime visibleFirstDay, DateTime visibleLastDay)
       updateVisibilityFilter;
-  final Function(TimeOfDay timeFilter) updateTimeFilter;
   final Function(int companyId, DateTime first, DateTime last) loadPeriods;
   final Function resetViewModel;
 
   _ViewModel({
     @required this.selectPeriodViewModel,
-    this.updateTimeFilter,
     this.settingsViewModel,
     this.updateVisibilityFilter,
     this.updateSelectedDay,
@@ -372,8 +390,6 @@ class _ViewModel {
   static _ViewModel fromStore(Store<AppState> store) {
     return _ViewModel(
       selectPeriodViewModel: store.state.selectPeriodViewModel,
-      updateTimeFilter: (timeFilter) =>
-          store.dispatch(UpdateTimeFilterAction(timeFilter)),
       updateVisibilityFilter: (first, last) =>
           store.dispatch(UpdateVisibilityFilterAction(first, last)),
       updateSelectedDay: (day) => store.dispatch(UpdateSelectedDayAction(day)),
@@ -383,4 +399,16 @@ class _ViewModel {
           store.dispatch(LoadPeriodsAction(companyId, first, last)),
     );
   }
+
+  @override
+  int get hashCode =>
+      selectPeriodViewModel.hashCode ^ settingsViewModel.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _ViewModel &&
+          runtimeType == other.runtimeType &&
+          settingsViewModel == other.settingsViewModel &&
+          selectPeriodViewModel == other.selectPeriodViewModel;
 }

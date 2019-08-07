@@ -8,7 +8,21 @@ class DayResponse {
   List<Period> periods = [];
   DateTime date;
 
-  DayResponse({this.periods, this.date});
+  DayResponse({
+    this.periods,
+    this.date,
+  });
+
+  @override
+  int get hashCode => periods.hashCode ^ date.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DayResponse &&
+          runtimeType == other.runtimeType &&
+          periods == other.periods &&
+          date == other.date;
 
   factory DayResponse.fromJson(Map<String, dynamic> json) {
     return _$DayResponseFromJson(json);

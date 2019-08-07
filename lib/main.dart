@@ -5,14 +5,15 @@ import 'package:appoint/home.dart';
 import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/middleware/store_companies_middleware.dart';
 import 'package:appoint/models/app_state.dart';
-import 'package:appoint/models/user.dart';
 import 'package:appoint/pages/login.dart';
 import 'package:appoint/pages/routes.dart';
 import 'package:appoint/reducers/app_state_reducer.dart';
 import 'package:appoint/utils/constants.dart';
 import 'package:appoint/utils/lifecycle_event_handler.dart';
+import 'package:appoint/utils/logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:logger/logger.dart';
 import 'package:redux/redux.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux_dev_tools/redux_dev_tools.dart';
@@ -20,6 +21,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:redux_epics/redux_epics.dart';
 
 void main() async {
+  Logger.level = Level.debug;
+
   debugPaintSizeEnabled = false;
 
   /* var remoteDevtools = RemoteDevToolsMiddleware('0.0.0.0:8001');
@@ -54,6 +57,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   final Store store;
   final Widget defaultRoute;
+  final Logger _logger = getLogger('MyApp');
 
   MyApp({
     this.store,
@@ -70,36 +74,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    _logger.i("build");
+    WidgetsBinding.instance
+        .addObserver(LifecycleEventHandler(suspendingCallBack: () async {
+      _logger.d("suspending");
+    }));
+    store.dispatch(AuthenticateAction());
+    store.dispatch(LoadSharedPreferencesAction());
+
     return StoreProvider<AppState>(
       store: store,
-      child: StoreConnector<AppState, _ViewModel>(
-        converter: (store) => _ViewModel.fromState(store),
-        onInit: (store) {
-          //save settings on kill
-          WidgetsBinding.instance
-              .addObserver(LifecycleEventHandler(suspendingCallBack: () async {
-            print("suspending");
-          }));
-          store.dispatch(AuthenticateAction());
-          store.dispatch(LoadSharedPreferencesAction());
-        },
-        builder: (context, vm) => MaterialApp(
-          routes: routes,
-          home: defaultRoute,
-          theme: theme,
-          title: "Appoint",
-        ),
+      child: MaterialApp(
+        routes: routes,
+        home: defaultRoute,
+        theme: theme,
+        title: "Appoint",
       ),
     );
-  }
-}
-
-class _ViewModel {
-  final User user;
-
-  _ViewModel({this.user});
-
-  static _ViewModel fromState(Store<AppState> store) {
-    return _ViewModel(user: store.state.userViewModel.user);
   }
 }

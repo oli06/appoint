@@ -5,29 +5,34 @@ import 'package:appoint/actions/select_period_action.dart';
 import 'package:appoint/actions/settings_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/data/api.dart';
+import 'package:appoint/enums/enums.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/category.dart';
-import 'package:appoint/models/company.dart';
 import 'package:appoint/selectors/selectors.dart';
 import 'package:appoint/utils/constants.dart';
+import 'package:appoint/utils/logger.dart';
+import 'package:logger/logger.dart';
 import 'package:redux/redux.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 List<Middleware<AppState>> createStoreCompaniesMiddleware(
     Api api, SharedPreferences sharedPreferences) {
+  Logger logger = getLogger('middleware');
+
   final loadAppointments = _createLoadAppointments(api);
   final verifyUser = _createUserVerifcation(api);
   final loadUserLocation = _createLoadUserLocation();
   final loadUserFavorites = _createLoadUserFavorites(api);
   final removeUserFavorites = _createRemoveFromUserFavorites(api);
   final addUserFavorite = _createAddToUserFavorites(api);
-  final loadSharedPreferences = _createLoadSharedPreferences();
+  final loadSharedPreferences = _createLoadSharedPreferences(logger);
   final loadCategories = _createLoadCategories(api);
 
-  final authenticate = _authenticate(api, sharedPreferences);
-  final loginProcessDone = _loadedUserConfigurationAction(sharedPreferences);
-  final loadPeriods = _createLoadPeriods(api);
+  final authenticate = _authenticate(api, sharedPreferences, logger);
+  final loginProcessDone =
+      _loadedUserConfigurationAction(sharedPreferences, logger);
+  final loadPeriods = _createLoadPeriods(api, logger);
 
   final updateApi = _updateApiPropertiesAction(api);
 
@@ -63,12 +68,11 @@ Middleware<AppState> _createLoadAppointments(Api api) {
 }
 
 Middleware<AppState> _loadedUserConfigurationAction(
-    SharedPreferences sharedPreferences) {
+    SharedPreferences sharedPreferences, Logger logger) {
   return (Store<AppState> store, action, NextDispatcher next) {
-    print("loaded shared preferences");
+    logger.d("loaded shared preferences");
 
     sharedPreferences.setString(kUserIdKey, action.user.id);
-    sharedPreferences.setString(kTokenKey, action.token);
 
     store.dispatch(LoadedUserAction(action.user, action.token));
     store.dispatch(LoadCategoriesAction());
@@ -86,7 +90,7 @@ Middleware<AppState> _updateApiPropertiesAction(Api api) {
 }
 
 ///fetches periods which aren't already in cache
-Middleware<AppState> _createLoadPeriods(Api api) {
+Middleware<AppState> _createLoadPeriods(Api api, Logger logger) {
   return (Store<AppState> store, action, NextDispatcher next) async {
     store.dispatch(UpdateIsLoadingAction(true));
 
@@ -120,36 +124,36 @@ Middleware<AppState> _createLoadPeriods(Api api) {
         dateCounterRight = dateCounterRight.subtract(oneDay);
       }
 
-      print(
+      logger.d(
           "load Periods between: ${dateCounterLeft.toString()} - ${dateCounterRight.toString()}");
 
       api
           .getPeriods(action.companyId, dateCounterLeft, dateCounterRight)
           .then((result) {
         store.dispatch(LoadedPeriodsAction(result));
-        print(
+        logger.d(
             "loaded Periods for: ${dateCounterLeft.toString()} - ${dateCounterRight.toString()}");
 
         store.dispatch(UpdateIsLoadingAction(false));
       });
     } else {
       store.dispatch(UpdateIsLoadingAction(false));
-      print("load periods; all available");
+      logger.d("load periods; all available");
     }
   };
 }
 
 Middleware<AppState> _authenticate(
-    Api api, SharedPreferences sharedPreferences) {
+    Api api, SharedPreferences sharedPreferences, Logger logger) {
   return (Store<AppState> store, action, NextDispatcher next) {
-    print("authentication soon");
+    logger.d("authenticate");
 
     if (sharedPreferences.containsKey(kTokenKey)) {
       store.dispatch(UpdateLoginProcessIsActiveAction(true));
 
-      print("user is authenticated");
       final token = sharedPreferences.getString(kTokenKey);
       final userId = sharedPreferences.getString(kUserIdKey);
+      logger.i("user $userId is authenticated");
 
       api.token = token;
       api.userId = userId;
@@ -161,7 +165,7 @@ Middleware<AppState> _authenticate(
         store.dispatch(UpdateLoginProcessIsActiveAction(false));
       });
     } else {
-      print("user isnot authenticated");
+      logger.i("user isnot authenticated");
     }
 
     next(action);
@@ -194,7 +198,7 @@ Middleware<AppState> _createLoadCategories(Api api) {
   };
 }
 
-Middleware<AppState> _createLoadSharedPreferences() {
+Middleware<AppState> _createLoadSharedPreferences(Logger logger) {
   return (Store<AppState> store, action, next) async {
     final SharedPreferences sharedPreferences =
         await SharedPreferences.getInstance();
@@ -204,7 +208,7 @@ Middleware<AppState> _createLoadSharedPreferences() {
       if (sharedPreferences.containsKey(s)) {
         settings[s] = sharedPreferences.get(s);
       } else {
-        print("setting $s not available");
+        logger.i("setting $s is not available");
       }
     });
 

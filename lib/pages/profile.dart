@@ -22,6 +22,7 @@ class ProfilePage extends StatelessWidget {
     return Scaffold(
       appBar: _buildNavBar(context),
       body: StoreConnector<AppState, _ViewModel>(
+        distinct: true,
         converter: (store) => _ViewModel.fromState(store),
         builder: (context, vm) => SafeArea(
           child: Padding(

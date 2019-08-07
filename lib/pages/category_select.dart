@@ -32,6 +32,7 @@ class _CategorySelectPageState extends State<CategorySelectPage> {
 
   Widget _buildBody() {
     return StoreConnector<AppState, _ViewModel>(
+      distinct: true,
       converter: (store) => _ViewModel.fromState(store),
       builder: (context, vm) => ListView.separated(
         separatorBuilder: (context, index) => Divider(height: 1),

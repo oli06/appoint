@@ -8,6 +8,7 @@ import 'package:appoint/pages/add_appoint.dart';
 import 'package:appoint/pages/appointment_details.dart';
 import 'package:appoint/selectors/selectors.dart';
 import 'package:appoint/utils/ios_url_scheme.dart';
+import 'package:appoint/utils/logger.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:appoint/view_models/appointments_vm.dart';
 import 'package:appoint/widgets/appointment_tile.dart';
@@ -18,79 +19,89 @@ import 'package:appoint/widgets/navBar.dart';
 import 'package:flutter_cupertino_date_picker/flutter_cupertino_date_picker.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:location/location.dart';
+import 'package:logger/logger.dart';
 import 'package:redux/redux.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 
-class AppointmentPage extends StatefulWidget {
-  @override
-  _AppointmentPageState createState() => _AppointmentPageState();
-}
-
-class _AppointmentPageState extends State<AppointmentPage> {
+class AppointmentPage extends StatelessWidget {
+  final Logger _logger = getLogger('Appointments');
   final _scrollController = ScrollController();
-  List<_ListHeader> listElements = [];
+  final List<_ListHeader> listElements = [];
 
   @override
   Widget build(BuildContext context) {
-    return StoreConnector<AppState, _ViewModel>(
-      converter: (store) => _ViewModel.fromState(store),
-      onInit: (store) {
-        print("called oninit");
-        if (store.state.appointmentsViewModel.appointments == null) {
-          print("load appointments");
-          store.dispatch(LoadAppointmentsAction());
-        }
-        if (store.state.userViewModel.currentLocation == null) {
-          store.dispatch(LoadUserLocationAction());
-        }
-      },
-      builder: (context, vm) => Scaffold(
-        appBar: _buildNavBar(),
-        body: vm.appointmentsViewModel.isLoading
-            ? _buildLoading()
-            : vm.appointmentsViewModel.appointments.length == 0
-                ? _buildEmptyList()
-                : _buildAppointmentsList(vm),
+    _logger.d("build");
+    return Scaffold(
+      appBar: _buildNavBar(),
+      body: StoreConnector<AppState, _LoadingViewModel>(
+        distinct: true,
+        converter: (store) => _LoadingViewModel.fromState(store),
+        onInit: (store) {
+          _logger.d('onInit');
+          if (store.state.appointmentsViewModel.appointments == null) {
+            _logger.d('load appointments');
+            store.dispatch(LoadAppointmentsAction());
+          }
+          if (store.state.userViewModel.currentLocation == null) {
+            store.dispatch(LoadUserLocationAction());
+          }
+        },
+        builder: (context, vm) {
+          _logger.d("build store connector _LoadingViewModel");
+          return vm.isLoading
+              ? _buildLoading()
+              : vm.appointmentsLength == 0
+                  ? _buildEmptyList(context)
+                  : _buildAppointmentsList();
+        },
       ),
     );
   }
 
-  Widget _buildAppointmentsList(_ViewModel vm) {
-    final List<Day<Appoint>> days =
-        groupAppointmentsByDate(vm.appointmentsViewModel.appointments);
+  Widget _buildAppointmentsList() {
+    return StoreConnector<AppState, _ViewModel>(
+      converter: (store) => _ViewModel.fromState(store),
+      builder: (context, vm) {
+        _logger.d("build store connect _ViewModel");
+        final List<Day<Appoint>> days =
+            groupAppointmentsByDate(vm.appointmentsViewModel.appointments);
 
-    //filter upcoming Appointment
-    final Appoint upcomingAppointment = days[0].events[0];
-    days[0].events.removeAt(0);
-    if (days[0].events.length == 0) {
-      days.removeAt(0);
-    }
+        //filter upcoming Appointment
+        final Appoint upcomingAppointment = days[0].events[0];
+        days[0].events.removeAt(0);
+        if (days[0].events.length == 0) {
+          days.removeAt(0);
+        }
 
-    days.forEach((d) => listElements.add(
-        _ListHeader(childrenCount: d.events.length, value: d.date.toUtc())));
+        days.forEach((d) => listElements.add(_ListHeader(
+            childrenCount: d.events.length, value: d.date.toUtc())));
 
-    final List<Widget> slivers = List<Widget>();
-    days.asMap().forEach((index, day) => slivers
-        .addAll(_buildHeaderBuilderLists(context, index, 1, day, vm.location)));
-    return Column(
-      children: <Widget>[
-        _buildUpcomingEventDescription(upcomingAppointment, vm),
-        _buildUpcomingAppointment(upcomingAppointment, vm),
-        Expanded(
-          child: CupertinoScrollbar(
-            child: CustomScrollView(
-              shrinkWrap: true,
-              controller: _scrollController,
-              slivers: slivers,
+        final List<Widget> slivers = List<Widget>();
+        days.asMap().forEach((index, day) => slivers.addAll(
+            _buildHeaderBuilderLists(context, index, 1, day, vm.location)));
+
+        return Column(
+          children: <Widget>[
+            _buildUpcomingEventDescription(
+                upcomingAppointment, vm.location, context),
+            _buildUpcomingAppointment(upcomingAppointment, context),
+            Expanded(
+              child: CupertinoScrollbar(
+                child: CustomScrollView(
+                  shrinkWrap: true,
+                  controller: _scrollController,
+                  slivers: slivers,
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
-  Padding _buildUpcomingEventDescription(
-      Appoint upcomingAppointment, _ViewModel vm) {
+  Padding _buildUpcomingEventDescription(Appoint upcomingAppointment,
+      LocationData location, BuildContext context) {
     bool eventIsActive = false;
     String eventDuration = "";
     if (upcomingAppointment.period.start.isBefore(DateTime.now())) {
@@ -105,9 +116,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Text(
-            eventIsActive
-                ? "Im Termin:"
-                : "Termin in $eventDuration",
+            eventIsActive ? "Im Termin:" : "Termin in $eventDuration",
             style: TextStyle(fontSize: 18),
           ),
           CupertinoButton(
@@ -123,8 +132,8 @@ class _AppointmentPageState extends State<AppointmentPage> {
             ),
             onPressed: () => UrlScheme.buildRouteCupertinoActionSheet(
                 context,
-                vm.location.latitude,
-                vm.location.longitude,
+                location.latitude,
+                location.longitude,
                 upcomingAppointment.company.address.latitude,
                 upcomingAppointment.company.address.longitude),
           ),
@@ -134,7 +143,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
   }
 
   Padding _buildUpcomingAppointment(
-      Appoint upcomingAppointment, _ViewModel vm) {
+      Appoint upcomingAppointment, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 0, 8, 8),
       child: GestureDetector(
@@ -170,14 +179,23 @@ class _AppointmentPageState extends State<AppointmentPage> {
                               style: TextStyle(fontSize: 15),
                             ),
                           ),
-                          Text(vm.categories
-                                  .firstWhere(
-                                      (c) =>
-                                          c.id ==
-                                          upcomingAppointment.company.category,
-                                      orElse: () => null)
-                                  ?.value ??
-                              "leer"),
+                          StoreConnector<AppState, List<Category>>(
+                            converter: (store) =>
+                                store.state.selectCompanyViewModel.categories,
+                            builder: (context, categories) {
+                              _logger.d("build store connector Categories");
+
+                              return Text(categories
+                                      .firstWhere(
+                                          (c) =>
+                                              c.id ==
+                                              upcomingAppointment
+                                                  .company.category,
+                                          orElse: () => null)
+                                      ?.value ??
+                                  "leer");
+                            },
+                          ),
                         ],
                       ),
                       Row(
@@ -206,7 +224,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
       sliverIndex += firstIndex;
       return new SliverStickyHeaderBuilder(
         builder: (context, state) => AnimatedListHeader(
-          onTap: () => listHeaderTap(day),
+          onTap: () => listHeaderTap(day, context),
           start: day.date,
           state: state,
         ),
@@ -247,7 +265,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
     );
   }
 
-  Widget _buildEmptyList() {
+  Widget _buildEmptyList(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -302,7 +320,7 @@ class _AppointmentPageState extends State<AppointmentPage> {
     );
   }
 
-  void listHeaderTap(Day day) {
+  void listHeaderTap(Day day, BuildContext context) {
     DatePicker.showDatePicker(
       context,
       minDateTime: DateTime.now(),
@@ -338,24 +356,61 @@ class _AppointmentPageState extends State<AppointmentPage> {
   }
 }
 
+class _LoadingViewModel {
+  final bool isLoading;
+  final int appointmentsLength;
+
+  _LoadingViewModel({
+    this.isLoading,
+    this.appointmentsLength,
+  });
+
+  static _LoadingViewModel fromState(Store<AppState> store) {
+    return _LoadingViewModel(
+      isLoading: store.state.appointmentsViewModel.isLoading,
+      appointmentsLength:
+          store.state.appointmentsViewModel.appointments?.length ?? 0,
+    );
+  }
+
+  @override
+  int get hashCode => isLoading.hashCode ^ appointmentsLength.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _LoadingViewModel &&
+          runtimeType == other.runtimeType &&
+          isLoading == other.isLoading &&
+          appointmentsLength == other.appointmentsLength;
+}
+
 class _ViewModel {
   final AppointmentsViewModel appointmentsViewModel;
   final LocationData location;
-  final List<Category> categories;
 
   _ViewModel({
     this.appointmentsViewModel,
     this.location,
-    this.categories,
   });
 
   static _ViewModel fromState(Store<AppState> store) {
     return _ViewModel(
       appointmentsViewModel: store.state.appointmentsViewModel,
       location: store.state.userViewModel.currentLocation,
-      categories: store.state.selectCompanyViewModel.categories,
     );
   }
+
+  @override
+  int get hashCode => location.hashCode ^ appointmentsViewModel.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _ViewModel &&
+          runtimeType == other.runtimeType &&
+          location == other.location &&
+          appointmentsViewModel == other.appointmentsViewModel;
 }
 
 class _ListHeader {

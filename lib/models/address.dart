@@ -22,6 +22,27 @@ class Address {
   });
 
   @override
+  int get hashCode =>
+      street.hashCode ^
+      houseNumber.hashCode ^
+      city.hashCode ^
+      postal.hashCode ^
+      latitude.hashCode ^
+      longitude.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Address &&
+          runtimeType == other.runtimeType &&
+          street == other.street &&
+          houseNumber == other.houseNumber &&
+          city == other.city &&
+          postal == other.postal &&
+          latitude == other.latitude &&
+          longitude == other.longitude;
+
+  @override
   String toString() {
     return "$street $houseNumber - $postal $city";
   }

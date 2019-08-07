@@ -20,4 +20,25 @@ class SelectedPeriodViewModel {
     this.visibleLastDay,
     this.selectedDay,
   });
+
+  @override
+  int get hashCode =>
+      timeFilter.hashCode ^
+      isLoading.hashCode ^
+      periods.hashCode ^
+      visibleFirstDay.hashCode ^
+      visibleLastDay.hashCode ^
+      selectedDay.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SelectedPeriodViewModel &&
+          runtimeType == other.runtimeType &&
+          isLoading == other.isLoading &&
+          periods == other.periods &&
+          timeFilter == other.timeFilter &&
+          visibleFirstDay == other.visibleFirstDay &&
+          visibleLastDay == other.visibleLastDay &&
+          selectedDay == other.selectedDay;
 }

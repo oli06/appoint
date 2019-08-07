@@ -27,6 +27,7 @@ class CompanyTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
+      distinct: true,
       converter: (store) => _ViewModel.fromState(store),
       builder: (context, vm) => isStatic ? _buildTile(vm) : _buildSlidable(vm),
     );
@@ -91,6 +92,7 @@ class CompanyTile extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: StoreConnector<AppState, Category>(
+              distinct: true,
               converter: (store) => store
                   .state.selectCompanyViewModel.categories
                   .firstWhere((c) => c.id == company.category,

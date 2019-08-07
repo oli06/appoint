@@ -27,17 +27,39 @@ class Company {
     this.phone,
   });
 
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      name.hashCode ^
+      picture.hashCode ^
+      address.hashCode ^
+      rating.hashCode ^
+      category.hashCode ^
+      isPartner.hashCode ^
+      description.hashCode ^
+      phone.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Company &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          picture == other.picture &&
+          address == other.address &&
+          rating == other.rating &&
+          category == other.category &&
+          isPartner == other.isPartner &&
+          description == other.description &&
+          phone == other.phone;
+
   factory Company.fromJson(Map<String, dynamic> json) {
     return _$CompanyFromJson(json);
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-  };
-}
-
-enum CompanyVisibilityFilter {
-  all,
-  favorites,
+        'id': id,
+        'name': name,
+      };
 }

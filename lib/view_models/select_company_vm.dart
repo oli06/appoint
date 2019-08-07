@@ -1,9 +1,8 @@
+import 'package:appoint/enums/enums.dart';
 import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/models/category.dart';
-import 'package:appoint/models/company.dart';
 
 class SelectCompanyViewModel {
-  //final bool isLoading;
   final List<Category> categories;
   final CompanySearchState companySearchState;
   final CompanyVisibilityFilter companyVisibilityFilter;
@@ -12,7 +11,6 @@ class SelectCompanyViewModel {
   final String nameFilter;
 
   const SelectCompanyViewModel({
-    //this.isLoading,
     this.categories,
     this.companySearchState,
     this.companyVisibilityFilter = CompanyVisibilityFilter.all,
@@ -20,4 +18,25 @@ class SelectCompanyViewModel {
     this.rangeFilter = 9.0,
     this.nameFilter = "",
   });
+
+  @override
+  int get hashCode =>
+      categories.hashCode ^
+      companySearchState.hashCode ^
+      companyVisibilityFilter.hashCode ^
+      categoryFilter.hashCode ^
+      rangeFilter.hashCode ^
+      nameFilter.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SelectCompanyViewModel &&
+          runtimeType == other.runtimeType &&
+          categories == other.categories &&
+          companySearchState == other.companySearchState &&
+          companyVisibilityFilter == other.companyVisibilityFilter &&
+          categoryFilter == other.categoryFilter &&
+          rangeFilter == other.rangeFilter &&
+          nameFilter == other.nameFilter;
 }

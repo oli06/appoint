@@ -29,6 +29,33 @@ class User {
   });
 
   @override
+  int get hashCode =>
+      id.hashCode ^
+      firstName.hashCode ^
+      lastName.hashCode ^
+      email.hashCode ^
+      isVerified.hashCode ^
+      birthday.hashCode ^
+      favorites.hashCode ^
+      phone.hashCode ^
+      address.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is User &&
+          runtimeType == other.runtimeType &&
+          firstName == other.firstName &&
+          lastName == other.lastName &&
+          email == other.email &&
+          isVerified == other.isVerified &&
+          birthday == other.birthday &&
+          favorites == other.favorites &&
+          phone == other.phone &&
+          address == other.address &&
+          id == other.id;
+
+  @override
   String toString() {
     return '$firstName $lastName';
   }

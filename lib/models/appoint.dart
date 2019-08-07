@@ -21,7 +21,26 @@ class Appoint {
     this.id,
   });
 
-    factory Appoint.fromJson(Map<String, dynamic> json) {
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      title.hashCode ^
+      company.hashCode ^
+      period.hashCode ^
+      description.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Appoint &&
+          runtimeType == other.runtimeType &&
+          title == other.title &&
+          company == other.company &&
+          period == other.period &&
+          description == other.description &&
+          id == other.id;
+
+  factory Appoint.fromJson(Map<String, dynamic> json) {
     return _$AppointFromJson(json);
   }
 

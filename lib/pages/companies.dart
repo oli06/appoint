@@ -26,6 +26,7 @@ class _CompanyPageState extends State<CompanyPage>
   @override
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
+      distinct: true,
       onInit: (store) {
         if (store.state.userViewModel.currentLocation == null) {
           store.dispatch(LoadUserLocationAction());

@@ -1,3 +1,4 @@
+import 'package:appoint/enums/enums.dart';
 import 'package:appoint/models/category.dart';
 import 'package:appoint/models/company.dart';
 

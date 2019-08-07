@@ -164,6 +164,7 @@ class AppointmentDetails extends StatelessWidget {
             onPressed: () {},
           ),
           StoreConnector<AppState, _ViewModel>(
+            distinct: true,
             converter: (store) => _ViewModel.fromState(store),
             onInit: (store) {
               if (store.state.userViewModel.currentLocation == null) {
