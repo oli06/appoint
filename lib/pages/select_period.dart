@@ -330,6 +330,7 @@ class SelectPeriod extends StatelessWidget {
       "Neuer Termin",
       height: 59,
       leadingWidget: StoreConnector<AppState, VoidCallback>(
+        rebuildOnChange: false,
         converter: (store) =>
             () => store.dispatch(ResetSelectPeriodViewModelAction()),
         builder: (context, callback) {
