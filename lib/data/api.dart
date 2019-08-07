@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:appoint/data/request_result.dart';
 import 'package:appoint/models/appoint.dart';
 import 'package:appoint/models/category.dart';
 import 'package:appoint/models/company.dart';
@@ -100,7 +101,7 @@ class Api {
 
     if (response.statusCode == 200) {
       final List<dynamic> dyn = json.decode(response.body);
-      
+
       final dayObj = DayResponse.fromJson(dyn[0]);
       return dayObj.periods[0];
     }
@@ -108,22 +109,38 @@ class Api {
     return null;
   }
 
-  Future<http.Response> register(UserAccount user) async {
+  Future<RequestResult<bool>> register(UserAccount user) async {
     final jsonString = user.toJson();
     final response = await http.post('$url/users/register', body: jsonString);
 
-    return response;
+    if (response.statusCode == 200) {
+      return RequestResult.success(true);
+    }
+
+    return RequestResult.failed(
+      AppointWebserviceError.fromJson(json.decode(response.body)),
+      response.statusCode,
+    );
   }
 
-  Future<http.Response> login(String username, String password) async {
+  Future<RequestResult<dynamic>> login(String username, String password) async {
     print("login request $username, pw: $password");
     final body = {
       "grant_type": "password",
       "username": username,
       "password": password
     };
-    final url = baseUrl + "token";
-    return await http.post(url, body: body);
+
+    final response = await http.post('$baseUrl/token', body: body);
+
+    if (response.statusCode == 200) {
+      return RequestResult.success(json.decode(response.body));
+    }
+
+    return RequestResult.failed(
+      AppointWebserviceError.fromJson(json.decode(response.body)),
+      response.statusCode,
+    );
   }
 
   Future<bool> removeUserFavorites(List<int> companyIds) async {
@@ -171,16 +188,18 @@ class Api {
     return [];
   }
 
-  Future<User> getUser() async {
+  Future<RequestResult<User>> getUser() async {
     final response = await http.get('$url/users/$userId',
         headers: {HttpHeaders.authorizationHeader: "bearer $token"});
 
     if (response.statusCode == 200) {
       dynamic user = json.decode(response.body);
-      return User.fromJson(user);
+      return RequestResult.success(User.fromJson(user));
     }
 
-    return null;
+    return RequestResult.failed(
+        AppointWebserviceError.fromJson(json.decode(response.body)),
+        response.statusCode);
   }
 
   Future<List<Appoint>> getAppointments() async {

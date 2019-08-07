@@ -1,12 +1,11 @@
-import 'dart:convert';
-
-import 'package:appoint/actions/companies_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/data/api.dart';
+import 'package:appoint/data/request_result.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/user.dart';
 import 'package:appoint/pages/signup.dart';
 import 'package:appoint/utils/constants.dart';
+import 'package:appoint/utils/logger.dart';
 import 'package:appoint/view_models/user_vm.dart';
 import 'package:appoint/widgets/form/form_button.dart';
 import 'package:appoint/widgets/form/text_button.dart';
@@ -14,7 +13,7 @@ import 'package:appoint/widgets/form/appoint_input.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:http/http.dart';
+import 'package:logger/logger.dart';
 import 'package:redux/redux.dart' as redux;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -27,6 +26,7 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  final Logger logger = getLogger("Login");
   final _formKey = GlobalKey<FormState>();
 
   String username = "";
@@ -159,36 +159,46 @@ class _LoginState extends State<Login> {
   }
 
   void _validateAndLogin(_ViewModel vm, BuildContext context) {
+    _formKey.currentState.save();
+
     if (_formKey.currentState.validate()) {
-      print("validate and setLoginProcess active");
       vm.updateLoginProcessIsActive(true);
-      _formKey.currentState.save();
+
+      logger.i("userdata validates, username $username");
+
       final api = Api();
-      api.login(username, password).then((Response response) {
-        if (response.statusCode == 200) {
-          final jsonMap = json.decode(response.body);
-          final token = jsonMap['access_token'];
+      api.login(username, password).then((RequestResult response) {
+        if (response.success) {
+          logger.i("successful login for $username");
+
+          final token = response.data['access_token'];
 
           api.token = token;
-          api.userId = jsonMap['userId'];
+          api.userId = response.data['userId'];
           vm.updateApiProperties(api.userId, api.token);
 
-          api.getUser().then((user) async {
-            if (user != null) {
-              vm.loadedUserConfigurationAction(user, token);
-              print("navigate now to app");
+          api.getUser().then((response) async {
+            if (response.success) {
+              vm.loadedUserConfigurationAction(response.data, token);
+              logger.i("navigate to /app");
               Navigator.pushReplacementNamed(context, "app");
 
               final sharedPreferences = await SharedPreferences.getInstance();
-              sharedPreferences.setString(kUserNameKey, user.email);
+              sharedPreferences.setString(kUserNameKey, response.data.email);
             } else {
-              print("failed receiving user");
+              logger.e(
+                  "getUser failed: ${response.error} (${response.statusCode})");
+
+              setState(() {
+                info = "Benutzerdaten konnten nicht geladen werden";
+              });
             }
           });
         } else {
-          print("falsches password");
+          logger.i("login failed for $username");
           setState(() {
-            info = "E-Mail und Passwort stimmen nicht überein";
+            //info = "E-Mail und Passwort stimmen nicht überein";
+            info = "${response.error.errorDescription} (${response.statusCode})";
           });
         }
         vm.updateLoginProcessIsActive(false);
@@ -203,7 +213,6 @@ class _LoginState extends State<Login> {
       keyboardType: TextInputType.emailAddress,
       onSaved: (value) => username = value,
       onFieldSubmitted: (String value) {
-        print("username field submitted");
         this.username = value;
         FocusScope.of(context).requestFocus(_passwordFocus);
       },
@@ -240,7 +249,7 @@ class _LoginState extends State<Login> {
   Widget _buildForgotPassword(BuildContext context) {
     return TextButton(
       onTap: () {
-        print("forgot pw");
+        logger.i("forgot password");
         //TODO: forgot pw
       },
       text: "Passwort vergessen?",

@@ -37,7 +37,7 @@ class SignupSuccess extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
-                  "Du hast dich erfolgreich registriert! Wir haben dir eine Bestätigungsmail gesendet. Klicke auf den Link in der E-Mail. Anschließend kannst du dich mit deinen Zugangsdaten in der App anmelden", style: TextStyle(fontSize: 18),),
+                  "Du hast dich erfolgreich registriert!\nWir haben dir eine Bestätigungsmail gesendet. Klicke auf den Link in der E-Mail. Anschließend kannst du dich mit deinen Zugangsdaten in der App anmelden", style: TextStyle(fontSize: 16),),
             ),
             FlatButton(
               child: Text("Zurück zum Login",

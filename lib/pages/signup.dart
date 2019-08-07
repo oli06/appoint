@@ -4,6 +4,7 @@ import 'package:appoint/data/api.dart';
 import 'package:appoint/models/useraccount.dart';
 import 'package:appoint/pages/login.dart';
 import 'package:appoint/pages/signup_success.dart';
+import 'package:appoint/utils/logger.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:appoint/widgets/form/appoint_input.dart';
 import 'package:appoint/widgets/form/form_button.dart';
@@ -12,6 +13,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cupertino_date_picker/flutter_cupertino_date_picker.dart';
+import 'package:logger/logger.dart';
 
 class SignUp extends StatefulWidget {
   static final routeName = "signup";
@@ -22,6 +24,7 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
+  final Logger logger = getLogger("SignUp");
   final _formKey = GlobalKey<FormState>();
 
   String info = "";
@@ -145,27 +148,31 @@ class _SignUpState extends State<SignUp> {
                 if (_formKey.currentState.validate() &&
                     _hasAgreed &&
                     _birthday != null) {
-                  Api()
-                      .register(UserAccount(
+                  final userAccount = UserAccount(
                     password: _password,
                     birthday: _birthday,
                     email: _email,
                     firstName: _firstName,
                     lastName: _lastName,
                     phone: _phone,
-                  ))
-                      .then((result) {
-                    if (result.statusCode == 200) {
-                      print("created user with success");
-                      Navigator.pushReplacementNamed(
-                          context, SignupSuccess.namedRoute);
-                    } else {
-                      print("failed user registration");
-                      setState(() {
-                        info = json.decode(result.body);
-                      });
-                    }
-                  });
+                  );
+
+                  Api().register(userAccount).then(
+                    (result) {
+                      if (result.success) {
+                        logger.i(
+                            "registration succeed, navigation to SignUpSuccess");
+                        Navigator.pushReplacementNamed(
+                            context, SignupSuccess.namedRoute);
+                      } else {
+                        logger.e(
+                            "user registration failed: ${result.error.error} ${result.error.errorDescription} (${result.statusCode})");
+                        setState(() {
+                          info = result.error.errorDescription;
+                        });
+                      }
+                    },
+                  );
                 }
               },
             ),

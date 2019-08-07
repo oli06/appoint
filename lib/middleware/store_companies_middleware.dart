@@ -158,9 +158,12 @@ Middleware<AppState> _authenticate(
       api.token = token;
       api.userId = userId;
 
-      api.getUser().then((user) {
-        if (user != null) {
-          store.dispatch(LoadedUserConfigurationAction(user, token));
+      api.getUser().then((response) {
+        if (response.success) {
+          store.dispatch(LoadedUserConfigurationAction(response.data, token));
+        } else {
+          logger
+              .e("getUser failed: ${response.error.error} ${response.error.errorDescription} (${response.statusCode})");
         }
         store.dispatch(UpdateLoginProcessIsActiveAction(false));
       });
