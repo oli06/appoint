@@ -94,6 +94,7 @@ class SelectCompanyState extends State<SelectCompany>
 
   Widget _buildCompanyTile(Company cpy) {
     return StoreConnector<AppState, VoidCallback>(
+      rebuildOnChange: false,
         distinct: true,
         converter: (store) {
           return () => store.dispatch(ResetCompanyNameSearchFilterAction());
