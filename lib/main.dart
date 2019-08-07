@@ -35,7 +35,8 @@ void main() async {
     middleware: [...createStoreCompaniesMiddleware(api, sharedPreferences)] +
         [
           EpicMiddleware<AppState>(CompanyNameSearchEpic(api)),
-          EpicMiddleware<AppState>(CompanyFilterSearchEpic(api))
+          EpicMiddleware<AppState>(CompanyFilterSearchEpic(api)),
+          EpicMiddleware<AppState>(CompanyFilterCategoryEpic(api)),
         ],
   );
 

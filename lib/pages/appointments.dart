@@ -91,13 +91,23 @@ class _AppointmentPageState extends State<AppointmentPage> {
 
   Padding _buildUpcomingEventDescription(
       Appoint upcomingAppointment, _ViewModel vm) {
+    bool eventIsActive = false;
+    String eventDuration = "";
+    if (upcomingAppointment.period.start.isBefore(DateTime.now())) {
+      eventIsActive = true;
+    } else {
+      eventDuration = Parse.convertDateDifferenceToReadable(
+          DateTime.now(), upcomingAppointment.period.start);
+    }
     return Padding(
       padding: const EdgeInsets.only(left: 8.0, right: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Text(
-            "Termin in ${Parse.convertDateDifferenceToReadable(DateTime.now(), upcomingAppointment.period.start)}:",
+            eventIsActive
+                ? "Im Termin:"
+                : "Termin in $eventDuration",
             style: TextStyle(fontSize: 18),
           ),
           CupertinoButton(

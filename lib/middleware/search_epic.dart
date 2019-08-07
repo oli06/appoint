@@ -14,27 +14,29 @@ class CompanyNameSearchEpic implements EpicClass<AppState> {
   @override
   Stream<dynamic> call(Stream<dynamic> actions, EpicStore<AppState> store) {
     return Observable(actions)
-        // Narrow down to SearchAction actions
-        .ofType(TypeToken<CompanyNameSearchAction>())
-        // Don't start searching until the user pauses for 250ms
+        .ofType(TypeToken<CompanyFilterSearchAction>())
         .debounceTime(const Duration(milliseconds: 250))
-        // Cancel the previous search and start a new one with switchMap
-        .switchMap((action) => _search(action.filters));
+        .switchMap((action) => _search(
+              action.search,
+              store.state.selectCompanyViewModel.rangeFilter,
+              store.state.selectCompanyViewModel.categoryFilter,
+            ));
   }
 
-  Stream<dynamic> _search(CompanySearchFilter filters) async* {
+  Stream<dynamic> _search(String name, double range, int category) async* {
     yield CompanySearchLoadingAction();
 
     try {
-      yield CompanySearchResultAction(
-          await api.getCompanies(getCompanySearchString(filters)));
+      yield CompanySearchResultAction(await api.getCompanies(
+          getCompanySearchString(
+              name: name, range: range, category: category)));
     } catch (e) {
       yield CompanySearchErrorAction();
     }
   }
 }
 
-///Difference between CompanyNameSearchEpic and CompanyFilterSearchEpic is the missing debounce time, when searching for other attributes than name
+///Difference between CompanyNameSearchEpic and CompanyFilterSearchEpic is the missing debounce time. when Name (userinput) or range value changes this could lead to massive abuse of reqeusts
 class CompanyFilterSearchEpic implements EpicClass<AppState> {
   final Api api;
 
@@ -44,17 +46,56 @@ class CompanyFilterSearchEpic implements EpicClass<AppState> {
   Stream<dynamic> call(Stream<dynamic> actions, EpicStore<AppState> store) {
     return Observable(actions)
         // Narrow down to SearchAction actions
-        .ofType(TypeToken<CompanyFilterSearchAction>())
+        .ofType(TypeToken<CompanyFilterRangeAction>())
+        .debounceTime(const Duration(milliseconds: 100))
         // Cancel the previous search and start a new one with switchMap
-        .switchMap((action) => _search(action.filters));
+        .switchMap((action) => _search(
+              store.state.selectCompanyViewModel.nameFilter,
+              action.range,
+              store.state.selectCompanyViewModel.categoryFilter,
+            ));
   }
 
-  Stream<dynamic> _search(CompanySearchFilter filters) async* {
+  Stream<dynamic> _search(String name, double range, int category) async* {
+    print("called search for range");
     yield CompanySearchLoadingAction();
 
     try {
-      yield CompanySearchResultAction(
-          await api.getCompanies(getCompanySearchString(filters)));
+      yield CompanySearchResultAction(await api.getCompanies(
+          getCompanySearchString(
+              name: name, range: range, category: category)));
+    } catch (e) {
+      yield CompanySearchErrorAction();
+    }
+  }
+}
+
+class CompanyFilterCategoryEpic implements EpicClass<AppState> {
+  final Api api;
+
+  CompanyFilterCategoryEpic(this.api);
+
+  @override
+  Stream<dynamic> call(Stream<dynamic> actions, EpicStore<AppState> store) {
+    return Observable(actions)
+        // Narrow down to SearchAction actions
+        .ofType(TypeToken<CompanyFilterCategoryAction>())
+        // Cancel the previous search and start a new one with switchMap
+        .switchMap((action) => _search(
+              store.state.selectCompanyViewModel.nameFilter,
+              store.state.selectCompanyViewModel.rangeFilter,
+              action.category,
+            ));
+  }
+
+  Stream<dynamic> _search(String name, double range, int category) async* {
+    print("called search for category");
+    yield CompanySearchLoadingAction();
+
+    try {
+      yield CompanySearchResultAction(await api.getCompanies(
+          getCompanySearchString(
+              name: name, range: range, category: category)));
     } catch (e) {
       yield CompanySearchErrorAction();
     }
@@ -80,7 +121,7 @@ class CompanySearchState {
   factory CompanySearchState.error() => CompanySearchState(hasError: true);
 }
 
-class CompanySearchFilter {
+/* class CompanySearchFilter {
   final CompanyVisibilityFilter companyVisibilityFilter;
   final int categoryFilter;
   final double rangeFilter;
@@ -112,4 +153,4 @@ class CompanySearchFilter {
         rangeFilter: 9.0,
         nameFilter: "",
       );
-}
+} */

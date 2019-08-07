@@ -1,5 +1,3 @@
-import 'package:appoint/middleware/search_epic.dart';
-import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/appoint.dart';
 import 'package:appoint/models/company.dart';
 import 'package:appoint/models/day.dart';
@@ -8,9 +6,6 @@ import 'package:appoint/utils/distance.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:flutter/material.dart';
-
-List<Company> companiesSelector(AppState state) =>
-    state.selectCompanyViewModel.companies;
 
 List<Company> companiesVisibilityFilterSelector(List<Company> companies,
     CompanyVisibilityFilter filter, List<int> userFavorites) {
@@ -86,15 +81,20 @@ Map<DateTime, List<Period>> getPeriodsBetween(
   return map;
 }
 
-String getCompanySearchString(CompanySearchFilter filters) {
+String getCompanySearchString({
+  String name = "",
+  double range = 9,
+  int category = -1,
+  CompanyVisibilityFilter visibility = CompanyVisibilityFilter.all,
+}) {
   //e.g. "&visibility=1&range=21.5&category=2&name=Maier"
 
   String term = "";
 
-  term += "?visibility=${filters.companyVisibilityFilter.index}";
-  term += "&range=${filters.rangeFilter}";
-  term += "&category=${filters.categoryFilter}";
-  term += "&name=${filters.nameFilter}";
+  term += "?visibility=${visibility.index}";
+  term += "&range=$range";
+  term += "&category=$category";
+  term += "&name=$name";
 
   return term;
 }

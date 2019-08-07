@@ -26,9 +26,9 @@ class AppState {
   factory AppState.initState() => AppState(
         selectCompanyViewModel: SelectCompanyViewModel(
           categories: [],
-          isLoading: true,
+          //isLoading: true,
           companySearchState: CompanySearchState.initial(),
-          filters: CompanySearchFilter.initial(),
+          //filters: CompanySearchFilter.initial(),
         ),
         selectPeriodViewModel: SelectedPeriodViewModel(
           //if you set isLoading to true, no periods will be fetched anymore

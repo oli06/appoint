@@ -1,8 +1,6 @@
-import 'package:appoint/assets/company_icons_icons.dart';
 import 'package:appoint/pages/profile.dart';
 import 'package:appoint/widgets/TabBar/FABBottomAppBarItem.dart';
 import 'package:appoint/pages/appointments.dart';
-import 'package:appoint/pages/companies.dart';
 import 'package:appoint/pages/add_appoint.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

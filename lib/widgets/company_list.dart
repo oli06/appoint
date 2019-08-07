@@ -31,7 +31,9 @@ class _CompanyListState extends State<CompanyList> {
   Widget build(BuildContext context) {
     return StoreConnector<AppState, _ViewModel>(
         onInit: (Store<AppState> store) => store.dispatch(
-            CompanyFilterSearchAction(store.state.selectCompanyViewModel.filters)),
+            CompanyFilterCategoryAction(
+                store.state.selectCompanyViewModel.categoryFilter)
+            /* CompanyFilterSearchAction(store.state.selectCompanyViewModel.filters) */),
         converter: _ViewModel.fromStore,
         builder: (context, vm) {
           return Stack(

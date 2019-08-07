@@ -5,7 +5,6 @@ import 'package:appoint/actions/select_period_action.dart';
 import 'package:appoint/actions/settings_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/data/api.dart';
-import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/category.dart';
 import 'package:appoint/models/company.dart';
@@ -17,7 +16,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 List<Middleware<AppState>> createStoreCompaniesMiddleware(
     Api api, SharedPreferences sharedPreferences) {
-  final loadCompanies = _createLoadCompanies(api);
   final loadAppointments = _createLoadAppointments(api);
   final verifyUser = _createUserVerifcation(api);
   final loadUserLocation = _createLoadUserLocation();
@@ -34,7 +32,6 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware(
   final updateApi = _updateApiPropertiesAction(api);
 
   return [
-    TypedMiddleware<AppState, LoadCompaniesAction>(loadCompanies),
     TypedMiddleware<AppState, LoadAppointmentsAction>(loadAppointments),
     TypedMiddleware<AppState, VerifyUserAction>(verifyUser),
     TypedMiddleware<AppState, LoadUserLocationAction>(loadUserLocation),
@@ -50,19 +47,6 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware(
     TypedMiddleware<AppState, LoadPeriodsAction>(loadPeriods),
     TypedMiddleware<AppState, UpdateApiPropertiesAction>(updateApi),
   ];
-}
-
-Middleware<AppState> _createLoadCompanies(Api api) {
-  return (Store<AppState> store, action, NextDispatcher next) {
-    store.dispatch(UpdateCompanyIsLoadingAction(true));
-
-    api.getCompanies(store.state.userViewModel.token).then((companies) {
-      store.dispatch(LoadedCompaniesAction(companies));
-      store.dispatch(UpdateCompanyIsLoadingAction(false));
-    });
-
-    next(action);
-  };
 }
 
 Middleware<AppState> _createLoadAppointments(Api api) {
@@ -200,12 +184,10 @@ Middleware<AppState> _createUserVerifcation(Api api) {
 Middleware<AppState> _createLoadCategories(Api api) {
   return (Store<AppState> store, action, next) {
     //TODO: check, if categories should use a own viewmodel
-    store.dispatch(UpdateCompanyIsLoadingAction(true));
 
     api.getCategories().then((result) {
       result.insert(0, Category(id: -1, value: "Alle"));
       store.dispatch(LoadedCategoriesAction(result));
-      store.dispatch(UpdateCompanyIsLoadingAction(false));
     });
 
     next(action);
@@ -245,9 +227,9 @@ Middleware<AppState> _createLoadUserFavorites(Api api) {
   return (Store<AppState> store, action, next) {
     store.dispatch(UpdateIsLoadingFavoritesAction(true));
     api
-        .getCompanies(getCompanySearchString(CompanySearchFilter(
-            companyVisibilityFilter: CompanyVisibilityFilter.favorites,
-            rangeFilter: double.infinity)))
+        .getCompanies(getCompanySearchString(
+            visibility: CompanyVisibilityFilter.favorites,
+            range: double.infinity))
         .then((result) {
       store.dispatch(LoadedFavoritesAction(result));
       store.dispatch(UpdateIsLoadingFavoritesAction(false));

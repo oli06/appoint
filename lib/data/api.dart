@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:appoint/models/appoint.dart';
 import 'package:appoint/models/category.dart';
 import 'package:appoint/models/company.dart';
-import 'package:appoint/models/day.dart';
 import 'package:appoint/models/dayresponse.dart';
 import 'package:appoint/models/period.dart';
 import 'package:appoint/models/user.dart';
@@ -100,8 +99,10 @@ class Api {
     );
 
     if (response.statusCode == 200) {
-      final dynamic dyn = json.decode(response.body);
-      return Period.fromJson(dyn);
+      final List<dynamic> dyn = json.decode(response.body);
+      
+      final dayObj = DayResponse.fromJson(dyn[0]);
+      return dayObj.periods[0];
     }
 
     return null;

@@ -153,8 +153,8 @@ class AddAppointState extends State<AddAppoint>
                             CupertinoButton(
                               padding: EdgeInsets.zero,
                               child:
-                                  Text("...oder nächsten freien Termin finden"),
-                              onPressed: _company == null
+                                  Text("nächsten freien Termin finden"),
+                              onPressed: _company == null || _period != null
                                   ? null
                                   : () {
                                       setState(() {
@@ -300,7 +300,7 @@ class AddAppointState extends State<AddAppoint>
                       setState(() {
                         _isLoading = false;
                       });
-                      
+
                       vm.createOrUpdateAppoint(Appoint(
                         id: isEditing ? widget.appoint.id : null,
                         title: _title,
@@ -427,7 +427,7 @@ class AddAppointState extends State<AddAppoint>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Zeitraum auswählen..."),
+            Text("Zeitraum"),
             Icon(
               Icons.arrow_forward_ios,
               size: 18,
@@ -460,7 +460,7 @@ class AddAppointState extends State<AddAppoint>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Unternehmen auswählen..."),
+            Text("Unternehmen"),
             Icon(Icons.arrow_forward_ios,
                 size: 18, color: Theme.of(context).accentColor),
           ],

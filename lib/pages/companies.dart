@@ -60,15 +60,13 @@ class _CompanyPageState extends State<CompanyPage>
           children: <Widget>[
             Slider(
               activeColor: Color(0xff09c199),
-              value: vm.selectCompanyViewModel.filters.rangeFilter,
+              value: vm.selectCompanyViewModel.rangeFilter,
               min: 1.0,
               max: 50.0,
-              onChanged: (double newValue) => vm.companySearchAction(
-                  CompanySearchFilter.fromExisting(
-                      vm.selectCompanyViewModel.filters,
-                      rangeFilter: newValue)),
+              onChanged: (double newValue) =>
+                  vm.companyRangeFilterAction(newValue),
             ),
-            Text("${vm.selectCompanyViewModel.filters.rangeFilter.toInt()} km"),
+            Text("${vm.selectCompanyViewModel.rangeFilter.toInt()} km"),
           ],
         ),
         Padding(
@@ -101,16 +99,15 @@ class _CompanyPageState extends State<CompanyPage>
     return Padding(
       padding: const EdgeInsets.only(left: 8.0, right: 8.0),
       child: SelectWidget<Category>(
-          dataset: vm.categories,
-          itemBuilder: (context, category) {
-            return Text(category.value);
-          },
-          selectedIndex: vm.categories.indexWhere(
-              (c) => c.id == vm.selectCompanyViewModel.filters.categoryFilter),
-          onSelectionChanged: (value, index, context) => vm.companySearchAction(
-              CompanySearchFilter.fromExisting(
-                  vm.selectCompanyViewModel.filters,
-                  categoryFilter: value.id))),
+        dataset: vm.categories,
+        itemBuilder: (context, category) {
+          return Text(category.value);
+        },
+        selectedIndex: vm.categories.indexWhere(
+            (c) => c.id == vm.selectCompanyViewModel.categoryFilter),
+        onSelectionChanged: (value, index, context) =>
+            vm.companyCategoryFilterAction(value.id),
+      ),
     );
   }
 
@@ -165,11 +162,13 @@ class _CompanyPageState extends State<CompanyPage>
 class _ViewModel {
   final SelectCompanyViewModel selectCompanyViewModel;
   final List<Category> categories;
-  final Function(CompanySearchFilter filters) companySearchAction;
+  final Function(double range) companyRangeFilterAction;
+  final Function(int category) companyCategoryFilterAction;
 
   _ViewModel({
     this.selectCompanyViewModel,
-    this.companySearchAction,
+    this.companyRangeFilterAction,
+    this.companyCategoryFilterAction,
     this.categories,
   });
 
@@ -177,8 +176,10 @@ class _ViewModel {
     return _ViewModel(
       selectCompanyViewModel: store.state.selectCompanyViewModel,
       categories: store.state.selectCompanyViewModel.categories,
-      companySearchAction: (filters) =>
-          store.dispatch(CompanyFilterSearchAction(filters)),
+      companyRangeFilterAction: (range) =>
+          store.dispatch(CompanyFilterRangeAction(range)),
+      companyCategoryFilterAction: (category) =>
+          store.dispatch(CompanyFilterCategoryAction(category)),
     );
   }
 }
