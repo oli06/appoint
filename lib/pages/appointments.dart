@@ -144,6 +144,10 @@ class AppointmentPage extends StatelessWidget {
 
   Padding _buildUpcomingAppointment(
       Appoint upcomingAppointment, BuildContext context) {
+    DateTime date = upcomingAppointment.period.start
+        .add(upcomingAppointment.period.duration);
+    String duration = (date.hour * 60 + date.minute).toString();
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 0, 8, 8),
       child: GestureDetector(
@@ -161,14 +165,25 @@ class AppointmentPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(
-                        upcomingAppointment.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: Color(0xff333f52)),
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Text(
+                              upcomingAppointment.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: Color(0xff333f52)),
+                            ),
+                          ),
+                          Text(
+                            "${duration}min",
+                            style:
+                                TextStyle(color: Theme.of(context).accentColor),
+                          ),
+                        ],
                       ),
                       Row(
                         mainAxisSize: MainAxisSize.max,

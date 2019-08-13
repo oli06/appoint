@@ -81,7 +81,7 @@ class FavoritesPage extends StatelessWidget {
         padding: const EdgeInsets.all(8.0),
         child: Container(
           child: Text(
-            "Unternehmen, die Sie als Favorit markiert haben, oder bei denen Sie bereits einen Termin hatten werden hier angezeigt.",
+            "Unternehmen, die Sie als Favorit markiert haben, oder bei denen Sie bereits einen Termin hatten, werden hier angezeigt.",
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 18),
           ),

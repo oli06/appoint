@@ -1,6 +1,7 @@
 import 'package:appoint/actions/appointments_action.dart';
 import 'package:appoint/actions/companies_action.dart';
 import 'package:appoint/actions/favorites_action.dart';
+import 'package:appoint/actions/past_appointments_action.dart';
 import 'package:appoint/actions/select_period_action.dart';
 import 'package:appoint/actions/settings_action.dart';
 import 'package:appoint/actions/user_action.dart';
@@ -21,6 +22,7 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware(
   Logger logger = getLogger('middleware');
 
   final loadAppointments = _createLoadAppointments(api);
+  final loadPastAppointments = _createLoadPastAppointments(api);
   final verifyUser = _createUserVerifcation(api);
   final loadUserLocation = _createLoadUserLocation();
   final loadUserFavorites = _createLoadUserFavorites(api);
@@ -51,6 +53,7 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware(
     TypedMiddleware<AppState, LoadedUserConfigurationAction>(loginProcessDone),
     TypedMiddleware<AppState, LoadPeriodsAction>(loadPeriods),
     TypedMiddleware<AppState, UpdateApiPropertiesAction>(updateApi),
+    TypedMiddleware<AppState, LoadPastAppointments>(loadPastAppointments),
   ];
 }
 
@@ -61,6 +64,19 @@ Middleware<AppState> _createLoadAppointments(Api api) {
     api.getAppointments().then((appointments) {
       store.dispatch(LoadedAppointmentsAction(appointments));
       store.dispatch(UpdateAppointmentsIsLoadingAction(false));
+    });
+
+    next(action);
+  };
+}
+
+Middleware<AppState> _createLoadPastAppointments(Api api) {
+  return (Store<AppState> store, action, NextDispatcher next) {
+    store.dispatch(UpdatePastAppointmentsIsLoadingAction(true));
+
+    api.getPastAppointments().then((appointments) {
+      store.dispatch(LoadedPastAppointmentsAction(appointments));
+      store.dispatch(UpdatePastAppointmentsIsLoadingAction(false));
     });
 
     next(action);
@@ -163,8 +179,8 @@ Middleware<AppState> _authenticate(
         if (response.success) {
           store.dispatch(LoadedUserConfigurationAction(response.data, token));
         } else {
-          logger
-              .e("getUser failed: ${response.error.error} ${response.error.errorDescription} (${response.statusCode})");
+          logger.e(
+              "getUser failed: ${response.error.error} ${response.error.errorDescription} (${response.statusCode})");
         }
         store.dispatch(UpdateLoginProcessIsActiveAction(false));
       });

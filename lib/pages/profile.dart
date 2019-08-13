@@ -2,6 +2,7 @@ import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/pages/favorites.dart';
 import 'package:appoint/pages/login.dart';
+import 'package:appoint/pages/past_appointments.dart';
 import 'package:appoint/pages/settings.dart';
 import 'package:appoint/utils/constants.dart';
 import 'package:appoint/view_models/user_vm.dart';
@@ -66,14 +67,14 @@ class ProfilePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Text(
-              vm.userViewModel.user.toString(),
+              vm.userViewModel?.user?.toString() ?? "",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
             Text(
-              vm.userViewModel.user.email,
+              vm.userViewModel?.user?.email ?? "",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w300),
             ),
-            if (vm.userViewModel.user.address != null)
+            if (vm.userViewModel?.user?.address != null)
               Text(
                 vm.userViewModel.user.address.toCityString(),
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w300),
@@ -220,15 +221,10 @@ class ProfilePage extends StatelessWidget {
           ListTile(
             title: Text("vergangene Termine"),
             trailing: Icon(Icons.arrow_forward_ios),
-            onTap: () => Navigator.pushNamed(context, SettingsPage.routeName),
+            onTap: () =>
+                Navigator.pushNamed(context, PastAppointmentPage.routeName),
           ),
           Divider(height: 1),
-          /*ListTile(
-            title: Text("Tutorial"),
-            trailing: Icon(Icons.arrow_forward_ios),
-            onTap: null,
-          ),
-          Divider(height: 1),*/
           ListTile(
               title: Text("Über uns"),
               trailing: Icon(Icons.arrow_forward_ios),

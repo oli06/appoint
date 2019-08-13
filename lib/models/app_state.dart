@@ -2,6 +2,7 @@ import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:appoint/view_models/appointments_vm.dart';
 import 'package:appoint/view_models/favorites_vm.dart';
+import 'package:appoint/view_models/past_appointments_vm.dart';
 import 'package:appoint/view_models/select_company_vm.dart';
 import 'package:appoint/view_models/select_period_vm.dart';
 import 'package:appoint/view_models/settings_vm.dart';
@@ -14,6 +15,7 @@ class AppState {
   final UserViewModel userViewModel;
   final FavoritesViewModel favoritesViewModel;
   final SettingsViewModel settingsViewModel;
+  final PastAppointmentsViewModel pastAppointmentsViewModel;
   AppState({
     this.selectCompanyViewModel = const SelectCompanyViewModel(),
     this.selectPeriodViewModel = const SelectedPeriodViewModel(),
@@ -21,6 +23,7 @@ class AppState {
     this.userViewModel = const UserViewModel(),
     this.favoritesViewModel = const FavoritesViewModel(),
     this.settingsViewModel = const SettingsViewModel(),
+    this.pastAppointmentsViewModel = const PastAppointmentsViewModel(),
   });
 
   @override
@@ -30,7 +33,8 @@ class AppState {
       appointmentsViewModel.hashCode ^
       userViewModel.hashCode ^
       favoritesViewModel.hashCode ^
-      settingsViewModel.hashCode;
+      settingsViewModel.hashCode ^
+      pastAppointmentsViewModel.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -41,6 +45,7 @@ class AppState {
           selectPeriodViewModel == other.selectPeriodViewModel &&
           appointmentsViewModel == other.appointmentsViewModel &&
           userViewModel == other.userViewModel &&
+          pastAppointmentsViewModel == other.pastAppointmentsViewModel &&
           favoritesViewModel == other.favoritesViewModel &&
           settingsViewModel == other.settingsViewModel;
 
@@ -60,6 +65,7 @@ class AppState {
               DateTime.now().year, DateTime.now().month, DateTime.now().day),
         ),
         appointmentsViewModel: AppointmentsViewModel(isLoading: true),
+        pastAppointmentsViewModel: PastAppointmentsViewModel(isLoading: true),
         userViewModel:
             UserViewModel(isLoading: true, loginProcessIsActive: false),
         favoritesViewModel: FavoritesViewModel(

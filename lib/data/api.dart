@@ -214,6 +214,19 @@ class Api {
     return [];
   }
 
+  Future<List<Appoint>> getPastAppointments() async {
+    final response = await http.get(
+        '$url/users/$userId/appointments?before=${Parse.dateRequestFormat.format(DateTime.now())}',
+        headers: {HttpHeaders.authorizationHeader: "bearer $token"});
+
+    if (response.statusCode == 200) {
+      List<dynamic> list = json.decode(response.body);
+      return list.map((model) => Appoint.fromJson(model)).toList();
+    }
+
+    return [];
+  }
+
   Future<bool> postAppointment(Appoint appoint) async {
     final body = appoint.toJson();
     final encoded = json.encode(body);
