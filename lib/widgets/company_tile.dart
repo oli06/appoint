@@ -70,13 +70,42 @@ class CompanyTile extends StatelessWidget {
     );
   }
 
+  Widget _buildDistanceIndicator(vm) {
+    if (vm.userLocation != null &&
+        company.address.latitude != null &&
+        company.address.longitude != null) {
+      return Row(
+        children: <Widget>[
+          Icon(Icons.compare_arrows),
+          Text(
+              "${DistanceUtil.calculateDistanceBetweenCoordinates(vm.userLocation.latitude, vm.userLocation.longitude, company.address.latitude, company.address.longitude).toStringAsFixed(1)}"),
+        ],
+      );
+    }
+
+    return Container(
+      height: 0,
+      width: 0,
+    );
+  }
+
   ListTile _buildTile(_ViewModel vm) {
     return ListTile(
       onTap: onTap,
-      /* leading: CircleAvatar(
-                backgroundImage: NetworkImage(
-              "${company.picture}",
-            )), */
+      leading: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          company.picture != null && company.picture.isNotEmpty
+              ? CircleAvatar(
+                  backgroundImage: NetworkImage(
+                    "${company.picture}",
+                  ),
+                )
+              : CircleAvatar(
+                  backgroundImage: AssetImage("images/avatar_placeholder.jpeg"),
+                ),
+        ],
+      ),
       title: Row(
         children: <Widget>[
           Expanded(
@@ -117,14 +146,7 @@ class CompanyTile extends StatelessWidget {
                 style:
                     const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
               ),
-              if (vm.userLocation != null)
-                Row(
-                  children: <Widget>[
-                    Icon(Icons.compare_arrows),
-                    Text(
-                        "${DistanceUtil.calculateDistanceBetweenCoordinates(vm.userLocation.latitude, vm.userLocation.longitude, company.address.latitude, company.address.longitude).toStringAsFixed(1)}"),
-                  ],
-                ),
+              _buildDistanceIndicator(vm),
             ],
           ),
           Row(

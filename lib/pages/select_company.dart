@@ -39,6 +39,8 @@ class SelectCompanyState extends State<SelectCompany>
       () {
         //fix listener getting called twice: https://github.com/flutter/flutter/issues/13848
         if (_controller.indexIsChanging) {
+          _logger.d("update visibility index to: ${_controller.index}");
+
           store.dispatch(CompanyFilterVisibilityAction(
               CompanyVisibilityFilter.values[_controller.index]));
         }
@@ -62,7 +64,6 @@ class SelectCompanyState extends State<SelectCompany>
                   _buildRangeAndMapButton(),
                   Expanded(
                     child: CompanyList(
-                      filterWithVisibility: true,
                       itemBuilder: (context, index, Company cpy) =>
                           _buildCompanyTile(cpy),
                     ),
@@ -94,7 +95,7 @@ class SelectCompanyState extends State<SelectCompany>
 
   Widget _buildCompanyTile(Company cpy) {
     return StoreConnector<AppState, VoidCallback>(
-      rebuildOnChange: false,
+        rebuildOnChange: false,
         distinct: true,
         converter: (store) {
           return () => store.dispatch(ResetCompanyNameSearchFilterAction());

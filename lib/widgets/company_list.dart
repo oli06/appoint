@@ -1,7 +1,9 @@
 import 'package:appoint/actions/companies_action.dart';
+import 'package:appoint/enums/enums.dart';
 import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/company.dart';
+import 'package:appoint/selectors/selectors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -11,13 +13,9 @@ import 'package:redux/redux.dart';
 class CompanyList extends StatelessWidget {
   final Widget Function(BuildContext context, int index, Company cpy)
       itemBuilder;
-  final bool filterWithRange;
-  final bool filterWithVisibility;
 
   CompanyList({
     @required this.itemBuilder,
-    this.filterWithRange = false,
-    this.filterWithVisibility = false,
   });
 
   @override
@@ -27,7 +25,7 @@ class CompanyList extends StatelessWidget {
         onInit: (Store<AppState> store) => store.dispatch(
             CompanyFilterCategoryAction(
                 store.state.selectCompanyViewModel.categoryFilter)),
-        converter: _ViewModel.fromStore,
+        converter: (store) => _ViewModel.fromState(store),
         builder: (context, vm) {
           return Stack(
             alignment: AlignmentDirectional.topCenter,
@@ -40,7 +38,12 @@ class CompanyList extends StatelessWidget {
               AnimatedOpacity(
                 duration: const Duration(milliseconds: 200),
                 opacity: !vm.companySearchState.isLoading &&
-                            vm.companySearchState?.searchResults?.length == 0 ??
+                            companiesVisibilityFilterSelector(
+                                        vm.companySearchState?.searchResults,
+                                        vm.filter,
+                                        vm.userFavorites)
+                                    .length ==
+                                0 ??
                         false
                     ? 1.0
                     : 0.0,
@@ -51,7 +54,10 @@ class CompanyList extends StatelessWidget {
                 opacity:
                     vm.companySearchState.searchResults != null ? 1.0 : 0.0,
                 child: _buildCompanyList(
-                  vm.companySearchState.searchResults,
+                  companiesVisibilityFilterSelector(
+                      vm.companySearchState.searchResults,
+                      vm.filter,
+                      vm.userFavorites),
                   context,
                 ),
               ),
@@ -125,24 +131,33 @@ class CompanyList extends StatelessWidget {
 
 class _ViewModel {
   final CompanySearchState companySearchState;
+  final CompanyVisibilityFilter filter;
+  final List<int> userFavorites;
 
   _ViewModel({
     this.companySearchState,
+    this.filter,
+    this.userFavorites,
   });
 
-  static _ViewModel fromStore(Store<AppState> store) {
+  static _ViewModel fromState(Store<AppState> store) {
     return _ViewModel(
       companySearchState: store.state.selectCompanyViewModel.companySearchState,
+      filter: store.state.selectCompanyViewModel.companyVisibilityFilter,
+      userFavorites: store.state.userViewModel.user.favorites,
     );
   }
 
   @override
-  int get hashCode => companySearchState.hashCode;
+  int get hashCode =>
+      companySearchState.hashCode ^ filter.hashCode ^ userFavorites.hashCode;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is _ViewModel &&
           runtimeType == other.runtimeType &&
-          companySearchState == other.companySearchState;
+          companySearchState == other.companySearchState &&
+          userFavorites == other.userFavorites &&
+          filter == other.filter;
 }

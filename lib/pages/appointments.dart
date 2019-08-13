@@ -85,6 +85,7 @@ class AppointmentPage extends StatelessWidget {
             _buildUpcomingEventDescription(
                 upcomingAppointment, vm.location, context),
             _buildUpcomingAppointment(upcomingAppointment, context),
+            SizedBox(height: 5,),
             Expanded(
               child: CupertinoScrollbar(
                 child: CustomScrollView(
