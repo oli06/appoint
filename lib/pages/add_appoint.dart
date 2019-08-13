@@ -27,9 +27,16 @@ import 'package:flutter_redux/flutter_redux.dart';
 
 class AddAppoint extends StatefulWidget {
   final Appoint appoint;
+  ///#no-time: used to create appoint with companies pre-selected (e.g. from company favorites)
+  final Company company;
   final bool isEditing;
 
-  AddAppoint({Key key, this.isEditing = false, this.appoint}) : super(key: key);
+  AddAppoint({
+    Key key,
+    this.isEditing = false,
+    this.appoint,
+    this.company,
+  }) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -65,6 +72,8 @@ class AddAppointState extends State<AddAppoint>
       _description = widget.appoint.description;
 
       _titleController.text = _title;
+    } else if (widget.company != null) {
+      _company = widget.company;
     }
 
     _titleController.addListener(onTitleChange);

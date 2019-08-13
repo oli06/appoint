@@ -1,10 +1,13 @@
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/assets/company_icons_icons.dart';
 import 'package:appoint/models/app_state.dart';
+import 'package:appoint/models/appoint.dart';
 import 'package:appoint/models/category.dart';
 import 'package:appoint/models/company.dart';
+import 'package:appoint/pages/add_appoint.dart';
 import 'package:appoint/utils/ios_url_scheme.dart';
 import 'package:appoint/utils/parse.dart';
+import 'package:appoint/widgets/navBar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -21,145 +24,161 @@ class CompanyDetails extends StatelessWidget {
     final Company company = ModalRoute.of(context).settings.arguments;
 
     return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (context, bool innerBoxIsScrolled) {
-          return <Widget>[
-            SliverAppBar(
-              expandedHeight: 200,
-              pinned: true,
-              flexibleSpace: FlexibleSpaceBar(
-                centerTitle: false,
-                title: Padding(
-                  padding: EdgeInsets.zero,
-                  child: Text(company.name),
-                ),
-                background: Image.network(
-                  //TODO:
-                  "https://images.pexels.com/photos/396547/pexels-photo-396547.jpeg?auto=compress&cs=tinysrgb&h=350",
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ];
+      appBar: _buildNavBar(context, company),
+      body: _buildBody(company, context),
+    );
+  }
+
+  Widget _buildNavBar(BuildContext context, Company cpy) {
+    return NavBar(
+      cpy.name,
+      secondHeader: "Details",
+      height: 59,
+      trailing: IconButton(
+        icon: Icon(Icons.add, size: 28,),
+        onPressed: () {
+          showCupertinoModalPopup(
+              context: context,
+              builder: (BuildContext context) => AddAppoint(
+                    isEditing: false,
+                    company: cpy,
+                  ));
         },
-        body: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  Text(
-                    company.rating.toStringAsFixed(1),
-                    style: TextStyle(color: Color(0xfff7981c), fontSize: 16),
-                  ),
-                  ...Parse.ratingToIconList(company.rating),
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: StoreConnector<AppState, Category>(
-                        distinct: true,
-                        converter: (store) => store
-                            .state.selectCompanyViewModel.categories
-                            .firstWhere((c) => c.id == company.category),
-                        builder: (context, category) => Text(
-                          category.value,
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: 5,
-              ),
-              Text(
-                company.address.toStreetString(),
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(
-                height: 5,
-              ),
-              Text(
-                company.address.toCityString(),
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 5),
-              GestureDetector(
-                onTap: () {
-                  final noSpacePhoneNumber = UrlScheme.getTelUrl(company.phone);
-                  canLaunch(noSpacePhoneNumber).then((result) {
-                    if (result) {
-                      launch(noSpacePhoneNumber);
-                    }
-                  });
-                },
-                child: Text(
-                  company.phone,
-                  style: TextStyle(color: Color(0xff1991eb), fontSize: 16),
-                ),
-              ),
-              SizedBox(
-                height: 5,
-              ),
-              Text(
-                "Geschlossen",
-                style: TextStyle(color: Colors.red, fontSize: 16),
-              ),
-              SizedBox(height: 10),
-              Text(
-                company.description,
-                style: TextStyle(fontSize: 16),
-              ),
-              _buildActionButtons(company),
-            ],
-          ),
+      ),
+      leadingWidget: IconButton(
+        icon: Icon(
+          Icons.arrow_back_ios,
         ),
+        onPressed: () => Navigator.pop(context),
       ),
     );
   }
 
-  Widget _buildActionButtons(Company company) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildBody(Company company, BuildContext context) {
+    return CupertinoScrollbar(
+      child: Column(
         children: <Widget>[
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            child: Row(
+          Stack(
+            alignment: AlignmentDirectional.topEnd,
+            children: <Widget>[
+              Image.network(
+                //TODO:
+                "https://i.ibb.co/hH7FFxS/alesia-kazantceva-XLm6-f-Pw-K5-Q-unsplash.jpg",
+                fit: BoxFit.cover,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 4.0),
+                child: StoreConnector<AppState, _ViewModel>(
+                  converter: (store) => _ViewModel.fromState(store),
+                  builder: (context, vm) => vm.userFavoriteIds
+                          .contains(company.id)
+                      ? FlatButton(
+                          padding: EdgeInsets.zero,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.only(right: 2.0),
+                                child: Icon(CompanyIcons.heart),
+                              ),
+                              Text(
+                                "Aus Favoriten entfernen",
+                              ),
+                            ],
+                          ),
+                          onPressed: () => vm.removeFromFavorites(company.id),
+                        )
+                      : FlatButton(
+                          padding: EdgeInsets.zero,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Padding(
+                                padding: const EdgeInsets.only(right: 2.0),
+                                child: Icon(
+                                  CompanyIcons.heart,
+                                  color: Theme.of(context).errorColor,
+                                ),
+                              ),
+                              Text(
+                                "Zu Favoriten hinzufügen",
+                                style: TextStyle(
+                                    color: Theme.of(context).errorColor),
+                              ),
+                            ],
+                          ),
+                          onPressed: () => vm.addToFavorites(company.id),
+                        ),
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text("Termin vereinbaren"),
+                Row(
+                  children: <Widget>[
+                    Text(
+                      company.rating.toStringAsFixed(1),
+                      style: TextStyle(color: Color(0xfff7981c), fontSize: 16),
+                    ),
+                    ...Parse.ratingToIconList(company.rating),
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: StoreConnector<AppState, Category>(
+                          distinct: true,
+                          converter: (store) => store
+                              .state.selectCompanyViewModel.categories
+                              .firstWhere((c) => c.id == company.category),
+                          builder: (context, category) => Text(
+                            category.value,
+                            style: TextStyle(fontSize: 18),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  "${company.address.toStreetString()}, ${company.address.toCityString()}",
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () {
+                    final noSpacePhoneNumber =
+                        UrlScheme.getTelUrl(company.phone);
+                    canLaunch(noSpacePhoneNumber).then((result) {
+                      if (result) {
+                        launch(noSpacePhoneNumber);
+                      }
+                    });
+                  },
+                  child: Text(
+                    company.phone,
+                    style: TextStyle(color: Color(0xff1991eb), fontSize: 16),
+                  ),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Text(
+                  "Geschlossen",
+                  style: TextStyle(color: Colors.red, fontSize: 16),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  company.description,
+                  style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                ),
               ],
             ),
-            onPressed: () {},
-          ),
-          StoreConnector<AppState, _ViewModel>(
-            converter: (store) => _ViewModel.fromState(store),
-            builder: (context, vm) => vm.userFavoriteIds.contains(company.id)
-                ? CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    child: Row(
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.only(right: 2.0),
-                          child: Icon(CompanyIcons.heart),
-                        ),
-                        Text("Aus Favoriten entfernen"),
-                      ],
-                    ),
-                    onPressed: () => vm.removeFromFavorites(company.id),
-                  )
-                : CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    child: Row(
-                      children: <Widget>[
-                        Text("Zu Favoriten hinzufügen"),
-                      ],
-                    ),
-                    onPressed: () => vm.addToFavorites(company.id),
-                  ),
           ),
         ],
       ),

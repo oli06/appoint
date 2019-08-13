@@ -20,6 +20,9 @@ class AppointmentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    DateTime date = appoint.period.start.add(appoint.period.duration);
+    String duration = (date.hour * 60 + date.minute).toString();
+
     return /* Slidable(
       actionPane: SlidableDrawerActionPane(),
       secondaryActions: <Widget>[
@@ -69,28 +72,39 @@ class AppointmentTile extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Padding(
+              /* Padding(
                 padding: const EdgeInsets.only(right: 4.0, top: 4),
                 child: Align(
                   alignment: Alignment.topCenter,
                   child: IconCircleGradient.periodIndicator(
                       appoint.period.duration.inMinutes / 60),
                 ),
-              ),
+              ), */
               Expanded(
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Text(
-                        appoint.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: Color(0xff333f52)),
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: Text(
+                              appoint.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: Color(0xff333f52)),
+                            ),
+                          ),
+                          Text(
+                            "${duration}min",
+                            style:
+                                TextStyle(color: Theme.of(context).accentColor),
+                          ),
+                        ],
                       ),
                       Row(
                         mainAxisSize: MainAxisSize.max,
@@ -127,10 +141,7 @@ class AppointmentTile extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 4.0),
-                child: Icon(
-                  Icons.arrow_forward_ios,
-                  color: Colors.grey,
-                ),
+                child: Icon(Icons.arrow_forward_ios),
               ),
             ],
           ),

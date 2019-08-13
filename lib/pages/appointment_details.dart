@@ -23,7 +23,17 @@ class AppointmentDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final GlobalKey<ScaffoldState> _scaffoldKey =
         new GlobalKey<ScaffoldState>();
+
     final Appoint appointment = ModalRoute.of(context).settings.arguments;
+    bool eventIsActive = false;
+    String eventDuration = "";
+    if (appointment.period.start.isBefore(DateTime.now())) {
+      eventIsActive = true;
+    } else {
+      eventDuration = Parse.convertDateDifferenceToReadable(
+          DateTime.now(), appointment.period.start);
+    }
+
     return Scaffold(
       appBar: _buildNavBar(context),
       key: _scaffoldKey,
@@ -65,7 +75,8 @@ class AppointmentDetails extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: <Widget>[
-                      _buildPeriodTile(appointment),
+                      _buildPeriodTile(
+                          appointment, eventIsActive, eventDuration),
                       if (appointment.description != null &&
                           appointment.description.isNotEmpty) ...[
                         _buildDivider(),
@@ -84,7 +95,8 @@ class AppointmentDetails extends StatelessWidget {
                   ),
                 ),
               ),
-              _buildActionButtons(appointment, context, _scaffoldKey),
+              _buildActionButtons(
+                  appointment, context, _scaffoldKey, eventIsActive),
             ],
           ),
         ),
@@ -104,7 +116,8 @@ class AppointmentDetails extends StatelessWidget {
     );
   }
 
-  Padding _buildPeriodTile(Appoint appointment) {
+  Padding _buildPeriodTile(
+      Appoint appointment, bool eventIsActive, String eventDuration) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
@@ -118,7 +131,8 @@ class AppointmentDetails extends StatelessWidget {
                   style: TextStyle(fontSize: 17),
                 ),
                 Text(
-                    "in ${Parse.convertDateDifferenceToReadable(DateTime.now(), appointment.period.start)}"),
+                  eventIsActive ? "Termin aktiv" : "Termin in $eventDuration",
+                ),
               ],
             ),
             Padding(
@@ -144,7 +158,7 @@ class AppointmentDetails extends StatelessWidget {
   }
 
   Widget _buildActionButtons(Appoint appoint, BuildContext context,
-      GlobalKey<ScaffoldState> scaffoldKey) {
+      GlobalKey<ScaffoldState> scaffoldKey, bool isActive) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
       child: Row(
@@ -161,7 +175,7 @@ class AppointmentDetails extends StatelessWidget {
                 Text("Absagen"),
               ],
             ),
-            onPressed: () {},
+            onPressed: isActive ? null : () {},
           ),
           StoreConnector<AppState, _ViewModel>(
             distinct: true,
@@ -201,14 +215,16 @@ class AppointmentDetails extends StatelessWidget {
                 Text("Verschieben"),
               ],
             ),
-            onPressed: () => showCupertinoModalPopup(
-              context: context,
-              builder: (context) => AddAppoint(
-                isEditing: true,
-                appoint: appoint,
-                key: scaffoldKey,
-              ),
-            ),
+            onPressed: isActive
+                ? null
+                : () => showCupertinoModalPopup(
+                      context: context,
+                      builder: (context) => AddAppoint(
+                        isEditing: true,
+                        appoint: appoint,
+                        key: scaffoldKey,
+                      ),
+                    ),
           ),
         ],
       ),
