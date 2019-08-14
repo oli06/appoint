@@ -7,23 +7,23 @@ part 'company.g.dart';
 class Company {
   int id;
   String name;
-  String picture;
   Address address;
   double rating;
   int category;
   bool isPartner;
   String description;
+  String avatar;
   String phone;
 
   Company({
     this.id,
     this.name,
-    this.picture,
     this.address,
     this.rating,
     this.category,
     this.isPartner,
     this.description,
+    this.avatar,
     this.phone,
   });
 
@@ -31,12 +31,12 @@ class Company {
   int get hashCode =>
       id.hashCode ^
       name.hashCode ^
-      picture.hashCode ^
       address.hashCode ^
       rating.hashCode ^
       category.hashCode ^
       isPartner.hashCode ^
       description.hashCode ^
+      avatar.hashCode ^
       phone.hashCode;
 
   @override
@@ -46,12 +46,12 @@ class Company {
           runtimeType == other.runtimeType &&
           id == other.id &&
           name == other.name &&
-          picture == other.picture &&
           address == other.address &&
           rating == other.rating &&
           category == other.category &&
           isPartner == other.isPartner &&
           description == other.description &&
+          avatar == other.avatar &&
           phone == other.phone;
 
   factory Company.fromJson(Map<String, dynamic> json) {

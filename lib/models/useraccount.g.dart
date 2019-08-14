@@ -8,14 +8,15 @@ part of 'useraccount.dart';
 
 UserAccount _$UserAccountFromJson(Map json) {
   return UserAccount(
-      password: json['password'] as String,
-      firstName: json['firstName'] as String,
-      lastName: json['lastName'] as String,
-      email: json['email'] as String,
-      birthday: json['birthday'] == null
-          ? null
-          : DateTime.parse(json['birthday'] as String),
-      phone: json['phone'] as String);
+    password: json['password'] as String,
+    firstName: json['firstName'] as String,
+    lastName: json['lastName'] as String,
+    email: json['email'] as String,
+    birthday: json['birthday'] == null
+        ? null
+        : DateTime.parse(json['birthday'] as String),
+    phone: json['phone'] as String,
+  );
 }
 
 Map<String, dynamic> _$UserAccountToJson(UserAccount instance) =>
@@ -25,5 +26,5 @@ Map<String, dynamic> _$UserAccountToJson(UserAccount instance) =>
       'lastName': instance.lastName,
       'email': instance.email,
       'birthday': instance.birthday?.toIso8601String(),
-      'phone': instance.phone
+      'phone': instance.phone,
     };

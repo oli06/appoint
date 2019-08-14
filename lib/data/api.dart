@@ -14,7 +14,7 @@ import 'dart:async';
 import 'dart:convert';
 
 String baseUrl = "https://appointservice.azurewebsites.net/";
-String accessPoint = "api/";
+String accessPoint = "api";
 String url = baseUrl + accessPoint;
 
 class Api {

@@ -12,6 +12,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:location/location.dart';
 import 'package:redux/redux.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:convert';
 
 class CompanyTile extends StatelessWidget {
   final Company company;
@@ -89,21 +90,39 @@ class CompanyTile extends StatelessWidget {
     );
   }
 
-  ListTile _buildTile(_ViewModel vm) {
+  Widget _buildTile(_ViewModel vm) {
     return ListTile(
       onTap: onTap,
       leading: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
-          company.picture != null && company.picture.isNotEmpty
+          company.avatar != null
               ? CircleAvatar(
-                  backgroundImage: NetworkImage(
-                    "${company.picture}",
+                  maxRadius: 19,
+                  backgroundImage: MemoryImage(
+                    base64Decode(company.avatar),
                   ),
                 )
               : CircleAvatar(
+                maxRadius: 19,
                   backgroundImage: AssetImage("images/avatar_placeholder.jpeg"),
                 ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.zero,
+                child: Icon(
+                  Icons.star,
+                  color: Color(0xfff7981c),
+                  size: 16,
+                ),
+              ),
+              Text("${company.rating.toStringAsFixed(1)} "),
+            ],
+          ),
         ],
       ),
       title: Row(
@@ -144,7 +163,7 @@ class CompanyTile extends StatelessWidget {
               Text(
                 "${company.address.toStreetString()}",
                 style:
-                    const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
               _buildDistanceIndicator(vm),
             ],
@@ -158,7 +177,7 @@ class CompanyTile extends StatelessWidget {
                       fontSize: 15, fontWeight: FontWeight.w500),
                 ),
               ),
-              Row(
+              /* Row(
                 children: <Widget>[
                   Icon(
                     Icons.star,
@@ -167,7 +186,7 @@ class CompanyTile extends StatelessWidget {
                   ),
                   Text("${company.rating.toStringAsFixed(1)}"),
                 ],
-              ),
+              ), */
             ],
           ),
         ],
