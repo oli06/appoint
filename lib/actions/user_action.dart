@@ -31,10 +31,13 @@ class LoadedUserAction {
 }
 
 class UpdateApiPropertiesAction {
-  final String userId;
+  final int userId;
   final String token;
 
-  UpdateApiPropertiesAction(this.userId, this.token);
+  UpdateApiPropertiesAction(
+    this.userId,
+    this.token,
+  );
 }
 
 class VerifyUserAction {

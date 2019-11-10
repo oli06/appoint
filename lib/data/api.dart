@@ -6,6 +6,7 @@ import 'package:appoint/models/category.dart';
 import 'package:appoint/models/company.dart';
 import 'package:appoint/models/dayresponse.dart';
 import 'package:appoint/models/period.dart';
+import 'package:appoint/models/sync.dart';
 import 'package:appoint/models/user.dart';
 import 'package:appoint/models/useraccount.dart';
 import 'package:appoint/utils/parse.dart';
@@ -19,11 +20,11 @@ String url = baseUrl + accessPoint;
 
 class Api {
   String token;
-  String userId;
+  int userId;
 
   Api({
     this.token,
-    this.userId = "",
+    this.userId,
   });
 
   Future<List<Company>> getCompanies(String searchTerm) async {
@@ -114,7 +115,6 @@ class Api {
     final response = await http.post('$url/users/register', body: jsonString);
 
     if (response.statusCode == 200) {
-      return RequestResult.success(true);
     }
 
     return RequestResult.failed(
@@ -131,7 +131,7 @@ class Api {
       "password": password
     };
 
-    final response = await http.post('$baseUrl/token', body: body);
+    final response = await http.post('${baseUrl}token', body: body);
 
     if (response.statusCode == 200) {
       return RequestResult.success(json.decode(response.body));
@@ -186,6 +186,21 @@ class Api {
     }
 
     return [];
+  }
+
+  Future<RequestResult<Sync>> getSyncFlags() async {
+    final response = await http.get('$url/users/$userId/sync',
+        headers: {HttpHeaders.authorizationHeader: "bearer $token"});
+
+    if (response.statusCode == 200) {
+      dynamic sync = json.decode(response.body);
+      return RequestResult.success(Sync.fromJson(sync));
+    }
+
+    return RequestResult.failed(
+      AppointWebserviceError.fromJson(json.decode(response.body)),
+      response.statusCode,
+    );
   }
 
   Future<RequestResult<User>> getUser() async {

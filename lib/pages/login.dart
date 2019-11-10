@@ -166,7 +166,7 @@ class _LoginState extends State<Login> {
           final token = response.data['access_token'];
 
           api.token = token;
-          api.userId = response.data['userId'];
+          api.userId = int.parse(response.data['userId']);
           vm.updateApiProperties(api.userId, api.token);
 
           api.getUser().then((response) async {
@@ -291,7 +291,7 @@ class _ViewModel {
   final Function(bool loginProcessIsActive) updateLoginProcessIsActive;
   final Function(String username) forgotPassword;
   final Function(User user, String token) loadedUserConfigurationAction;
-  final Function(String userId, String token) updateApiProperties;
+  final Function(int userId, String token) updateApiProperties;
 
   _ViewModel({
     this.userViewModel,

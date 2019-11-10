@@ -1,7 +1,7 @@
 import 'package:appoint/models/company.dart';
 
 class LoadFavoritesAction {
-  final String userId;
+  final int userId;
 
   LoadFavoritesAction(this.userId);
 }

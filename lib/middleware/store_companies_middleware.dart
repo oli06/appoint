@@ -12,6 +12,7 @@ import 'package:appoint/models/category.dart';
 import 'package:appoint/selectors/selectors.dart';
 import 'package:appoint/utils/constants.dart';
 import 'package:appoint/utils/logger.dart';
+//import 'package:localstorage/localstorage.dart';
 import 'package:logger/logger.dart';
 import 'package:redux/redux.dart';
 import 'package:location/location.dart';
@@ -88,7 +89,7 @@ Middleware<AppState> _loadedUserConfigurationAction(
   return (Store<AppState> store, action, NextDispatcher next) {
     logger.d("loaded shared preferences");
 
-    sharedPreferences.setString(kUserIdKey, action.user.id);
+    sharedPreferences.setInt(kUserIdKey, action.user.id);
     sharedPreferences.setString(kTokenKey, action.token);
 
     store.dispatch(LoadedUserAction(action.user, action.token));
@@ -169,11 +170,28 @@ Middleware<AppState> _authenticate(
       store.dispatch(UpdateLoginProcessIsActiveAction(true));
 
       final token = sharedPreferences.getString(kTokenKey);
-      final userId = sharedPreferences.getString(kUserIdKey);
+      final userId = sharedPreferences.getInt(kUserIdKey);
       logger.i("user $userId is authenticated");
 
       api.token = token;
       api.userId = userId;
+
+      // load data from storage
+      if(sharedPreferences.containsKey(kLastSyncFlag)) {
+        api.getSyncFlags().then((syncFlags) {
+          final lastSync = DateTime.parse(sharedPreferences.getString(kLastSyncFlag));
+
+          if(!syncFlags.data.lastModified.isBefore(lastSync)) {
+            //load userData from storage
+          } 
+          
+
+          if(lastSync.isBefore(syncFlags.data.appointmentsLastModified)) {
+            //load appointments
+          }
+        });
+        
+      }
 
       api.getUser().then((response) {
         if (response.success) {
