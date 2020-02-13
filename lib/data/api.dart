@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:appoint/data/api_interface.dart';
 import 'package:appoint/data/request_result.dart';
 import 'package:appoint/models/appoint.dart';
 import 'package:appoint/models/category.dart';
@@ -10,21 +11,18 @@ import 'package:appoint/models/sync.dart';
 import 'package:appoint/models/user.dart';
 import 'package:appoint/models/useraccount.dart';
 import 'package:appoint/utils/parse.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
 
-String baseUrl = "https://appointservice.azurewebsites.net/";
-String accessPoint = "api";
-String url = baseUrl + accessPoint;
-
-class Api {
-  String token;
-  int userId;
-
+class Api extends ApiInterface {
+  String get url => baseUrl + accessPoint;
+  String baseUrl;
+  String accessPoint;
   Api({
-    this.token,
-    this.userId,
+    @required this.baseUrl,
+    @required this.accessPoint,
   });
 
   Future<List<Company>> getCompanies(String searchTerm) async {
@@ -114,8 +112,7 @@ class Api {
     final jsonString = user.toJson();
     final response = await http.post('$url/users/register', body: jsonString);
 
-    if (response.statusCode == 200) {
-    }
+    if (response.statusCode == 200) {}
 
     return RequestResult.failed(
       AppointWebserviceError.fromJson(json.decode(response.body)),
@@ -278,5 +275,11 @@ class Api {
     }
 
     return false;
+  }
+
+  @override
+  Future<bool> verifyUser(String code) {
+    // TODO: implement verifyUser
+    return null;
   }
 }

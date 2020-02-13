@@ -1,14 +1,10 @@
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/appoint.dart';
 import 'package:appoint/models/category.dart';
-import 'package:appoint/pages/add_appoint.dart';
-import 'package:appoint/utils/ios_url_scheme.dart';
 import 'package:appoint/utils/parse.dart';
-import 'package:appoint/widgets/icon_circle_gradient.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:location/location.dart';
 
 class AppointmentTile extends StatelessWidget {

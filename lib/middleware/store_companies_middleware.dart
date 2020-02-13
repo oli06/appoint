@@ -6,6 +6,7 @@ import 'package:appoint/actions/select_period_action.dart';
 import 'package:appoint/actions/settings_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/data/api.dart';
+import 'package:appoint/data/api_base.dart';
 import 'package:appoint/enums/enums.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/category.dart';
@@ -19,7 +20,7 @@ import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 List<Middleware<AppState>> createStoreCompaniesMiddleware(
-    Api api, SharedPreferences sharedPreferences) {
+    ApiBase api, SharedPreferences sharedPreferences) {
   Logger logger = getLogger('middleware');
 
   final loadAppointments = _createLoadAppointments(api);
@@ -58,7 +59,7 @@ List<Middleware<AppState>> createStoreCompaniesMiddleware(
   ];
 }
 
-Middleware<AppState> _createLoadAppointments(Api api) {
+Middleware<AppState> _createLoadAppointments(ApiBase api) {
   return (Store<AppState> store, action, NextDispatcher next) {
     store.dispatch(UpdateAppointmentsIsLoadingAction(true));
 
@@ -71,7 +72,7 @@ Middleware<AppState> _createLoadAppointments(Api api) {
   };
 }
 
-Middleware<AppState> _createLoadPastAppointments(Api api) {
+Middleware<AppState> _createLoadPastAppointments(ApiBase api) {
   return (Store<AppState> store, action, NextDispatcher next) {
     store.dispatch(UpdatePastAppointmentsIsLoadingAction(true));
 
@@ -100,7 +101,7 @@ Middleware<AppState> _loadedUserConfigurationAction(
   };
 }
 
-Middleware<AppState> _updateApiPropertiesAction(Api api) {
+Middleware<AppState> _updateApiPropertiesAction(ApiBase api) {
   return (Store<AppState> store, action, NextDispatcher next) {
     api.token = action.token;
     api.userId = action.userId;
@@ -108,7 +109,7 @@ Middleware<AppState> _updateApiPropertiesAction(Api api) {
 }
 
 ///fetches periods which aren't already in cache
-Middleware<AppState> _createLoadPeriods(Api api, Logger logger) {
+Middleware<AppState> _createLoadPeriods(ApiBase api, Logger logger) {
   return (Store<AppState> store, action, NextDispatcher next) async {
     store.dispatch(UpdateIsLoadingAction(true));
 
@@ -162,7 +163,7 @@ Middleware<AppState> _createLoadPeriods(Api api, Logger logger) {
 }
 
 Middleware<AppState> _authenticate(
-    Api api, SharedPreferences sharedPreferences, Logger logger) {
+    ApiBase api, SharedPreferences sharedPreferences, Logger logger) {
   return (Store<AppState> store, action, NextDispatcher next) {
     logger.d("authenticate");
 
@@ -177,20 +178,19 @@ Middleware<AppState> _authenticate(
       api.userId = userId;
 
       // load data from storage
-      if(sharedPreferences.containsKey(kLastSyncFlag)) {
+      if (sharedPreferences.containsKey(kLastSyncFlag)) {
         api.getSyncFlags().then((syncFlags) {
-          final lastSync = DateTime.parse(sharedPreferences.getString(kLastSyncFlag));
+          final lastSync =
+              DateTime.parse(sharedPreferences.getString(kLastSyncFlag));
 
-          if(!syncFlags.data.lastModified.isBefore(lastSync)) {
+          if (!syncFlags.data.lastModified.isBefore(lastSync)) {
             //load userData from storage
-          } 
-          
+          }
 
-          if(lastSync.isBefore(syncFlags.data.appointmentsLastModified)) {
+          if (lastSync.isBefore(syncFlags.data.appointmentsLastModified)) {
             //load appointments
           }
         });
-        
       }
 
       api.getUser().then((response) {
@@ -210,11 +210,11 @@ Middleware<AppState> _authenticate(
   };
 }
 
-Middleware<AppState> _createUserVerifcation(Api api) {
+Middleware<AppState> _createUserVerifcation(ApiBase api) {
   return (Store<AppState> store, action, next) {
     store.dispatch(UpdateUserLoadingAction(true));
 
-    api.postUserVerificationCode(action.verificationCode).then((result) {
+    api.verifyUser(action.verificationCode).then((result) {
       store.dispatch(VerifyUserResultAction(result));
       store.dispatch(UpdateUserLoadingAction(false));
     });
@@ -223,7 +223,7 @@ Middleware<AppState> _createUserVerifcation(Api api) {
   };
 }
 
-Middleware<AppState> _createLoadCategories(Api api) {
+Middleware<AppState> _createLoadCategories(ApiBase api) {
   return (Store<AppState> store, action, next) {
     //TODO: check, if categories should use a own viewmodel
 
@@ -265,7 +265,7 @@ Middleware<AppState> _createLoadUserLocation() {
   };
 }
 
-Middleware<AppState> _createLoadUserFavorites(Api api) {
+Middleware<AppState> _createLoadUserFavorites(ApiBase api) {
   return (Store<AppState> store, action, next) {
     store.dispatch(UpdateIsLoadingFavoritesAction(true));
     api
@@ -281,7 +281,7 @@ Middleware<AppState> _createLoadUserFavorites(Api api) {
   };
 }
 
-Middleware<AppState> _createRemoveFromUserFavorites(Api api) {
+Middleware<AppState> _createRemoveFromUserFavorites(ApiBase api) {
   return (Store<AppState> store, action, next) {
     api.removeUserFavorites(action.companyIds).then((res) {
       //TODO: use user.favorites stream to reload them
@@ -291,7 +291,7 @@ Middleware<AppState> _createRemoveFromUserFavorites(Api api) {
   };
 }
 
-Middleware<AppState> _createAddToUserFavorites(Api api) {
+Middleware<AppState> _createAddToUserFavorites(ApiBase api) {
   return (Store<AppState> store, action, next) {
     api.addUserFavorite(action.companyId).then((res) {
       //TODO: use user.favorites stream to reload them

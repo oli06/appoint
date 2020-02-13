@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:appoint/actions/appointments_action.dart';
 import 'package:appoint/data/api.dart';
+import 'package:appoint/data/api_base.dart';
 import 'package:appoint/utils/calendar.dart';
 import 'package:appoint/utils/constants.dart';
 import 'package:appoint/models/app_state.dart';
@@ -27,6 +28,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 
 class AddAppoint extends StatefulWidget {
   final Appoint appoint;
+
   ///#no-time: used to create appoint with companies pre-selected (e.g. from company favorites)
   final Company company;
   final bool isEditing;
@@ -174,10 +176,13 @@ class AddAppointState extends State<AddAppoint>
                                       StoreProvider.of<AppState>(context)
                                           .state
                                           .userViewModel;
-                                  Api(
-                                    token: store.token,
-                                    userId: store.user.id,
-                                  ).getNextPeriod(_company.id).then((period) {
+                                  final _api = ApiBase();
+                                  _api.token = store.token;
+                                  _api.userId = store.user.id;
+
+                                  _api
+                                      .getNextPeriod(_company.id)
+                                      .then((period) {
                                     if (period != null) {
                                       _period = period;
                                     } else {
@@ -243,10 +248,9 @@ class AddAppointState extends State<AddAppoint>
                       description: _description ?? "",
                     );
 
-                    final api = Api(
-                      token: vm.userViewModel.token,
-                      userId: vm.userViewModel.user.id,
-                    );
+                    final api = ApiBase();
+                    api.token = vm.userViewModel.token;
+                    api.userId = vm.userViewModel.user.id;
 
                     if (!isEditing) {
                       //save new

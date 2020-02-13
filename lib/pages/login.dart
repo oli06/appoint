@@ -1,5 +1,6 @@
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/data/api.dart';
+import 'package:appoint/data/api_base.dart';
 import 'package:appoint/data/request_result.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/user.dart';
@@ -158,7 +159,7 @@ class _LoginState extends State<Login> {
 
       logger.i("userdata validates, username $username");
 
-      final api = Api();
+      final api = ApiBase();
       api.login(username, password).then((RequestResult response) {
         if (response.success) {
           logger.i("successful login for $username");

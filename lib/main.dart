@@ -1,6 +1,9 @@
 import 'package:appoint/actions/settings_action.dart';
 import 'package:appoint/actions/user_action.dart';
 import 'package:appoint/data/api.dart';
+import 'package:appoint/data/api_base.dart';
+import 'package:appoint/data/dummy_api.dart';
+import 'package:appoint/environment/env.dart';
 import 'package:appoint/home.dart';
 import 'package:appoint/middleware/search_epic.dart';
 import 'package:appoint/middleware/store_companies_middleware.dart';
@@ -29,7 +32,9 @@ void main() async {
   
   await remoteDevtools.connect(); */
   Widget defaultRoute = Login();
-  final Api api = new Api();
+
+  final ApiBase api = new ApiBase();
+
   final sharedPreferences = await SharedPreferences.getInstance();
 
   final store = DevToolsStore<AppState>(

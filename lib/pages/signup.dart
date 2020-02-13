@@ -1,4 +1,5 @@
 import 'package:appoint/data/api.dart';
+import 'package:appoint/data/api_base.dart';
 import 'package:appoint/models/useraccount.dart';
 import 'package:appoint/pages/signup_success.dart';
 import 'package:appoint/utils/logger.dart';
@@ -169,7 +170,7 @@ class _SignUpState extends State<SignUp> {
                     phone: _phone,
                   );
 
-                  Api().register(userAccount).then(
+                  ApiBase().register(userAccount).then(
                     (result) {
                       if (result.success) {
                         logger.i(

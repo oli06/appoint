@@ -1,5 +1,6 @@
 import 'package:appoint/actions/companies_action.dart';
 import 'package:appoint/data/api.dart';
+import 'package:appoint/data/api_base.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/company.dart';
 import 'package:appoint/selectors/selectors.dart';
@@ -7,7 +8,7 @@ import 'package:redux_epics/redux_epics.dart';
 import 'package:rxdart/rxdart.dart';
 
 class CompanyNameSearchEpic implements EpicClass<AppState> {
-  final Api api;
+  final ApiBase api;
 
   CompanyNameSearchEpic(this.api);
 
@@ -38,7 +39,7 @@ class CompanyNameSearchEpic implements EpicClass<AppState> {
 
 ///Difference between CompanyNameSearchEpic and CompanyFilterSearchEpic is the missing debounce time. when Name (userinput) or range value changes this could lead to massive abuse of reqeusts
 class CompanyFilterSearchEpic implements EpicClass<AppState> {
-  final Api api;
+  final ApiBase api;
 
   CompanyFilterSearchEpic(this.api);
 
@@ -71,7 +72,7 @@ class CompanyFilterSearchEpic implements EpicClass<AppState> {
 }
 
 class CompanyFilterCategoryEpic implements EpicClass<AppState> {
-  final Api api;
+  final ApiBase api;
 
   CompanyFilterCategoryEpic(this.api);
 
