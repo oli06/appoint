@@ -1,6 +1,6 @@
 Map config = {
   "development": true,
   "authentication": false,
-  "baseUrl": "https://appointservice.azurewebsites.net/",
+  "baseUrl": "https://example.org/appointservice",
   "accessPoint": "api",
 };
