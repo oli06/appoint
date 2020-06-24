@@ -1,3 +1,4 @@
 # appoint
 
-This Flutter project is currently WIP and is not compilable!
+:construction: This Flutter application is WIP and needs a big cleanup!
+
