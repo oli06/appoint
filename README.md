@@ -3,7 +3,9 @@
 :construction: This Flutter application is WIP and needs a big cleanup!
 
 ## Some selected preview pictures
-
-![Signin Page](images/preview/singin.png?raw=true "Signin Page") 
-![Select Company Page](images/preview/select_company.png?raw=true "Select Company Page")
-![Select Appointment Page](images/preview/select_appointment.png?raw=true "Select Appointment Page")
+<div>
+  
+<img src="images/preview/singin.png" width="317" height="634"/>
+<img src="images/preview/select_company.png" width="317" height="634"/>
+<img src="images/preview/select_appointment.png" width="317" height="634"/>
+</div>
