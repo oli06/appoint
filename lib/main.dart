@@ -24,6 +24,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:redux_epics/redux_epics.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   Logger.level = Level.debug;
 
   debugPaintSizeEnabled = false;

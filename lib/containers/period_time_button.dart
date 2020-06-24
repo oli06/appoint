@@ -2,7 +2,6 @@ import 'package:appoint/actions/select_period_action.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cupertino_date_picker/date_picker.dart';
 import 'package:flutter_cupertino_date_picker/flutter_cupertino_date_picker.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:redux/redux.dart';
@@ -79,7 +78,7 @@ class PeriodTimeButton extends StatelessWidget {
       DatePicker.showDatePicker(
         context,
         dateFormat: "HH:mm",
-        minuteDivider: 15,
+        //minuteDivider: 15, //TODO: use correct github repo to support minuteDividers
         onConfirm: (value, _) {
           vm.updateTimeFilter(TimeOfDay.fromDateTime(value));
         },
