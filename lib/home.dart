@@ -1,4 +1,5 @@
 import 'package:appoint/pages/profile.dart';
+import 'package:appoint/utils/icons.dart';
 import 'package:appoint/widgets/TabBar/FABBottomAppBarItem.dart';
 import 'package:appoint/pages/appointments.dart';
 import 'package:appoint/pages/add_appoint.dart';
@@ -30,7 +31,10 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
           FABBottomAppBarItem(
               iconData: CupertinoIcons.profile_circled, text: "Profil"),
           FABBottomAppBarItem(
-              iconData: CupertinoIcons.getIconData(0xf2d1), text: "Termine")
+            //iconData: CupertinoIcons.getIconData(0xf2d1),
+            iconData: AppointIcons.getIconByCodePoint(0xf2d1),
+            text: "Termine",
+          ),
         ],
         centerItemText: 'Neuer Termin',
         color: Colors.blueGrey,
@@ -51,12 +55,12 @@ class HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildFab(BuildContext context) {
     return FloatingActionButton(
-      onPressed: () =>
-        showCupertinoModalPopup(
-          context: context,
-          builder: (BuildContext context) => AddAppoint(isEditing: false,),
+      onPressed: () => showCupertinoModalPopup(
+        context: context,
+        builder: (BuildContext context) => AddAppoint(
+          isEditing: false,
         ),
-      
+      ),
       child: Icon(Icons.add),
       elevation: 4.0,
       backgroundColor: Color(0xff09c199),

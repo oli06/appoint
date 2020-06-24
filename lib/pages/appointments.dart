@@ -7,6 +7,7 @@ import 'package:appoint/models/day.dart';
 import 'package:appoint/pages/add_appoint.dart';
 import 'package:appoint/pages/appointment_details.dart';
 import 'package:appoint/selectors/selectors.dart';
+import 'package:appoint/utils/icons.dart';
 import 'package:appoint/utils/ios_url_scheme.dart';
 import 'package:appoint/utils/logger.dart';
 import 'package:appoint/utils/parse.dart';
@@ -85,7 +86,9 @@ class AppointmentPage extends StatelessWidget {
             _buildUpcomingEventDescription(
                 upcomingAppointment, vm.location, context),
             _buildUpcomingAppointment(upcomingAppointment, context),
-            SizedBox(height: 5,),
+            SizedBox(
+              height: 5,
+            ),
             Expanded(
               child: CupertinoScrollbar(
                 child: CustomScrollView(
@@ -317,7 +320,8 @@ class AppointmentPage extends StatelessWidget {
       leadingWidget: Container(
         padding: EdgeInsets.only(left: 10.0),
         child: Icon(
-          CupertinoIcons.getIconData(0xf2d1),
+          //CupertinoIcons.getIconData(0xf2d1),
+          AppointIcons.getIconByCodePoint(0xf2d1),
         ),
       ),
       trailing: Row(

@@ -5,6 +5,7 @@ import 'package:appoint/pages/login.dart';
 import 'package:appoint/pages/past_appointments.dart';
 import 'package:appoint/pages/settings.dart';
 import 'package:appoint/utils/constants.dart';
+import 'package:appoint/utils/icons.dart';
 import 'package:appoint/view_models/user_vm.dart';
 import 'package:appoint/widgets/dialog.dart' as appoint;
 import 'package:appoint/widgets/expansion_widget.dart';
@@ -45,7 +46,8 @@ class ProfilePage extends StatelessWidget {
                       alignment: FractionalOffset.bottomCenter,
                       child: ListTile(
                           title: Text("Ausloggen"),
-                          trailing: Icon(CupertinoIcons.getIconData(0xf385)),
+                          //trailing: Icon(CupertinoIcons.getIconData(0xf385)),
+                          trailing: Icon(AppointIcons.getIconByCodePoint(0xf385)),
                           onTap: () => _showLogoutScreen(context, vm)),
                     ),
                   ),

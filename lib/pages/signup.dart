@@ -1,7 +1,7 @@
-import 'package:appoint/data/api.dart';
 import 'package:appoint/data/api_base.dart';
 import 'package:appoint/models/useraccount.dart';
 import 'package:appoint/pages/signup_success.dart';
+import 'package:appoint/utils/icons.dart';
 import 'package:appoint/utils/logger.dart';
 import 'package:appoint/utils/parse.dart';
 import 'package:appoint/widgets/form/appoint_input.dart';
@@ -279,7 +279,8 @@ class _SignUpState extends State<SignUp> {
         return null;
       },
       leadingWidget: Icon(
-        CupertinoIcons.getIconData(0xf4c8),
+        //CupertinoIcons.getIconData(0xf4c8),
+        AppointIcons.getIconByCodePoint(0xf4c8)
       ),
       errorText: "Passwort fehlt",
       onSaved: (value) => _password = value,
@@ -298,7 +299,8 @@ class _SignUpState extends State<SignUp> {
       errorText: "",
       hintText: "",
       leadingWidget: Icon(
-        CupertinoIcons.getIconData(0xf2d1),
+        //CupertinoIcons.getIconData(0xf2d1),
+        AppointIcons.getIconByCodePoint(0xf2d1)
       ),
       onFieldSubmitted: (value) {},
       showSuffixIcon: true,

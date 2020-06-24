@@ -1,11 +1,11 @@
 import 'package:appoint/actions/user_action.dart';
-import 'package:appoint/data/api.dart';
 import 'package:appoint/data/api_base.dart';
 import 'package:appoint/data/request_result.dart';
 import 'package:appoint/models/app_state.dart';
 import 'package:appoint/models/user.dart';
 import 'package:appoint/pages/signup.dart';
 import 'package:appoint/utils/constants.dart';
+import 'package:appoint/utils/icons.dart';
 import 'package:appoint/utils/logger.dart';
 import 'package:appoint/view_models/user_vm.dart';
 import 'package:appoint/widgets/form/form_button.dart';
@@ -138,7 +138,8 @@ class _LoginState extends State<Login> {
       errorText: "Passwort fehlt",
       focusNode: _passwordFocus,
       action: TextInputAction.go,
-      leadingWidget: Icon(CupertinoIcons.getIconData(0xf4c8)),
+      //leadingWidget: Icon(CupertinoIcons.getIconData(0xf4c8)),
+      leadingWidget: Icon(AppointIcons.getIconByCodePoint(0xf4c8)),
       obscureText: true,
       onSaved: (value) => setState(() {
         password = value;
